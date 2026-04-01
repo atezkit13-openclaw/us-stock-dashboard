@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>US Market Intelligence Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-primary: #070b14;
@@ -32,7 +31,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg-primary); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; min-height: 100vh; overflow-x: hidden; }
   body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); pointer-events: none; z-index: 0; }
   .container { max-width: 1600px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
 
@@ -41,21 +40,21 @@
   .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .logo-area { display: flex; align-items: center; gap: 12px; }
   .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.05em; background: linear-gradient(90deg, #e2e8f0, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .logo-text { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; background: linear-gradient(90deg, #e2e8f0, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase; }
   .clock-area { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
   .clock-box { display: flex; flex-direction: column; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; }
-  .clock-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
-  .clock-time { font-size: 16px; font-weight: 600; color: var(--accent-cyan); letter-spacing: 0.05em; }
+  .clock-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+  .clock-time { font-size: 16px; font-weight: 600; color: var(--accent-cyan); font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
   .clock-date { font-size: 10px; color: var(--text-secondary); }
   .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .btn-refresh { background: linear-gradient(135deg, #1e3a5f, #1e4d7a); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; transition: all 0.2s; text-transform: uppercase; }
+  .btn-refresh { background: linear-gradient(135deg, #1e3a5f, #1e4d7a); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; transition: all 0.2s; text-transform: uppercase; }
   .btn-refresh:hover { background: linear-gradient(135deg, #1e4d7a, #1e6bad); color: #fff; }
   .btn-refresh.loading { opacity: 0.6; cursor: not-allowed; }
   .last-updated { font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em; }
 
   /* ── MANAGER MODE BUTTON ── */
-  .btn-manager { background: linear-gradient(135deg, #2a1a00, #3d2600); border: 1px solid var(--manager-accent); color: var(--manager-accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; transition: all 0.2s; text-transform: uppercase; }
+  .btn-manager { background: linear-gradient(135deg, #2a1a00, #3d2600); border: 1px solid var(--manager-accent); color: var(--manager-accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; transition: all 0.2s; text-transform: uppercase; }
   .btn-manager:hover { background: linear-gradient(135deg, #3d2600, #5a3800); color: #ffe082; }
   .btn-manager.active { background: linear-gradient(135deg, #78350f, #92400e); border-color: #fbbf24; color: #fef3c7; animation: manager-glow 2s ease-in-out infinite; }
   @keyframes manager-glow { 0%,100%{ box-shadow: 0 0 0 0 rgba(245,158,11,0); } 50%{ box-shadow: 0 0 10px 2px rgba(245,158,11,0.3); } }
@@ -70,7 +69,7 @@
 
   /* ── SECTION HEADERS ── */
   .section { margin: 24px 0; }
-  .section-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .section-title { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
   .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   /* ── INDEX CARDS ── */
@@ -85,10 +84,10 @@
   @keyframes vix-pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(255,68,68,0); } 50%{ box-shadow: 0 0 12px 2px rgba(255,68,68,0.3); } }
   .card-symbol { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
   .card-name { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; }
-  .card-price { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+  .card-price { font-variant-numeric: tabular-nums; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
   .card-change { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-  .card-change-abs { font-size: 11px; font-weight: 500; }
-  .card-change-pct { font-size: 13px; font-weight: 700; }
+  .card-change-abs { font-size: 11px; font-weight: 500; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .card-change-pct { font-size: 13px; font-weight: 700; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
   .up { color: var(--green) !important; }
   .down { color: var(--red) !important; }
   .neutral { color: var(--text-dim) !important; }
@@ -107,8 +106,8 @@
   .ticker-link { color: var(--accent-cyan); text-decoration: none; font-weight: 600; font-size: 12px; letter-spacing: 0.05em; transition: color 0.15s; }
   .ticker-link:hover { color: #fff; text-decoration: underline; }
   .ticker-name { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
-  .price-cell { font-weight: 600; font-size: 13px; }
-  .change-cell { font-size: 12px; font-weight: 600; }
+  .price-cell { font-weight: 600; font-size: 13px; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .change-cell { font-size: 12px; font-weight: 600; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
   .momentum-bar-wrap { width: 80px; height: 4px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden; }
   .momentum-bar { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
   .momentum-bar.up { background: linear-gradient(90deg, var(--green-dim), var(--green)); }
@@ -126,7 +125,7 @@
   .manager-active .mgr-actions { display: flex; }
   .manager-active thead th.mgr-col { display: table-cell; }
   thead th.mgr-col { display: none; }
-  .btn-edit-row, .btn-del-row { border: none; border-radius: 4px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 3px 8px; transition: all 0.15s; }
+  .btn-edit-row, .btn-del-row { border: none; border-radius: 4px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 10px; font-weight: 600; padding: 3px 8px; transition: all 0.15s; }
   .btn-edit-row { background: rgba(59,130,246,0.2); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.4); }
   .btn-edit-row:hover { background: rgba(59,130,246,0.4); }
   .btn-del-row { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
@@ -138,11 +137,11 @@
   .manager-banner-icon { font-size: 18px; }
   .manager-banner-text { color: #fde68a; font-weight: 600; letter-spacing: 0.05em; flex: 1; }
   .manager-banner-sub { color: #92400e; font-size: 10px; }
-  .btn-add-ticker { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: var(--green); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .btn-add-ticker { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: var(--green); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
   .btn-add-ticker:hover { background: rgba(16,185,129,0.3); }
-  .btn-lock { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .btn-lock { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
   .btn-lock:hover { background: rgba(239,68,68,0.3); }
-  .btn-change-pin { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--amber); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .btn-change-pin { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--amber); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
   .btn-change-pin:hover { background: rgba(245,158,11,0.3); }
 
   /* ── MODALS ── */
@@ -150,7 +149,7 @@
   .modal-overlay.open { display: flex; }
   .modal { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 14px; padding: 32px; min-width: 380px; max-width: 480px; width: 90vw; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.6); animation: modal-in 0.2s ease; }
   @keyframes modal-in { from { opacity:0; transform: scale(0.94) translateY(10px); } to { opacity:1; transform: scale(1) translateY(0); } }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-title { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
   .modal-sub { font-size: 11px; color: var(--text-dim); margin-bottom: 24px; }
   .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; transition: color 0.15s; line-height: 1; }
   .modal-close:hover { color: var(--text-primary); }
@@ -162,7 +161,7 @@
   .pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.4s ease; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
   .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 260px; margin: 0 auto; }
-  .pin-key { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .pin-key { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
   .pin-key:hover { background: var(--bg-card-hover); border-color: var(--border-bright); transform: scale(1.04); }
   .pin-key:active { transform: scale(0.97); }
   .pin-key.clear { font-size: 13px; color: var(--amber); border-color: rgba(245,158,11,0.3); }
@@ -173,18 +172,18 @@
   /* TICKER EDIT MODAL */
   .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
   .form-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
-  .form-input, .form-select { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 10px 14px; border-radius: 8px; width: 100%; transition: border-color 0.2s; outline: none; }
+  .form-input, .form-select { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 13px; padding: 10px 14px; border-radius: 8px; width: 100%; transition: border-color 0.2s; outline: none; }
   .form-input:focus, .form-select:focus { border-color: var(--accent-blue); }
   .form-input::placeholder { color: var(--text-dim); }
   .form-input.error { border-color: var(--red); }
   .form-hint { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
   .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
-  .btn-primary { background: linear-gradient(135deg, #1e4d7a, #1e6bad); border: 1px solid var(--accent-blue); color: #fff; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, #1e4d7a, #1e6bad); border: 1px solid var(--accent-blue); color: #fff; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
   .btn-primary:hover { background: linear-gradient(135deg, #1e6bad, #1e82d4); }
-  .btn-secondary { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .btn-secondary { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
   .btn-secondary:hover { border-color: var(--border-bright); color: var(--text-primary); }
-  .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: var(--red); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: var(--red); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
   .btn-danger:hover { background: rgba(239,68,68,0.3); }
   .section-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
@@ -214,7 +213,7 @@
   .impact-high { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); }
   .impact-medium { background: rgba(245,158,11,0.2); color: var(--amber); border: 1px solid rgba(245,158,11,0.4); }
   .impact-low { background: rgba(16,185,129,0.2); color: var(--green); border: 1px solid rgba(16,185,129,0.4); }
-  .news-headline { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text-primary); margin-bottom: 8px; }
+  .news-headline { letter-spacing: -0.01em; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text-primary); margin-bottom: 8px; }
   .news-summary { font-size: 11px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 12px; }
   .news-footer { display: flex; align-items: center; justify-content: space-between; }
   .news-source { font-size: 10px; color: var(--text-dim); }
@@ -236,6 +235,66 @@
     .modal { min-width: unset; padding: 24px 18px; }
     .pin-pad { max-width: 220px; }
   }
+
+  /* ── TAB NAVIGATION ── */
+  .tab-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin: 0 0 0 0; background: var(--bg-secondary); position: sticky; top: 73px; z-index: 90; }
+  .tab-nav-btn { background: none; border: none; color: var(--text-dim); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; padding: 14px 24px; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; letter-spacing: 0.01em; }
+  .tab-nav-btn::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--accent-blue); transform: scaleX(0); transition: transform 0.2s; }
+  .tab-nav-btn:hover { color: var(--text-secondary); }
+  .tab-nav-btn.active { color: var(--accent-blue); }
+  .tab-nav-btn.active::after { transform: scaleX(1); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── MY PORTFOLIO TAB ── */
+  .pf-summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .pf-summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+  .pf-summary-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+  .pf-summary-value { font-size: 22px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; }
+  .pf-summary-sub { font-size: 11px; color: var(--text-secondary); margin-top: 4px; font-variant-numeric: tabular-nums; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; }
+
+  /* PIE CHART */
+  .pf-chart-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px; }
+  .pf-chart-canvas-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; }
+  .pf-chart-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; align-self: flex-start; }
+  #pf-pie { width: 100%; max-width: 300px; }
+  .pf-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; width: 100%; }
+  .pf-legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .pf-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .pf-legend-sym { font-weight: 700; color: var(--text-primary); min-width: 52px; }
+  .pf-legend-pct { color: var(--text-secondary); margin-left: auto; font-variant-numeric: tabular-nums; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; }
+
+  /* PORTFOLIO GROUPS */
+  .pf-group { margin-bottom: 20px; }
+  .pf-group-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px 8px 0 0; border-bottom: none; }
+  .pf-group-name { font-size: 12px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.04em; }
+  .pf-group-total { font-size: 12px; font-weight: 700; font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .pf-group-meta { font-size: 10px; color: var(--text-dim); margin-left: 8px; }
+  .pf-group-right { display: flex; align-items: center; gap: 16px; }
+  .pf-table-wrap { border: 1px solid var(--border); border-radius: 0 0 8px 8px; overflow: hidden; }
+  .pf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .pf-table thead th { background: rgba(13,19,34,0.8); padding: 8px 14px; text-align: left; font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .pf-table thead th:not(:first-child) { text-align: right; }
+  .pf-table tbody tr { border-bottom: 1px solid rgba(30,45,71,0.4); transition: background 0.15s; }
+  .pf-table tbody tr:last-child { border-bottom: none; }
+  .pf-table tbody tr:hover { background: var(--bg-card-hover); }
+  .pf-table tbody td { padding: 10px 14px; vertical-align: middle; white-space: nowrap; }
+  .pf-table tbody td:not(:first-child) { text-align: right; }
+  .pf-sym { font-weight: 700; font-size: 13px; color: var(--accent-cyan); letter-spacing: 0.03em; }
+  .pf-sym a { color: inherit; text-decoration: none; }
+  .pf-sym a:hover { text-decoration: underline; }
+  .pf-name { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .pf-num { font-family: SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .pf-mktval { font-weight: 600; font-size: 13px; }
+  .pf-cost { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .pf-excluded-badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; background: rgba(71,85,105,0.3); color: var(--text-dim); border: 1px solid var(--border); margin-left: 6px; }
+
+  @media (max-width: 800px) {
+    .pf-chart-wrap { grid-template-columns: 1fr; }
+    .tab-nav { overflow-x: auto; }
+    .tab-nav-btn { padding: 12px 16px; font-size: 12px; }
+  }
+
 </style>
 </head>
 <body>
@@ -416,7 +475,16 @@
   </div>
 </div>
 
+
+<!-- ═══ TAB NAVIGATION ═══ -->
+<nav class="tab-nav">
+  <button class="tab-nav-btn active" onclick="switchTab('market')" id="tab-btn-market">📊 Market</button>
+  <button class="tab-nav-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio">💼 My Portfolio</button>
+</nav>
+
 <div class="container" style="padding-top:24px;">
+
+<div class="tab-pane active" id="tab-market">
 
   <!-- MANAGER BANNER -->
   <div class="manager-banner" id="manager-banner">
@@ -518,6 +586,16 @@
     <div class="section-title">📰 Market Intelligence &amp; News</div>
     <div class="news-grid" id="news-grid"></div>
   </div>
+
+</div><!-- /tab-market -->
+
+<!-- ═══ PORTFOLIO TAB ═══ -->
+<div class="tab-pane" id="tab-portfolio">
+
+  <!-- PORTFOLIO CONTENT INJECTED BY JS -->
+  <div id="pf-root" style="padding:24px 0;"></div>
+
+</div><!-- /tab-portfolio -->
 
   <div class="footer">
     <div>Market Intelligence Dashboard — Built for Zeta | Qualys Senior TAM, Hong Kong</div>
@@ -1197,6 +1275,317 @@ renderNews();
   try { await fetchAllPrices(); }
   catch(e) { document.getElementById('last-updated').textContent = 'Seed data (fetch failed)'; }
 })();
+
+
+// ═══════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('tab-btn-' + name).classList.add('active');
+  if (name === 'portfolio') renderPortfolioTab();
+}
+
+// ═══════════════════════════════════════════════════════
+// PORTFOLIO DATA (from screenshots)
+// ═══════════════════════════════════════════════════════
+const PF_GROUPS = [
+  {
+    id: 'position',
+    name: 'Position Trade',
+    color: '#3b82f6',
+    excluded: false,
+    holdings: [
+      { sym:'PANW', name:'Palo Alto Networks', mktVal:2502.40, cost:2399.98, shares:15.609, price:160.32, dailyPct:3.87, dailyAbs:93.18, totalPct:4.27, totalAbs:102.42 },
+      { sym:'SPOT', name:'Spotify',            mktVal:2209.40, cost:2199.96, shares:4.5563, price:484.91, dailyPct:2.09, dailyAbs:45.15, totalPct:0.43, totalAbs:9.43 },
+      { sym:'MA',   name:'Mastercard',         mktVal:2334.41, cost:2399.97, shares:4.672,  price:499.66, dailyPct:1.15, dailyAbs:26.44, totalPct:-2.73, totalAbs:-65.56 },
+      { sym:'USD',  name:'Cash (USD)',          mktVal:3838.59, cost:3838.59, shares:3838.59,price:1.00,  dailyPct:0,    dailyAbs:0,     totalPct:0,    totalAbs:0 },
+    ]
+  },
+  {
+    id: 'etf',
+    name: '指數ETF (Index ETF)',
+    color: '#06b6d4',
+    excluded: false,
+    holdings: [
+      { sym:'VOO',  name:'Vanguard S&P 500 ETF', mktVal:3607.17, cost:3744.66, shares:6.0366, price:597.55, dailyPct:2.86, dailyAbs:100.33, totalPct:-3.67, totalAbs:-137.49 },
+      { sym:'QQQ',  name:'Invesco Nasdaq ETF',    mktVal:2166.33, cost:2298.74, shares:3.7533, price:577.18, dailyPct:3.39, dailyAbs:70.94,  totalPct:-5.76, totalAbs:-132.41 },
+      { sym:'AVUV', name:'Avantis US Small Cap',  mktVal:1998.42, cost:2003.97, shares:18.09,  price:110.47, dailyPct:2.03, dailyAbs:39.80,  totalPct:-0.28, totalAbs:-5.55  },
+    ]
+  },
+  {
+    id: 'hedge',
+    name: '避險Assets (Defensive)',
+    color: '#10b981',
+    excluded: false,
+    holdings: [
+      { sym:'GLDM', name:'SPDR Gold MiniShares', mktVal:1408.52, cost:1349.98, shares:15.196, price:92.69, dailyPct:3.77, dailyAbs:51.21, totalPct:4.34, totalAbs:58.54 },
+      { sym:'TLT',  name:'iShares 20Y Treasury', mktVal:468.82,  cost:479.98,  shares:5.408,  price:86.69, dailyPct:-0.10, dailyAbs:-0.49, totalPct:-2.33, totalAbs:-11.16 },
+    ]
+  },
+  {
+    id: 'crypto',
+    name: 'Crypto',
+    color: '#f59e0b',
+    excluded: false,
+    holdings: [
+      { sym:'BTC',  name:'Bitcoin',   mktVal:551.61, cost:732.80, shares:0.008031, price:68686, dailyPct:2.06, dailyAbs:11.13, totalPct:-24.73, totalAbs:-181.19 },
+      { sym:'ETH',  name:'Ethereum',  mktVal:377.84, cost:539.20, shares:0.17718,  price:2132.50, dailyPct:3.84, dailyAbs:13.96, totalPct:-29.93, totalAbs:-161.36 },
+      { sym:'USDT', name:'Tether USD',mktVal:1484.20, cost:1484.20, shares:1484.20, price:1.00, dailyPct:0,    dailyAbs:0,     totalPct:0,    totalAbs:0 },
+    ]
+  },
+  {
+    id: 'qualys',
+    name: 'Qualys (QLYS)',
+    color: '#8b5cf6',
+    excluded: true,
+    holdings: [
+      { sym:'QLYS', name:'Qualys Inc. (stock options)', mktVal:98392.00, cost:126851.20, shares:null, price:null, dailyPct:-0.08, dailyAbs:-78.40, totalPct:-22.44, totalAbs:-28459.20 },
+    ]
+  },
+];
+
+// Palette for pie chart
+const PIE_COLORS = {
+  'position': '#3b82f6',
+  'etf':      '#06b6d4',
+  'hedge':    '#10b981',
+  'crypto':   '#f59e0b',
+  // individual slices
+  'PANW': '#3b82f6', 'SPOT': '#60a5fa', 'MA': '#93c5fd', 'USD': '#1e3a5f',
+  'VOO':  '#06b6d4', 'QQQ':  '#22d3ee', 'AVUV':'#67e8f9',
+  'GLDM': '#10b981', 'TLT':  '#6ee7b7',
+  'BTC':  '#f59e0b', 'ETH':  '#fcd34d', 'USDT':'#92400e',
+};
+
+const GROUP_COLORS = ['#3b82f6','#06b6d4','#10b981','#f59e0b','#8b5cf6','#ec4899','#ef4444'];
+
+function fmtUSD(v) {
+  return '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+function fmtAbs(v) { return (v >= 0 ? '+' : '-') + '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function clr(v)    { return v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--text-dim)'; }
+
+// ═══════════════════════════════════════════════════════
+// PORTFOLIO TAB RENDERER
+// ═══════════════════════════════════════════════════════
+function renderPortfolioTab() {
+  const root = document.getElementById('pf-root');
+  if (!root) return;
+
+  // ── totals (exclude Qualys from unrealised)
+  const includedGroups = PF_GROUPS.filter(g => !g.excluded);
+  const totalMkt  = includedGroups.reduce((s,g) => s + g.holdings.reduce((a,h) => a+h.mktVal, 0), 0);
+  const totalCost = includedGroups.reduce((s,g) => s + g.holdings.reduce((a,h) => a+h.cost, 0), 0);
+  const totalPnL  = totalMkt - totalCost;
+  const totalPnLPct = totalCost > 0 ? (totalPnL/totalCost)*100 : 0;
+  const dailyAbs  = includedGroups.reduce((s,g) => s + g.holdings.reduce((a,h) => a+h.dailyAbs, 0), 0);
+  const dailyPct  = totalCost > 0 ? (dailyAbs/totalCost)*100 : 0;
+
+  // ── build summary bar
+  let summaryHtml = `
+    <div class="pf-summary-bar">
+      <div class="pf-summary-card">
+        <div class="pf-summary-label">Total Market Value</div>
+        <div class="pf-summary-value">${fmtUSD(totalMkt)}</div>
+        <div class="pf-summary-sub" style="color:var(--text-dim);">Cost basis ${fmtUSD(totalCost)}</div>
+      </div>
+      <div class="pf-summary-card">
+        <div class="pf-summary-label">Total P&amp;L (All Time)</div>
+        <div class="pf-summary-value" style="color:${clr(totalPnL)}">${fmtAbs(totalPnL)}</div>
+        <div class="pf-summary-sub" style="color:${clr(totalPnLPct)}">${fmtPct(totalPnLPct)}</div>
+      </div>
+      <div class="pf-summary-card">
+        <div class="pf-summary-label">Today's P&amp;L</div>
+        <div class="pf-summary-value" style="color:${clr(dailyAbs)}">${fmtAbs(dailyAbs)}</div>
+        <div class="pf-summary-sub" style="color:${clr(dailyPct)}">${fmtPct(dailyPct)}</div>
+      </div>
+      <div class="pf-summary-card">
+        <div class="pf-summary-label">Unrealized (excl. QLYS)</div>
+        <div class="pf-summary-value" style="color:${clr(totalPnL)}">${fmtUSD(totalMkt)}</div>
+        <div class="pf-summary-sub" style="color:var(--text-dim);">QLYS ${fmtUSD(98392)} excluded</div>
+      </div>
+    </div>`;
+
+  // ── build pie chart (by group, asset-type view matching screenshot)
+  const pieSlices = [];
+  includedGroups.forEach((g, gi) => {
+    const gMkt = g.holdings.reduce((a,h) => a+h.mktVal, 0);
+    const pct  = (gMkt / totalMkt) * 100;
+    pieSlices.push({ label: g.name.split(' ')[0], fullName: g.name, value: gMkt, pct, color: GROUP_COLORS[gi] });
+  });
+
+  // individual holdings for detail view
+  const allHoldings = [];
+  includedGroups.forEach(g => {
+    g.holdings.forEach(h => {
+      allHoldings.push({ ...h, groupColor: g.color });
+    });
+  });
+  const indivSlices = allHoldings
+    .filter(h => h.mktVal > 0)
+    .map(h => ({ label: h.sym, value: h.mktVal, pct: (h.mktVal/totalMkt)*100, color: PIE_COLORS[h.sym] || '#475569' }))
+    .sort((a,b) => b.value - a.value);
+
+  const legendItems = pieSlices.map((s,i) => `
+    <div class="pf-legend-item">
+      <div class="pf-legend-dot" style="background:${s.color}"></div>
+      <span class="pf-legend-sym">${s.label}</span>
+      <span style="color:var(--text-secondary);font-size:11px;">${fmtUSD(s.value)}</span>
+      <span class="pf-legend-pct">${s.pct.toFixed(1)}%</span>
+    </div>`).join('');
+
+  // individual legend
+  const indivLegend = indivSlices.map(s => `
+    <div class="pf-legend-item">
+      <div class="pf-legend-dot" style="background:${s.color}"></div>
+      <span class="pf-legend-sym">${s.label}</span>
+      <span style="color:var(--text-secondary);font-size:11px;">${fmtUSD(s.value)}</span>
+      <span class="pf-legend-pct">${s.pct.toFixed(1)}%</span>
+    </div>`).join('');
+
+  let chartHtml = `
+    <div class="pf-chart-wrap">
+      <div class="pf-chart-canvas-wrap">
+        <div class="pf-chart-title">By Asset Type</div>
+        <canvas id="pf-pie" height="280"></canvas>
+        <div class="pf-legend">${legendItems}</div>
+      </div>
+      <div class="pf-chart-canvas-wrap">
+        <div class="pf-chart-title">By Holding</div>
+        <canvas id="pf-pie2" height="280"></canvas>
+        <div class="pf-legend">${indivLegend}</div>
+      </div>
+    </div>`;
+
+  // ── build group tables
+  let groupsHtml = '';
+  PF_GROUPS.forEach((g, gi) => {
+    const gMkt  = g.holdings.reduce((a,h) => a+h.mktVal, 0);
+    const gCost = g.holdings.reduce((a,h) => a+h.cost, 0);
+    const gPnL  = gMkt - gCost;
+    const gPnLPct = gCost > 0 ? (gPnL/gCost)*100 : 0;
+    const gDaily  = g.holdings.reduce((a,h) => a+h.dailyAbs, 0);
+    const gAlloc  = totalMkt > 0 ? (gMkt/totalMkt)*100 : 0;
+
+    const rows = g.holdings.map(h => {
+      const pnl    = h.mktVal - h.cost;
+      const pnlPct = h.cost > 0 ? (pnl/h.cost)*100 : 0;
+      const sharesStr = h.shares !== null ? (h.shares < 1 ? h.shares.toFixed(6) : h.shares.toFixed(4)) : '–';
+      const priceStr  = h.price  !== null ? '$' + h.price.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}) : '–';
+      const yhLink    = (h.sym !== 'USD' && h.sym !== 'USDT')
+        ? `<a href="https://finance.yahoo.com/quote/${h.sym}/" target="_blank">${h.sym}</a>`
+        : h.sym;
+      return `
+        <tr>
+          <td><div class="pf-sym pf-num">${yhLink}</div><div class="pf-name">${h.name}</div></td>
+          <td class="pf-num"><div class="pf-mktval">${fmtUSD(h.mktVal)}</div><div class="pf-cost">${fmtUSD(h.cost)}</div></td>
+          <td class="pf-num" style="color:${clr(h.dailyPct)}">${fmtPct(h.dailyPct)}<br><span style="font-size:10px;">${fmtAbs(h.dailyAbs)}</span></td>
+          <td class="pf-num" style="color:${clr(h.totalPct)}">${fmtPct(h.totalPct)}<br><span style="font-size:10px;">${fmtAbs(h.totalAbs)}</span></td>
+          <td class="pf-num">${priceStr}<br><span style="font-size:10px;color:var(--text-dim);">${sharesStr} shares</span></td>
+        </tr>`;
+    }).join('');
+
+    const excBadge = g.excluded ? '<span class="pf-excluded-badge">Excl. from total</span>' : '';
+    const colorDot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${GROUP_COLORS[gi]};margin-right:8px;"></span>`;
+
+    groupsHtml += `
+      <div class="pf-group">
+        <div class="pf-group-header">
+          <div style="display:flex;align-items:center;">
+            ${colorDot}
+            <span class="pf-group-name">${g.name}</span>
+            ${excBadge}
+            <span class="pf-group-meta">${g.holdings.length} holdings · ${g.excluded ? '–' : gAlloc.toFixed(1) + '% of portfolio'}</span>
+          </div>
+          <div class="pf-group-right">
+            <span class="pf-num" style="font-size:11px;color:${clr(gDaily)}">${fmtAbs(gDaily)} today</span>
+            <span class="pf-group-total" style="color:${clr(gPnLPct)}">${fmtPct(gPnLPct)}</span>
+            <span class="pf-group-total">${fmtUSD(gMkt)}</span>
+          </div>
+        </div>
+        <div class="pf-table-wrap">
+          <table class="pf-table">
+            <thead><tr><th>Symbol</th><th>Mkt Val / Cost</th><th>Daily</th><th>All Time</th><th>Price / Shares</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  });
+
+  root.innerHTML = summaryHtml + chartHtml + `
+    <div class="section-title" style="margin-top:8px;">📋 Holdings by Group</div>` + groupsHtml + `
+    <div style="font-size:10px;color:var(--text-dim);text-align:center;padding:16px 0;">
+      Data manually entered from Futu/Moomoo app screenshots. Prices are as of screenshot date, not live.
+    </div>`;
+
+  // Draw pie charts after DOM renders
+  setTimeout(() => {
+    drawPie('pf-pie',  pieSlices);
+    drawPie('pf-pie2', indivSlices);
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════
+// CANVAS PIE CHART (no external lib needed)
+// ═══════════════════════════════════════════════════════
+function drawPie(canvasId, slices) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx    = canvas.getContext('2d');
+  const W      = canvas.offsetWidth || 280;
+  canvas.width  = W;
+  canvas.height = W;
+
+  const cx = W / 2, cy = W / 2;
+  const outerR = W * 0.42;
+  const innerR = W * 0.22; // donut hole
+
+  const total = slices.reduce((s,sl) => s + sl.value, 0);
+  let angle   = -Math.PI / 2;
+
+  slices.forEach(sl => {
+    const sweep = (sl.value / total) * Math.PI * 2;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, outerR, angle, angle + sweep);
+    ctx.closePath();
+    ctx.fillStyle = sl.color || '#475569';
+    ctx.fill();
+    ctx.strokeStyle = '#070b14';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label for slices > 4%
+    if (sl.pct >= 4) {
+      const midA  = angle + sweep / 2;
+      const labelR = (outerR + innerR) / 2;
+      const lx = cx + Math.cos(midA) * labelR;
+      const ly = cy + Math.sin(midA) * labelR;
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.max(9, W*0.035)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+      ctx.textAlign   = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(sl.pct.toFixed(1) + '%', lx, ly - 6);
+      ctx.font = `${Math.max(8, W*0.028)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+      ctx.fillText(sl.label, lx, ly + 7);
+    }
+
+    angle += sweep;
+  });
+
+  // Donut hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+  ctx.fillStyle = '#070b14';
+  ctx.fill();
+}
+
 </script>
 </body>
 </html>
