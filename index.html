@@ -264,6 +264,198 @@ body.light-theme .manager-banner-text { color:#92400e; }
   font-size:11px; font-weight:600; transition:all 0.2s; }
 .btn-change-pin:hover { background:rgba(245,158,11,0.25); }
 
+
+
+/* ── TOP WIDGET ── */
+.top-widget-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px; gap:12px; flex-wrap:wrap;
+}
+.market-time-badge {
+  font-size:11px; font-weight:700; padding:4px 12px;
+  border-radius:20px; letter-spacing:0.06em;
+}
+.market-time-badge.open    { background:rgba(16,185,129,0.15); color:var(--green);  border:1px solid rgba(16,185,129,0.35); }
+.market-time-badge.closed  { background:rgba(139,92,246,0.15); color:var(--purple); border:1px solid rgba(139,92,246,0.35); }
+.market-time-badge.ext     { background:rgba(245,158,11,0.15); color:var(--amber);  border:1px solid rgba(245,158,11,0.35); }
+
+/* Status cell pill */
+.status-live   { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:700;
+  padding:2px 7px; border-radius:10px; letter-spacing:0.06em;
+  background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+.status-closed { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:700;
+  padding:2px 7px; border-radius:10px; letter-spacing:0.06em;
+  background:rgba(71,85,105,0.2); color:var(--text-dim); border:1px solid var(--border); }
+.status-ext    { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:700;
+  padding:2px 7px; border-radius:10px; letter-spacing:0.06em;
+  background:rgba(245,158,11,0.15); color:var(--amber); border:1px solid rgba(245,158,11,0.3); }
+.status-dot-sm { width:5px; height:5px; border-radius:50%; background:currentColor;
+  animation:pulse 2s infinite; }
+
+
+/* ── INDEX WIDGET HEADER ── */
+.index-widget-header {
+  display:flex; align-items:baseline; gap:12px; margin-bottom:10px; flex-wrap:wrap;
+}
+.index-widget-title {
+  font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--text-dim); display:flex; align-items:center; gap:8px;
+}
+.index-widget-title::after { content:''; flex:1; min-width:40px; height:1px; background:var(--border); }
+.index-widget-meta {
+  font-size:10px; color:var(--text-dim); white-space:nowrap;
+}
+.market-open-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(16,185,129,0.12); color:var(--green);
+  border:1px solid rgba(16,185,129,0.3); border-radius:10px;
+  padding:2px 9px; font-size:10px; font-weight:700; letter-spacing:0.06em;
+}
+.market-closed-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(71,85,105,0.15); color:var(--text-dim);
+  border:1px solid var(--border); border-radius:10px;
+  padding:2px 9px; font-size:10px; font-weight:700; letter-spacing:0.06em;
+}
+.market-ext-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(245,158,11,0.12); color:var(--amber);
+  border:1px solid rgba(245,158,11,0.3); border-radius:10px;
+  padding:2px 9px; font-size:10px; font-weight:700; letter-spacing:0.06em;
+}
+.pill-dot { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2s infinite; }
+
+/* ── WATCHLIST SECTION TABS ── */
+.wl-header-row {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:12px; flex-wrap:wrap; gap:8px;
+}
+.wl-section-tabs {
+  display:flex; gap:0; background:var(--bg-secondary);
+  border:1px solid var(--border); border-radius:8px; overflow:hidden;
+}
+.wl-stab {
+  background:none; border:none; color:var(--text-dim);
+  padding:8px 18px; cursor:pointer; font-size:12px; font-weight:600;
+  transition:all 0.15s; white-space:nowrap;
+}
+.wl-stab:hover { color:var(--text-primary); background:var(--bg-card-hover); }
+.wl-stab.active {
+  background:var(--bg-card); color:var(--accent-blue);
+  box-shadow:inset 0 -2px 0 var(--accent-blue);
+}
+
+/* ── STATUS BADGE IN TABLE ── */
+.status-live {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(16,185,129,0.12); color:var(--green);
+  border:1px solid rgba(16,185,129,0.3); border-radius:4px;
+  padding:2px 6px; font-size:9px; font-weight:700; letter-spacing:0.08em;
+}
+.status-closed {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(71,85,105,0.12); color:var(--text-dim);
+  border:1px solid var(--border); border-radius:4px;
+  padding:2px 6px; font-size:9px; font-weight:600; letter-spacing:0.06em;
+}
+.status-ext {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(245,158,11,0.12); color:var(--amber);
+  border:1px solid rgba(245,158,11,0.3); border-radius:4px;
+  padding:2px 6px; font-size:9px; font-weight:700; letter-spacing:0.08em;
+}
+
+/* ── NARRATIVE TABS ── */
+.narrative-tabs {
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px;
+}
+.narrative-tabs::-webkit-scrollbar { display:none; }
+.ntab {
+  background:var(--bg-card); border:1px solid var(--border);
+  color:var(--text-secondary); padding:5px 12px; border-radius:20px;
+  cursor:pointer; font-size:11px; font-weight:600; white-space:nowrap;
+  transition:all 0.15s; flex-shrink:0;
+}
+.ntab:hover { border-color:var(--border-bright); color:var(--text-primary); }
+.ntab.active { background:rgba(59,130,246,0.15); border-color:var(--accent-blue); color:var(--accent-blue); }
+
+/* ── SORT BAR ── */
+.sort-bar {
+  display:flex; gap:6px; align-items:center; margin-bottom:8px;
+  flex-wrap:wrap;
+}
+.sort-btn {
+  background:var(--bg-secondary); border:1px solid var(--border);
+  color:var(--text-dim); padding:3px 10px; border-radius:4px;
+  cursor:pointer; font-size:10px; font-weight:600; transition:all 0.15s;
+}
+.sort-btn:hover { color:var(--text-primary); border-color:var(--border-bright); }
+.sort-btn.active { color:var(--accent-cyan); border-color:var(--accent-cyan); background:rgba(6,182,212,0.08); }
+.sort-btn.desc::after { content:' ↓'; }
+.sort-btn.asc::after  { content:' ↑'; }
+
+/* ── INDUSTRY BADGE ── */
+.industry-badge {
+  display:inline-block; font-size:9px; padding:2px 6px; border-radius:3px;
+  background:rgba(71,85,105,0.2); color:var(--text-secondary);
+  border:1px solid var(--border); white-space:nowrap; max-width:160px;
+  overflow:hidden; text-overflow:ellipsis;
+}
+
+/* ── NARRATIVE BADGE ── */
+.narrative-badge {
+  display:inline-block; font-size:9px; font-weight:700; padding:2px 6px;
+  border-radius:3px; white-space:nowrap;
+}
+.nb-ai       { background:rgba(139,92,246,0.15); color:var(--purple);       border:1px solid rgba(139,92,246,0.3); }
+.nb-bigtech  { background:rgba(59,130,246,0.15);  color:var(--accent-blue);  border:1px solid rgba(59,130,246,0.3); }
+.nb-cyber    { background:rgba(6,182,212,0.15);   color:var(--accent-cyan);  border:1px solid rgba(6,182,212,0.3); }
+.nb-cloud    { background:rgba(16,185,129,0.15);  color:var(--green);        border:1px solid rgba(16,185,129,0.3); }
+.nb-ev       { background:rgba(245,158,11,0.15);  color:var(--amber);        border:1px solid rgba(245,158,11,0.3); }
+.nb-fintech  { background:rgba(251,191,36,0.15);  color:var(--gold);         border:1px solid rgba(251,191,36,0.3); }
+.nb-energy   { background:rgba(239,68,68,0.12);   color:#f87171;             border:1px solid rgba(239,68,68,0.3); }
+.nb-materials{ background:rgba(167,139,250,0.15); color:#a78bfa;             border:1px solid rgba(167,139,250,0.3); }
+.nb-crypto   { background:rgba(251,191,36,0.15);  color:var(--gold);         border:1px solid rgba(251,191,36,0.3); }
+.nb-macro    { background:rgba(16,185,129,0.12);  color:var(--green);        border:1px solid rgba(16,185,129,0.3); }
+
+/* ── INLINE TAGS ── */
+.ticker-tags { display:flex; gap:3px; flex-wrap:wrap; margin-top:3px; }
+.ticker-tag  {
+  font-size:8px; padding:1px 5px; border-radius:3px; cursor:pointer;
+  background:rgba(71,85,105,0.2); color:var(--text-dim); border:1px solid var(--border);
+  transition:all 0.12s; white-space:nowrap;
+}
+.ticker-tag:hover { background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.3); }
+.ticker-tag-add {
+  font-size:8px; padding:1px 5px; border-radius:3px; cursor:pointer;
+  background:rgba(16,185,129,0.1); color:var(--green); border:1px dashed rgba(16,185,129,0.4);
+  display:none;
+}
+.manager-active .ticker-tag-add { display:inline-block; }
+.manager-active .ticker-tag { cursor:pointer; }
+
+/* ── TAG EDITOR MODAL ── */
+.tag-editor-wrap { display:flex; gap:6px; flex-wrap:wrap; margin:12px 0; min-height:32px;
+  background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:8px; }
+.tag-pill { display:flex; align-items:center; gap:4px; background:rgba(59,130,246,0.15);
+  color:var(--accent-blue); border:1px solid rgba(59,130,246,0.3); border-radius:12px;
+  padding:3px 8px; font-size:11px; font-weight:500; }
+.tag-pill-del { background:none; border:none; color:var(--red); cursor:pointer; font-size:12px;
+  padding:0 2px; line-height:1; transition:opacity 0.12s; }
+.tag-pill-del:hover { opacity:0.7; }
+.tag-input-row { display:flex; gap:8px; margin-top:10px; }
+.tag-input-field { flex:1; background:var(--bg-secondary); border:1px solid var(--border);
+  color:var(--text-primary); font-size:12px; padding:7px 10px; border-radius:6px; outline:none; }
+.tag-input-field:focus { border-color:var(--accent-blue); }
+
+/* ── INDEX CARDS — market open vs closed state ── */
+.index-card.market-open::before  { opacity:1; animation:vix-pulse 3s ease-in-out infinite; }
+.card-market-badge { position:absolute; bottom:10px; right:10px; font-size:8px;
+  padding:2px 5px; border-radius:3px; font-weight:700; letter-spacing:0.06em; }
+.card-market-badge.open   { background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+.card-market-badge.closed { background:rgba(71,85,105,0.15);  color:var(--text-dim); border:1px solid var(--border); }
+
 /* ── NEWS TAB ── */
 .news-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:14px; }
 .news-card { background:var(--news-bg); border:1px solid var(--news-border);
@@ -637,6 +829,39 @@ body.light-theme .alert-item.oil-alert-bar {
   </div>
 </div>
 
+<!-- ═══ TAG EDITOR MODAL ═══ -->
+<div class="modal-overlay" id="tag-editor-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('tag-editor-modal')">✕</button>
+    <div class="modal-title" id="tag-editor-title">🏷 Edit Tags</div>
+    <div class="modal-sub">Click a tag to remove it. Add new tags below.</div>
+    <div class="tag-editor-wrap" id="tag-editor-wrap"></div>
+    <div class="tag-input-row">
+      <input class="tag-input-field" id="tag-new-input" placeholder="New tag (letters, numbers, dashes)"
+        onkeydown="if(event.key==='Enter')addTag()" maxlength="20">
+      <button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="addTag()">+ Add</button>
+    </div>
+    <div style="margin-top:14px;">
+      <div class="form-label" style="margin-bottom:8px;">NARRATIVE / THEME</div>
+      <select class="form-select" id="tag-narrative-select" onchange="applyNarrativeFromEditor()">
+        <option value="">— Select theme —</option>
+        <option value="AI Infra">🤖 AI Infra</option>
+        <option value="Big Tech">🖥 Big Tech</option>
+        <option value="Cybersecurity">🔵 Cybersecurity</option>
+        <option value="Cloud SaaS">☁ Cloud SaaS</option>
+        <option value="EV / Auto">⚡ EV / Auto</option>
+        <option value="Fintech">💳 Fintech</option>
+        <option value="Energy">🛢 Energy</option>
+        <option value="Critical Materials">⛏ Critical Materials</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('tag-editor-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveTagsAndClose()">✓ Done</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">
   <span id="toast-icon"></span>
   <span class="toast-msg" id="toast-msg"></span>
@@ -732,51 +957,96 @@ body.light-theme .alert-item.oil-alert-bar {
     <div class="manager-banner-sub">Add, edit, remove tickers. Changes saved to localStorage.</div></div>
     <button class="btn-add-ticker" onclick="openAddTicker('watchlist')">+ Watchlist</button>
     <button class="btn-add-ticker" onclick="openAddTicker('crypto')">+ Crypto/Cmdty</button>
+    <button class="btn-add-ticker" onclick="setNarrativeFilter('Crypto', document.querySelector('.ntab[data-narrative=Crypto]'))">🪙 View Crypto</button>
     <button class="btn-change-pin" onclick="openModal('change-pin-modal')">🔑 Change PIN</button>
     <button class="btn-lock" onclick="lockManager()">🔒 Lock</button>
   </div>
 
-  <div class="section">
-    <div class="section-title">📈 Major Indices — Last Close</div>
-    <div class="cards-grid" id="index-close-cards"></div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">⚡ Futures &amp; Commodities — Pre-Market</div>
-    <div class="cards-grid" id="futures-cards"></div>
+  <!-- Single adaptive widget: shows indices when open, futures when closed -->
+  <div class="section" id="top-widget-section">
+    <div class="top-widget-header">
+      <div class="section-title" id="top-widget-title" style="margin-bottom:0;">📈 Market</div>
+      <div class="market-time-badge" id="market-time-badge"></div>
+    </div>
+    <div class="cards-grid" id="top-widget-cards"></div>
   </div>
 
   <div class="divider"></div>
 
   <div class="section">
-    <div class="section-title">👁 Watch List</div>
+    <div class="section-title" style="margin-bottom:8px;">👁 Watch List</div>
+
+    <!-- Watchlist/Crypto tab switcher -->
+    <div class="wl-header-row">
+      <div class="wl-section-tabs">
+        <button class="wl-stab active" onclick="switchWatchlistTab('stocks',this)">👁 Watchlist</button>
+        <button class="wl-stab" onclick="switchWatchlistTab('crypto',this)">🪙 Crypto &amp; Commodities</button>
+      </div>
+    </div>
+
+    <div id="wl-pane-stocks">
+    <!-- Narrative mini-tabs -->
+    <div class="narrative-tabs" id="narrative-tabs">
+      <button class="ntab active" data-narrative="all" onclick="setNarrativeFilter('all',this)">All</button>
+      <button class="ntab" data-narrative="AI Infra" onclick="setNarrativeFilter('AI Infra',this)">🤖 AI Infra</button>
+      <button class="ntab" data-narrative="Big Tech" onclick="setNarrativeFilter('Big Tech',this)">🖥 Big Tech</button>
+      <button class="ntab" data-narrative="Cybersecurity" onclick="setNarrativeFilter('Cybersecurity',this)">🔵 Cybersecurity</button>
+      <button class="ntab" data-narrative="Cloud SaaS" onclick="setNarrativeFilter('Cloud SaaS',this)">☁ Cloud SaaS</button>
+      <button class="ntab" data-narrative="EV / Auto" onclick="setNarrativeFilter('EV / Auto',this)">⚡ EV / Auto</button>
+      <button class="ntab" data-narrative="Fintech" onclick="setNarrativeFilter('Fintech',this)">💳 Fintech</button>
+      <button class="ntab" data-narrative="Energy" onclick="setNarrativeFilter('Energy',this)">🛢 Energy</button>
+      <button class="ntab" data-narrative="Critical Materials" onclick="setNarrativeFilter('Critical Materials',this)">⛏ Materials</button>
+      <button class="ntab" data-narrative="Crypto" onclick="setNarrativeFilter('Crypto',this)">🪙 Crypto/Cmdty</button>
+    </div>
+
+    <!-- Sort bar -->
+    <div class="sort-bar" id="sort-bar">
+      <span style="font-size:10px;color:var(--text-dim);font-weight:600;">SORT:</span>
+      <button class="sort-btn active" data-col="sym" onclick="setSortCol('sym',this)">Symbol ↕</button>
+      <button class="sort-btn" data-col="price" onclick="setSortCol('price',this)">Price ↕</button>
+      <button class="sort-btn" data-col="pct" onclick="setSortCol('pct',this)">% Chg ↕</button>
+      <button class="sort-btn" data-col="industry" onclick="setSortCol('industry',this)">Industry ↕</button>
+      <button class="sort-btn" data-col="narrative" onclick="setSortCol('narrative',this)">Theme ↕</button>
+    </div>
+
     <div class="scroll-hint">← swipe to see all columns →</div>
     <div class="table-wrap" id="watchlist-wrap">
       <table id="watchlist-table">
         <thead><tr>
-          <th>Symbol</th><th>Last Close</th><th>Chg</th><th>% Chg</th>
-          <th>Pre/Post Mkt</th><th>Momentum</th><th>Tag</th>
+          <th onclick="setSortCol('sym',null)" style="cursor:pointer;">Symbol</th>
+          <th onclick="setSortCol('price',null)" style="cursor:pointer;">Price</th>
+          <th onclick="setSortCol('pct',null)" style="cursor:pointer;">% Chg</th>
+          <th>Status</th>
+          <th>Industry</th>
+          <th>Theme</th>
+          <th>Tags</th>
           <th class="mgr-col">Actions</th>
         </tr></thead>
         <tbody id="watchlist-tbody"></tbody>
       </table>
     </div>
-  </div>
+    </div><!-- /wl-pane-stocks -->
 
-  <div class="section">
-    <div class="section-title">🪙 Crypto &amp; Commodities</div>
-    <div class="scroll-hint">← swipe to see all columns →</div>
-    <div class="table-wrap" id="crypto-wrap">
-      <table id="crypto-table">
-        <thead><tr>
-          <th>Symbol</th><th>Price</th><th>Chg</th><th>% Chg</th>
-          <th>Status</th><th>Tag</th>
-          <th class="mgr-col">Actions</th>
-        </tr></thead>
-        <tbody id="crypto-tbody"></tbody>
-      </table>
-    </div>
-  </div>
+    <!-- CRYPTO / COMMODITIES PANE -->
+    <div id="wl-pane-crypto" style="display:none;">
+      <div class="scroll-hint">← swipe to see all columns →</div>
+      <div class="table-wrap" id="crypto-wrap">
+        <table id="crypto-table">
+          <thead><tr>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>% Chg</th>
+            <th>Status</th>
+            <th>Industry / Type</th>
+            <th>Tags</th>
+            <th class="mgr-col">Actions</th>
+          </tr></thead>
+          <tbody id="crypto-tbody"></tbody>
+        </table>
+      </div>
+    </div><!-- /wl-pane-crypto -->
+
+  </div><!-- /section -->
 
 </div><!-- /tab-market -->
 
@@ -901,7 +1171,11 @@ function updateClocks() {
   else                                    { dot.className='status-dot';           txt.textContent='🔴 Market Closed'; }
 }
 setInterval(updateClocks, 1000);
+// Re-render index widget every 60s to catch market open/close transition
+setInterval(()=>{ renderSmartIndexCards(); checkAlerts(); }, 60000);
 updateClocks();
+// Re-render top widget every 60s to handle market open/close transitions
+setInterval(() => { if (typeof renderTopWidget === 'function') renderTopWidget(); }, 60000);
 
 // ═══════════════════════════════════════════════════════════════
 // AUTO-REFRESH SCHEDULE  (HKT workdays only)
@@ -1160,7 +1434,8 @@ function activateManager() {
   document.getElementById('tab-btn-portfolio').classList.add('unlocked');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   renderAll();
-  showToast('success','🔓','Manager Mode activated. Portfolio unlocked.');
+  showToast('success','🔓','Manager Mode activated. Fetching live prices…');
+  fetchAllPrices();
 }
 function lockManager() {
   managerUnlocked=false;
@@ -1232,7 +1507,13 @@ const SEED_DEFAULT = {
   'RTY=F': { price:2538.70,  prev:2512.00,  name:'Russell 2000 Futures' },// TV: RTY1! 2538.7 +1.05%
   'GC=F':  { price:4810.00,  prev:4714.00,  name:'Gold Futures' },     // TV: GC2! 4810 +2.05%
   'BZ=F':  { price:100.80,   prev:98.50,    name:'Brent Crude Oil' },  // TV: CL1! 98.79; Brent+$2
+  // Extra top-bar tickers
+  '^DXY':   { price:99.43,   prev:99.88,  name:'US Dollar Index' },
+  'CL=F':   { price:98.79,   prev:101.33, name:'WTI Crude (UKOIL)' },
+  'YM=F':   { price:46835.00,prev:46582.00,name:'Dow Futures' },
   // Crypto — CoinGecko Apr 1 2026
+  '^DXY':   { price:104.15,   prev:104.58,   name:'US Dollar Index' },
+  'CL=F':   { price:98.79,    prev:101.37,   name:'WTI Crude Oil' },
   'BTC-USD':{ price:67946.00, prev:66520.00, name:'Bitcoin USD' },
   'ETH-USD':{ price:2103.49,  prev:2168.00,  name:'Ethereum USD' },
 };
@@ -1274,7 +1555,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260401c'; // Apr1 22:33 HKT — TradingView sync // bump this to force-reset cached seed prices
+const DATA_VERSION = '20260402c'; // Apr2 — single adaptive widget, crypto in watchlist tab // bump this to force-reset cached seed prices
 
 function loadLists() {
   try {
@@ -1340,8 +1621,11 @@ async function fetchAllPrices() {
   const btn = document.getElementById('refresh-btn');
   btn.textContent = '↻ Fetching…'; btn.classList.add('loading');
   syncSeed();
+  const extraSyms = ['^DXY','CL=F','YM=F'];
+  // Ensure YM=F (Dow futures) always in seed
+  if (!SEED['YM=F']) SEED['YM=F'] = { price:46835, prev:46333, name:'Dow Jones Futures' };
   const syms = [...new Set([
-    ...Object.keys(SEED_DEFAULT),
+    ...Object.keys(SEED_DEFAULT), ...extraSyms,
     ...LISTS.watchlist.map(t=>t.sym),
     ...LISTS.crypto.map(t=>t.sym),
   ])];
@@ -1378,71 +1662,409 @@ function fmtCardPrice(sym, price) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-const INDEX_CLOSES = ['^GSPC','^NDX','^RUT','^DJI','^VIX'];
-const FUTURES_LIST = ['ES=F','NQ=F','RTY=F','GC=F','BZ=F'];
+// Market OPEN → show live index prices
+const INDEX_OPEN   = ['^GSPC','^NDX','^RUT','^DJI','^VIX','^DXY','GC=F','BZ=F'];
+const INDEX_CLOSED = ['ES=F','NQ=F','YM=F','RTY=F','GC=F','BZ=F','^VIX','^DXY'];
+const SYM_LABEL = {
+  '^GSPC':'SPX','^NDX':'NDX','^RUT':'RUT','^DJI':'DJI',
+  '^VIX':'VIX', '^DXY':'DXY','GC=F':'GOLD','BZ=F':'UKOIL',
+  'ES=F':'ES1!','NQ=F':'NQ1!','YM=F':'YM1!','RTY=F':'RTY1!','CL=F':'UKOIL',
+};
 
-function renderIndexCards(cid, syms, type) {
-  const el = document.getElementById(cid); el.innerHTML='';
-  syms.forEach(sym=>{
-    const d=getPrice(sym); if(!d) return;
-    const {abs,pct}=calcChange(d.price,d.prev);
-    const cl=dir(pct);
-    const isVix=sym==='^VIX';
-    const va=isVix&&d.price>25?' vix-alert':'';
-    const srcBadge=type==='futures'?'futures':'live';
-    const link=`https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
-    el.innerHTML+=`<a class="index-card ${cl}${va}" href="${link}" target="_blank">
-      <span class="card-source ${srcBadge}">${type==='futures'?'FUT':'LIVE'}</span>
-      <div class="card-symbol">${sym.replace('^','').replace('=F','')}</div>
+function isMarketOpen() {
+  const now = new Date();
+  const etT = now.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'});
+  const [eh,em] = etT.split(':').map(Number);
+  const etMins = eh*60+em;
+  const etDay  = now.toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short'});
+  const isWE   = etDay==='Sat'||etDay==='Sun';
+  return !isWE && etMins>=570 && etMins<960;
+}
+
+function isExtendedHours() {
+  const now = new Date();
+  const etT = now.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'});
+  const [eh,em] = etT.split(':').map(Number);
+  const etMins = eh*60+em;
+  const etDay  = now.toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short'});
+  const isWE   = etDay==='Sat'||etDay==='Sun';
+  if (isWE) return false;
+  return (etMins>=240 && etMins<570) || (etMins>=960 && etMins<1200);
+}
+
+function renderTopWidget() {
+  const el      = document.getElementById('top-widget-cards');
+  const titleEl = document.getElementById('top-widget-title');
+  const badgeEl = document.getElementById('market-time-badge');
+  if (!el) return;
+  el.innerHTML = '';
+
+  const marketOpen = isMarketOpen();
+  const extHours   = isExtendedHours();
+
+  let syms, label, badgeClass, typeLabel;
+  if (marketOpen) {
+    syms       = INDEX_OPEN;
+    label      = '📈 Live Indices';
+    badgeClass = 'open';
+    typeLabel  = '✅ MARKET OPEN';
+    typeLabel  = '✅ NYSE/NASDAQ OPEN';
+  } else if (extHours) {
+    syms       = INDEX_CLOSED;
+    label      = '⚡ Index Futures — Extended Hours';
+    badgeClass = 'ext';
+    typeLabel  = '🌙 EXTENDED HOURS';
+  } else {
+    syms       = INDEX_CLOSED;
+    label      = '⚡ Index Futures — Pre/Post Market';
+    badgeClass = 'closed';
+    typeLabel  = '🔴 MARKET CLOSED';
+  }
+
+  if (titleEl) titleEl.textContent = label;
+  if (badgeEl) {
+    badgeEl.textContent  = typeLabel;
+    badgeEl.className    = 'market-time-badge ' + badgeClass;
+  }
+
+  syms.forEach(sym => {
+    const d = getPrice(sym); if (!d) return;
+    const {abs, pct} = calcChange(d.price, d.prev);
+    const cl  = dir(pct);
+    const isVix = sym === '^VIX';
+    const va  = isVix && d.price > 25 ? ' vix-alert' : '';
+    const isFut = sym.endsWith('=F') || sym === 'YM=F';
+    const srcBadgeClass = isFut ? 'futures' : 'live';
+    const srcLabel = marketOpen ? 'LIVE' : (isFut ? 'FUT' : 'LIVE');
+    const link = `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
+
+    // Display symbol nicely
+    const dispSym = (typeof SYM_LABEL !== 'undefined' && SYM_LABEL[sym]) || sym.replace('^','').replace('=F','');
+
+    el.innerHTML += `<a class="index-card ${cl}${va}" href="${link}" target="_blank">
+      <span class="card-source ${srcBadgeClass}">${srcLabel}</span>
+      <div class="card-symbol">${dispSym}</div>
       <div class="card-name">${d.name}</div>
-      <div class="card-price">${['%5EVIX','^VIX'].includes(sym)||sym==='^VIX'?'':'$'}${fmtP(d.price,sym)}</div>
+      <div class="card-price">${fmtCardPrice(sym, d.price)}</div>
       <div class="card-change">
         <span class="card-change-abs ${cl}">${fmtC(abs)}</span>
         <span class="card-change-pct ${cl}">${pct>=0?'+':''}${pct.toFixed(2)}%</span>
-        ${isVix&&d.price>25?'<span style="font-size:9px;color:var(--vix-alert);font-weight:700;">⚠HIGH</span>':''}
+        ${isVix && d.price>25 ? '<span style="font-size:9px;color:var(--vix-alert);font-weight:700;">⚠HIGH</span>' : ''}
       </div>
     </a>`;
   });
 }
 
+// Keep for backward compat (called nowhere now, but safe to keep)
+function renderIndexCards(cid, syms, type) { renderTopWidget(); }
+
 // ═══════════════════════════════════════════════════════════════
-// RENDER WATCH LIST TABLE
+// NARRATIVE FILTER + SORT STATE
+// ═══════════════════════════════════════════════════════════════
+let activeWatchlistTab = 'stocks';
+
+function switchWatchlistTab(tab, btn) {
+  activeWatchlistTab = tab;
+  document.querySelectorAll('.wl-stab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('wl-pane-stocks').style.display = tab === 'stocks' ? 'block' : 'none';
+  document.getElementById('wl-pane-crypto').style.display = tab === 'crypto'  ? 'block' : 'none';
+}
+
+let activeNarrative = 'all';
+let sortCol = 'sym';
+let sortDir = 'asc';
+
+function setNarrativeFilter(narrative, btn) {
+  activeNarrative = narrative;
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderAll();
+}
+
+function setSortCol(col, btn) {
+  if (sortCol === col) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortCol = col;
+    sortDir = col === 'pct' ? 'desc' : 'asc'; // default desc for % change
+  }
+  // Update sort button UI
+  document.querySelectorAll('.sort-btn').forEach(b => {
+    b.classList.remove('active','asc','desc');
+    if (b.dataset && b.dataset.col === col) {
+      b.classList.add('active', sortDir);
+    }
+  });
+  if (btn) {
+    btn.classList.remove('asc','desc');
+    btn.classList.add('active', sortDir);
+  }
+  renderAll();
+}
+
+function getNarrativeClass(narrative) {
+  const map = {
+    'AI Infra':'nb-ai','Big Tech':'nb-bigtech','Cybersecurity':'nb-cyber',
+    'Cloud SaaS':'nb-cloud','EV / Auto':'nb-ev','Fintech':'nb-fintech',
+    'Energy':'nb-energy','Critical Materials':'nb-materials',
+    'Crypto':'nb-crypto','Macro':'nb-macro',
+  };
+  return map[narrative] || 'nb-ai';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAG MANAGER
+// ═══════════════════════════════════════════════════════════════
+let editingTagTicker = null; // { list, idx }
+
+function openTagEditor(listName, idx) {
+  editingTagTicker = { list: listName, idx };
+  const ticker = LISTS[listName][idx];
+  const tags   = ticker.tags || [];
+
+  document.getElementById('tag-editor-title').textContent = '🏷 Tags for ' + ticker.sym;
+  renderTagPills(tags);
+  document.getElementById('tag-new-input').value = '';
+  const sel = document.getElementById('tag-narrative-select');
+  sel.value = ticker.narrative || '';
+  openModal('tag-editor-modal');
+}
+
+function renderTagPills(tags) {
+  const wrap = document.getElementById('tag-editor-wrap');
+  wrap.innerHTML = tags.length === 0
+    ? '<span style="font-size:11px;color:var(--text-dim);">No tags yet</span>'
+    : tags.map((t,i) => `
+        <span class="tag-pill">
+          ${t}
+          <button class="tag-pill-del" onclick="removeTag(${i})">×</button>
+        </span>`).join('');
+}
+
+function removeTag(i) {
+  const { list, idx } = editingTagTicker;
+  const tags = LISTS[list][idx].tags || [];
+  tags.splice(i, 1);
+  LISTS[list][idx].tags = tags;
+  renderTagPills(tags);
+  saveLists();
+}
+
+function addTag() {
+  const input = document.getElementById('tag-new-input');
+  const val   = input.value.trim().replace(/[^a-zA-Z0-9\-\.]/g,'');
+  if (!val) return;
+  const { list, idx } = editingTagTicker;
+  if (!LISTS[list][idx].tags) LISTS[list][idx].tags = [];
+  if (!LISTS[list][idx].tags.includes(val)) {
+    LISTS[list][idx].tags.push(val);
+    renderTagPills(LISTS[list][idx].tags);
+    saveLists();
+  }
+  input.value = '';
+}
+
+function applyNarrativeFromEditor() {
+  const sel = document.getElementById('tag-narrative-select').value;
+  if (!sel || !editingTagTicker) return;
+  const { list, idx } = editingTagTicker;
+  LISTS[list][idx].narrative = sel;
+  saveLists();
+}
+
+function saveTagsAndClose() {
+  closeModal('tag-editor-modal');
+  renderAll();
+  showToast('success','🏷','Tags saved.');
+}
+
+// Also allow editing narrative via tag editor
+function setNarrativeForTicker(listName, idx, narrative) {
+  LISTS[listName][idx].narrative = narrative;
+  saveLists(); renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER WATCH LIST TABLE (fully rebuilt)
+// Columns: Symbol | Price | % Chg | Industry | Theme | Tags | [Actions]
 // ═══════════════════════════════════════════════════════════════
 function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
-  const tbody=document.getElementById(tbodyId); tbody.innerHTML='';
-  LISTS[listName].forEach((ticker,idx)=>{
-    const sym=ticker.sym;
-    const d=getPrice(sym)||{price:ticker.price||0,prev:ticker.prev||0,name:ticker.name};
-    const {abs,pct}=calcChange(d.price,d.prev);
-    const cl=dir(pct);
-    const bw=Math.min(Math.abs(pct)*14,100).toFixed(0);
-    // Live extended price from meta (preMarket overrides regularMarket)
-    const lv=liveData[sym];
-    let extHtml='<span style="color:var(--text-dim);font-size:10px;">–</span>';
-    if(lv&&lv.price&&lv.prev){
-      const {pct:ep}=calcChange(lv.price,lv.prev);
-      extHtml=`<span class="extended-price">${fmtP(lv.price,sym)}</span> <span class="${dir(ep)}" style="font-size:10px;">${ep>=0?'+':''}${ep.toFixed(2)}%</span> <span class="premarket-badge">EXT</span>`;
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+
+  // Filter by narrative
+  let filtered = LISTS[listName].map((t,i) => ({...t, _idx:i}));
+  if (activeNarrative !== 'all') {
+    filtered = filtered.filter(t => (t.narrative||'') === activeNarrative);
+  }
+
+  // Sort
+  filtered.sort((a, b) => {
+    const da = getPrice(a.sym) || { price:a.price||0, prev:a.prev||0 };
+    const db = getPrice(b.sym) || { price:b.price||0, prev:b.prev||0 };
+    let va, vb;
+    if (sortCol === 'sym')       { va = a.sym; vb = b.sym; }
+    else if (sortCol === 'price'){ va = da.price; vb = db.price; }
+    else if (sortCol === 'pct')  {
+      va = da.prev ? (da.price-da.prev)/da.prev*100 : 0;
+      vb = db.prev ? (db.price-db.prev)/db.prev*100 : 0;
     }
-    const mgr=managerUnlocked?`<td><div class="mgr-actions">
+    else if (sortCol === 'industry')  { va = a.industry||''; vb = b.industry||''; }
+    else if (sortCol === 'narrative') { va = a.narrative||''; vb = b.narrative||''; }
+    else { va = a.sym; vb = b.sym; }
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-dim);font-size:12px;">No tickers in this narrative. Add some via Manager Mode.</td></tr>`;
+    return;
+  }
+
+  filtered.forEach(ticker => {
+    const idx = ticker._idx;
+    const sym = ticker.sym;
+    const d   = getPrice(sym) || { price:ticker.price||0, prev:ticker.prev||0, name:ticker.name };
+
+    // Price: use liveData if available (most current), else seed
+    const lv     = liveData[sym];
+    const curPrice = (lv && lv.price > 0) ? lv.price : d.price;
+    const prevClose = d.prev; // always last close from seed/fetch prev
+    const { abs, pct } = calcChange(curPrice, prevClose);
+    const cl = dir(pct);
+
+    // Tags HTML
+    const tags = ticker.tags || [];
+    const tagsHtml = `
+      <div class="ticker-tags">
+        ${tags.map((t,ti) => `<span class="ticker-tag" title="${managerUnlocked?'Click to remove tag':t}"
+          ${managerUnlocked ? `onclick="removeTagInline('${listName}',${idx},${ti})"` : ''}>${t}</span>`).join('')}
+        ${managerUnlocked ? `<span class="ticker-tag-add" onclick="openTagEditor('${listName}',${idx})">+ tag</span>` : ''}
+      </div>`;
+
+    // Industry badge
+    const indBadge = ticker.industry
+      ? `<span class="industry-badge" title="${ticker.industry}">${ticker.industry}</span>` : '–';
+
+    // Narrative badge
+    const narr = ticker.narrative || '';
+    const narrBadge = narr
+      ? `<span class="narrative-badge ${getNarrativeClass(narr)}">${narr}</span>` : '–';
+
+    // Manager actions
+    const mgr = managerUnlocked ? `<td><div class="mgr-actions">
       <button class="btn-edit-row" onclick="openEditTicker('${listName}',${idx})">✏</button>
-      <button class="btn-del-row" onclick="requestDelete('${listName}',${idx})">✕</button>
-    </div></td>`:'<td></td>';
-    tbody.innerHTML+=`<tr>
-      <td><a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
-          <div class="ticker-name">${d.name}</div></td>
-      <td class="price-cell">$${fmtP(d.prev,sym)}</td>
-      <td class="change-cell ${cl}">${fmtC(abs)}</td>
-      <td class="change-cell ${cl}">${pct>=0?'+':''}${pct.toFixed(2)}%</td>
-      <td>${extHtml}</td>
-      <td><div class="momentum-bar-wrap"><div class="momentum-bar ${cl}" style="width:${bw}%"></div></div></td>
-      <td><span class="tag-badge ${tagCls}">${tagLbl}</span></td>
+      <button class="btn-edit-row" onclick="openTagEditor('${listName}',${idx})" style="background:rgba(139,92,246,0.15);color:var(--purple);border-color:rgba(139,92,246,0.3);" title="Edit tags">🏷</button>
+      <button class="btn-del-row"  onclick="requestDelete('${listName}',${idx})">✕</button>
+    </div></td>` : '<td></td>';
+
+    // Status badge
+    const mktOpen2 = isMarketOpen();
+    const extHrs2  = isExtendedHours();
+    let statusBadge;
+    if (mktOpen2) {
+      statusBadge = `<span class="status-live"><span class="status-dot-sm"></span>LIVE</span>`;
+    } else if (extHrs2) {
+      statusBadge = `<span class="status-ext"><span class="status-dot-sm"></span>EXT HRS</span>`;
+    } else {
+      statusBadge = `<span class="status-closed">CLOSED</span>`;
+    }
+
+    tbody.innerHTML += `<tr>
+      <td>
+        <a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+        <div class="ticker-name">${ticker.name}</div>
+        ${tagsHtml}
+      </td>
+      <td class="price-cell">$${fmtP(curPrice, sym)}</td>
+      <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
+      <td>${statusBadge}</td>
+      <td>${indBadge}</td>
+      <td>${narrBadge}</td>
+      <td style="font-size:10px;color:var(--text-dim);">prev $${fmtP(prevClose,sym)}</td>
+      ${mgr}
+    </tr>`;
+  });
+}
+
+// Quick inline tag removal (click tag chip to remove when manager active)
+function removeTagInline(listName, idx, tagIdx) {
+  if (!managerUnlocked) return;
+  const tags = LISTS[listName][idx].tags || [];
+  tags.splice(tagIdx, 1);
+  LISTS[listName][idx].tags = tags;
+  saveLists(); renderAll();
+  showToast('info','🏷','Tag removed.');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER CRYPTO AS WATCHLIST ROWS (when Crypto tab selected)
+// ═══════════════════════════════════════════════════════════════
+function renderCryptoAsWatchlist() {
+  const tbody = document.getElementById('watchlist-tbody');
+  tbody.innerHTML = '';
+  const marketOpen = isMarketOpen();
+  const extHours   = isExtendedHours();
+
+  LISTS.crypto.forEach((ticker, idx) => {
+    const sym = ticker.sym;
+    const d   = getPrice(sym) || { price:ticker.price||0, prev:ticker.prev||0, name:ticker.name };
+    const lv  = liveData[sym];
+    const curPrice  = (lv && lv.price > 0) ? lv.price : d.price;
+    const prevClose = d.prev;
+    const { abs, pct } = calcChange(curPrice, prevClose);
+    const cl = dir(pct);
+    const tag = ticker.tag || 'CRYPTO';
+    const tagCls = tag === 'COMMODITY' ? 'tag-commodity' : 'tag-crypto';
+
+    // Status badge
+    let statusHtml;
+    if (sym === 'BTC-USD' || sym === 'ETH-USD') {
+      // Crypto trades 24/7
+      statusHtml = `<span class="status-live"><span class="status-dot-sm"></span>24/7 LIVE</span>`;
+    } else if (marketOpen) {
+      statusHtml = `<span class="status-live"><span class="status-dot-sm"></span>LIVE</span>`;
+    } else if (extHours) {
+      statusHtml = `<span class="status-ext"><span class="status-dot-sm"></span>EXT HRS</span>`;
+    } else {
+      statusHtml = `<span class="status-closed">CLOSED</span>`;
+    }
+
+    const industry = ticker.industry || tag;
+    const narr     = ticker.narrative || tag;
+    const narrBadge = `<span class="narrative-badge ${getNarrativeClass(narr)}">${narr}</span>`;
+    const tags = ticker.tags || [];
+    const tagsHtml = `<div class="ticker-tags">${tags.map(t=>`<span class="ticker-tag">${t}</span>`).join('')}</div>`;
+
+    const mgr = managerUnlocked ? `<td><div class="mgr-actions">
+      <button class="btn-edit-row" onclick="openEditTicker('crypto',${idx})">✏</button>
+      <button class="btn-del-row"  onclick="requestDelete('crypto',${idx})">✕</button>
+    </div></td>` : '<td></td>';
+
+    tbody.innerHTML += `<tr>
+      <td>
+        <a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+        <div class="ticker-name">${ticker.name}</div>
+        ${tagsHtml}
+      </td>
+      <td class="price-cell">$${fmtP(curPrice, sym)}</td>
+      <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br>
+        <span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
+      <td>${statusHtml}</td>
+      <td><span class="industry-badge">${industry}</span></td>
+      <td>${narrBadge}</td>
+      <td>${tagsHtml}</td>
       ${mgr}
     </tr>`;
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RENDER CRYPTO TABLE
+// RENDER CRYPTO TABLE (kept for backward compat, unused)
 // ═══════════════════════════════════════════════════════════════
 function renderCryptoTable() {
   const tbody=document.getElementById('crypto-tbody'); tbody.innerHTML='';
@@ -1457,14 +2079,27 @@ function renderCryptoTable() {
       <button class="btn-edit-row" onclick="openEditTicker('crypto',${idx})">✏</button>
       <button class="btn-del-row" onclick="requestDelete('crypto',${idx})">✕</button>
     </div></td>`:'<td></td>';
+    const mktOpen2 = isMarketOpen();
+    const mktExt2  = isExtendedHours();
+    let cStatusHtml;
+    if (mktOpen2)       cStatusHtml = `<span class="status-live"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;animation:pulse 2s infinite;"></span>LIVE</span>`;
+    else if (mktExt2)   cStatusHtml = `<span class="status-ext">EXT HRS</span>`;
+    else                cStatusHtml = `<span class="status-closed">CLOSED</span>`;
+    // crypto trades 24/7 — always live for BTC/ETH
+    if (sym==='BTC-USD'||sym==='ETH-USD') cStatusHtml = `<span class="status-live"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;animation:pulse 2s infinite;"></span>24/7</span>`;
+    const cTags = ticker.tags||[];
+    const cTagsHtml = cTags.map(t=>`<span class="ticker-tag">${t}</span>`).join('');
+    const cInd = ticker.industry ? `<span class="industry-badge">${ticker.industry}</span>` : '–';
+
     tbody.innerHTML+=`<tr>
       <td><a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
-          <div class="ticker-name">${d.name}</div></td>
+          <div class="ticker-name">${d.name}</div>
+          <div class="ticker-tags">${cTagsHtml}</div></td>
       <td class="price-cell">$${fmtP(d.price,sym)}</td>
-      <td class="change-cell ${cl}">${fmtC(abs)}</td>
-      <td class="change-cell ${cl}">${pct>=0?'+':''}${pct.toFixed(2)}%</td>
-      <td><span class="tag-badge tag-crypto" style="font-size:8px;">⚡ LIVE</span></td>
-      <td><span class="tag-badge ${tagCls}">${tag}</span></td>
+      <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
+      <td>${cStatusHtml}</td>
+      <td>${cInd}</td>
+      <td><div class="ticker-tags">${managerUnlocked?`<span class="ticker-tag-add" onclick="openTagEditor('crypto',${idx})">+ tag</span>`:''}</div></td>
       ${mgr}
     </tr>`;
   });
@@ -1475,11 +2110,18 @@ function renderCryptoTable() {
 // ═══════════════════════════════════════════════════════════════
 function renderAll() {
   syncSeed();
-  renderIndexCards('index-close-cards', INDEX_CLOSES, 'close');
-  renderIndexCards('futures-cards', FUTURES_LIST, 'futures');
-  renderStockTable('watchlist-tbody','watchlist','tag-watch','WATCH');
-  renderCryptoTable();
+  renderTopWidget();
+  renderWatchlistWithCrypto();
   checkAlerts();
+}
+
+// Render watchlist — when filter is 'Crypto', render LISTS.crypto rows
+function renderWatchlistWithCrypto() {
+  if (activeNarrative === 'Crypto') {
+    renderCryptoAsWatchlist();
+  } else {
+    renderStockTable('watchlist-tbody','watchlist','tag-watch','WATCH');
+  }
 }
 
 function checkAlerts() {
