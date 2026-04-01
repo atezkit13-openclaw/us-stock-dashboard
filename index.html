@@ -28,200 +28,54 @@
     --purple: #8b5cf6;
     --pink: #ec4899;
     --vix-alert: #ff4444;
+    --manager-accent: #f59e0b;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── SCANLINE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 0;
-  }
-
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); pointer-events: none; z-index: 0; }
   .container { max-width: 1600px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
 
   /* ── HEADER ── */
-  .header {
-    background: linear-gradient(180deg, #0a1628 0%, var(--bg-primary) 100%);
-    border-bottom: 1px solid var(--border-bright);
-    padding: 16px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-  }
-
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
+  .header { background: linear-gradient(180deg, #0a1628 0%, var(--bg-primary) 100%); border-bottom: 1px solid var(--border-bright); padding: 16px 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .logo-area { display: flex; align-items: center; gap: 12px; }
-
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-
-  .logo-text {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    background: linear-gradient(90deg, #e2e8f0, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .logo-sub {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
+  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.05em; background: linear-gradient(90deg, #e2e8f0, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase; }
   .clock-area { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-
-  .clock-box {
-    display: flex; flex-direction: column; align-items: center;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 14px;
-  }
-
+  .clock-box { display: flex; flex-direction: column; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; }
   .clock-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
   .clock-time { font-size: 16px; font-weight: 600; color: var(--accent-cyan); letter-spacing: 0.05em; }
   .clock-date { font-size: 10px; color: var(--text-secondary); }
-
-  .header-actions { display: flex; gap: 10px; align-items: center; }
-
-  .btn-refresh {
-    background: linear-gradient(135deg, #1e3a5f, #1e4d7a);
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-
+  .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .btn-refresh { background: linear-gradient(135deg, #1e3a5f, #1e4d7a); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; transition: all 0.2s; text-transform: uppercase; }
   .btn-refresh:hover { background: linear-gradient(135deg, #1e4d7a, #1e6bad); color: #fff; }
   .btn-refresh.loading { opacity: 0.6; cursor: not-allowed; }
+  .last-updated { font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em; }
 
-  .last-updated {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
+  /* ── MANAGER MODE BUTTON ── */
+  .btn-manager { background: linear-gradient(135deg, #2a1a00, #3d2600); border: 1px solid var(--manager-accent); color: var(--manager-accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; transition: all 0.2s; text-transform: uppercase; }
+  .btn-manager:hover { background: linear-gradient(135deg, #3d2600, #5a3800); color: #ffe082; }
+  .btn-manager.active { background: linear-gradient(135deg, #78350f, #92400e); border-color: #fbbf24; color: #fef3c7; animation: manager-glow 2s ease-in-out infinite; }
+  @keyframes manager-glow { 0%,100%{ box-shadow: 0 0 0 0 rgba(245,158,11,0); } 50%{ box-shadow: 0 0 10px 2px rgba(245,158,11,0.3); } }
 
   /* ── MARQUEE ── */
-  .marquee-wrap {
-    background: linear-gradient(90deg, #1a0a00, #1a1000, #0a0a1a);
-    border-top: 1px solid #4a3000;
-    border-bottom: 1px solid #4a3000;
-    padding: 8px 0;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .marquee-inner {
-    display: inline-block;
-    animation: marquee 40s linear infinite;
-  }
-
+  .marquee-wrap { background: linear-gradient(90deg, #1a0a00, #1a1000, #0a0a1a); border-top: 1px solid #4a3000; border-bottom: 1px solid #4a3000; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .marquee-inner { display: inline-block; animation: marquee 40s linear infinite; }
   .marquee-inner:hover { animation-play-state: paused; }
-
-  @keyframes marquee {
-    0% { transform: translateX(100vw); }
-    100% { transform: translateX(-100%); }
-  }
-
-  .marquee-item {
-    display: inline-block;
-    margin-right: 60px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-  }
-
-  .marquee-item .tag {
-    color: var(--amber);
-    margin-right: 8px;
-  }
+  @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+  .marquee-item { display: inline-block; margin-right: 60px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; }
+  .marquee-item .tag { color: var(--amber); margin-right: 8px; }
 
   /* ── SECTION HEADERS ── */
   .section { margin: 24px 0; }
-
-  .section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   /* ── INDEX CARDS ── */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-  }
-
-  .index-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.2s;
-    cursor: pointer;
-    text-decoration: none;
-    display: block;
-  }
-
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .index-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; position: relative; overflow: hidden; transition: all 0.2s; cursor: pointer; text-decoration: none; display: block; }
   .index-card:hover { border-color: var(--border-bright); background: var(--bg-card-hover); transform: translateY(-1px); }
   .index-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
   .index-card.up::before { background: linear-gradient(90deg, var(--green), transparent); }
@@ -229,195 +83,126 @@
   .index-card.neutral::before { background: linear-gradient(90deg, var(--text-dim), transparent); }
   .index-card.vix-alert { border-color: var(--vix-alert) !important; animation: vix-pulse 2s ease-in-out infinite; }
   @keyframes vix-pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(255,68,68,0); } 50%{ box-shadow: 0 0 12px 2px rgba(255,68,68,0.3); } }
-
-  .card-symbol {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-  }
-
+  .card-symbol { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
   .card-name { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; }
-
-  .card-price {
-    font-family: 'Syne', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-  }
-
-  .card-change {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 6px;
-  }
-
+  .card-price { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+  .card-change { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
   .card-change-abs { font-size: 11px; font-weight: 500; }
   .card-change-pct { font-size: 13px; font-weight: 700; }
   .up { color: var(--green) !important; }
   .down { color: var(--red) !important; }
   .neutral { color: var(--text-dim) !important; }
-
-  .card-tag {
-    position: absolute;
-    top: 12px; right: 12px;
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--bg-secondary);
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-  }
-
+  .card-tag { position: absolute; top: 12px; right: 12px; font-size: 8px; font-weight: 700; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--bg-secondary); color: var(--text-dim); border: 1px solid var(--border); }
   .card-tag.futures { color: var(--purple); border-color: var(--purple); }
   .card-tag.live { color: var(--green); border-color: var(--green); }
 
   /* ── TABLES ── */
-  .table-wrap {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-
-  thead th {
-    background: var(--bg-secondary);
-    padding: 10px 16px;
-    text-align: left;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid rgba(30,45,71,0.5);
-    transition: background 0.15s;
-  }
-
+  .table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: var(--bg-secondary); padding: 10px 16px; text-align: left; font-size: 9px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid rgba(30,45,71,0.5); transition: background 0.15s; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: var(--bg-card-hover); }
-
-  tbody td {
-    padding: 11px 16px;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  .ticker-link {
-    color: var(--accent-cyan);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.05em;
-    transition: color 0.15s;
-  }
-
+  tbody td { padding: 11px 16px; vertical-align: middle; white-space: nowrap; }
+  .ticker-link { color: var(--accent-cyan); text-decoration: none; font-weight: 600; font-size: 12px; letter-spacing: 0.05em; transition: color 0.15s; }
   .ticker-link:hover { color: #fff; text-decoration: underline; }
-
   .ticker-name { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
-
   .price-cell { font-weight: 600; font-size: 13px; }
-
   .change-cell { font-size: 12px; font-weight: 600; }
-
-  .momentum-bar-wrap {
-    width: 80px;
-    height: 4px;
-    background: var(--bg-secondary);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .momentum-bar {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
-
+  .momentum-bar-wrap { width: 80px; height: 4px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden; }
+  .momentum-bar { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
   .momentum-bar.up { background: linear-gradient(90deg, var(--green-dim), var(--green)); }
   .momentum-bar.down { background: linear-gradient(90deg, var(--red-dim), var(--red)); }
-
-  .tag-badge {
-    display: inline-block;
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-
+  .tag-badge { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; }
   .tag-portfolio { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
   .tag-watch { background: rgba(139,92,246,0.15); color: var(--purple); border: 1px solid rgba(139,92,246,0.3); }
   .tag-crypto { background: rgba(251,191,36,0.15); color: var(--gold); border: 1px solid rgba(251,191,36,0.3); }
   .tag-commodity { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .premarket-badge { font-size: 9px; padding: 2px 5px; border-radius: 3px; background: rgba(139,92,246,0.2); color: var(--purple); border: 1px solid rgba(139,92,246,0.4); }
+  .extended-price { font-size: 11px; color: var(--purple); font-weight: 500; }
 
-  /* ── PRE/POST MARKET ── */
-  .premarket-badge {
-    font-size: 9px;
-    padding: 2px 5px;
-    border-radius: 3px;
-    background: rgba(139,92,246,0.2);
-    color: var(--purple);
-    border: 1px solid rgba(139,92,246,0.4);
-  }
+  /* ── MANAGER EDIT CONTROLS IN TABLE ── */
+  .mgr-actions { display: none; gap: 6px; align-items: center; }
+  .manager-active .mgr-actions { display: flex; }
+  .manager-active thead th.mgr-col { display: table-cell; }
+  thead th.mgr-col { display: none; }
+  .btn-edit-row, .btn-del-row { border: none; border-radius: 4px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 3px 8px; transition: all 0.15s; }
+  .btn-edit-row { background: rgba(59,130,246,0.2); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.4); }
+  .btn-edit-row:hover { background: rgba(59,130,246,0.4); }
+  .btn-del-row { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
+  .btn-del-row:hover { background: rgba(239,68,68,0.4); }
 
-  .extended-price {
-    font-size: 11px;
-    color: var(--purple);
-    font-weight: 500;
-  }
+  /* ── MANAGER BANNER ── */
+  .manager-banner { display: none; background: linear-gradient(90deg, #1c1200, #2a1a00, #1c1200); border: 1px solid #78350f; border-radius: 8px; padding: 10px 18px; margin: 16px 0; align-items: center; gap: 14px; font-size: 11px; flex-wrap: wrap; }
+  .manager-banner.visible { display: flex; }
+  .manager-banner-icon { font-size: 18px; }
+  .manager-banner-text { color: #fde68a; font-weight: 600; letter-spacing: 0.05em; flex: 1; }
+  .manager-banner-sub { color: #92400e; font-size: 10px; }
+  .btn-add-ticker { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: var(--green); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .btn-add-ticker:hover { background: rgba(16,185,129,0.3); }
+  .btn-lock { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .btn-lock:hover { background: rgba(239,68,68,0.3); }
+  .btn-change-pin { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--amber); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .btn-change-pin:hover { background: rgba(245,158,11,0.3); }
 
-  /* ── NEWS ── */
-  .news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 14px;
-  }
+  /* ── MODALS ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 14px; padding: 32px; min-width: 380px; max-width: 480px; width: 90vw; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.6); animation: modal-in 0.2s ease; }
+  @keyframes modal-in { from { opacity:0; transform: scale(0.94) translateY(10px); } to { opacity:1; transform: scale(1) translateY(0); } }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 11px; color: var(--text-dim); margin-bottom: 24px; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; transition: color 0.15s; line-height: 1; }
+  .modal-close:hover { color: var(--text-primary); }
 
-  .news-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
+  /* PIN PAD */
+  .pin-display { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 2px solid var(--border-bright); transition: all 0.2s; }
+  .pin-dot.filled { background: var(--manager-accent); border-color: var(--manager-accent); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+  .pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.4s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 260px; margin: 0 auto; }
+  .pin-key { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .pin-key:hover { background: var(--bg-card-hover); border-color: var(--border-bright); transform: scale(1.04); }
+  .pin-key:active { transform: scale(0.97); }
+  .pin-key.clear { font-size: 13px; color: var(--amber); border-color: rgba(245,158,11,0.3); }
+  .pin-key.backspace { font-size: 18px; color: var(--text-secondary); }
+  .pin-error-msg { text-align: center; color: var(--red); font-size: 11px; margin-top: 16px; min-height: 16px; }
+  .pin-attempts { text-align: center; font-size: 10px; color: var(--text-dim); margin-top: 8px; }
 
+  /* TICKER EDIT MODAL */
+  .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .form-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+  .form-input, .form-select { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 10px 14px; border-radius: 8px; width: 100%; transition: border-color 0.2s; outline: none; }
+  .form-input:focus, .form-select:focus { border-color: var(--accent-blue); }
+  .form-input::placeholder { color: var(--text-dim); }
+  .form-input.error { border-color: var(--red); }
+  .form-hint { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+  .btn-primary { background: linear-gradient(135deg, #1e4d7a, #1e6bad); border: 1px solid var(--accent-blue); color: #fff; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .btn-primary:hover { background: linear-gradient(135deg, #1e6bad, #1e82d4); }
+  .btn-secondary { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .btn-secondary:hover { border-color: var(--border-bright); color: var(--text-primary); }
+  .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: var(--red); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .btn-danger:hover { background: rgba(239,68,68,0.3); }
+  .section-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 10px; padding: 14px 20px; font-size: 12px; z-index: 2000; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); transform: translateY(80px); opacity: 0; transition: all 0.3s ease; max-width: 320px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(16,185,129,0.5); }
+  .toast.error { border-color: rgba(239,68,68,0.5); }
+  .toast.info { border-color: rgba(59,130,246,0.5); }
+  .toast-icon { font-size: 16px; }
+  .toast-msg { color: var(--text-primary); line-height: 1.4; }
+
+  /* NEWS */
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
+  .news-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: all 0.2s; }
   .news-card:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
-
-  .news-category {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .news-cat-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
-
+  .news-category { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .news-cat-label { font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
   .cat-geo { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
   .cat-oil { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
   .cat-tech { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
@@ -425,133 +210,163 @@
   .cat-crypto { background: rgba(251,191,36,0.15); color: var(--gold); border: 1px solid rgba(251,191,36,0.3); }
   .cat-macro { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
   .cat-premarket { background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); }
-
-  .impact-badge {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
-
+  .impact-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; padding: 3px 8px; border-radius: 4px; }
   .impact-high { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); }
   .impact-medium { background: rgba(245,158,11,0.2); color: var(--amber); border: 1px solid rgba(245,158,11,0.4); }
   .impact-low { background: rgba(16,185,129,0.2); color: var(--green); border: 1px solid rgba(16,185,129,0.4); }
+  .news-headline { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text-primary); margin-bottom: 8px; }
+  .news-summary { font-size: 11px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 12px; }
+  .news-footer { display: flex; align-items: center; justify-content: space-between; }
+  .news-source { font-size: 10px; color: var(--text-dim); }
 
-  .news-headline {
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-  }
-
-  .news-summary {
-    font-size: 11px;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-  }
-
-  .news-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .news-source {
-    font-size: 10px;
-    color: var(--text-dim);
-  }
-
-  /* ── LOADING STATE ── */
-  .price-loading {
-    display: inline-block;
-    width: 60px;
-    height: 14px;
-    background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--border) 50%, var(--bg-secondary) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 3px;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  /* ── MARKET STATUS ── */
-  .market-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 11px;
-  }
-
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--red);
-  }
-
+  /* MARKET STATUS */
+  .market-status { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
   .status-dot.open { background: var(--green); animation: pulse 2s infinite; }
   .status-dot.premarket { background: var(--amber); animation: pulse 2s infinite; }
-
   @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
 
-  /* ── GRID LAYOUTS ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-  @media (max-width: 1100px) { .two-col { grid-template-columns: 1fr; } .three-col { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 700px) { .three-col { grid-template-columns: 1fr; } .cards-grid { grid-template-columns: repeat(2, 1fr); } .news-grid { grid-template-columns: 1fr; } }
-
-  /* ── FOOTER ── */
-  .footer {
-    border-top: 1px solid var(--border);
-    padding: 20px 0;
-    margin-top: 32px;
-    text-align: center;
-    font-size: 10px;
-    color: var(--text-dim);
-    line-height: 2;
-  }
-
-  /* ── SPARKLINE ── */
-  .sparkline { display: inline-block; vertical-align: middle; }
-
-  /* ── TABS ── */
-  .tab-bar { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
-
-  .tab-btn {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-
-  .tab-btn:hover { border-color: var(--border-bright); color: var(--text-primary); }
-  .tab-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent-blue); color: var(--accent-blue); }
-
-  /* ── DIVIDER ── */
+  /* MISC */
   .divider { height: 1px; background: var(--border); margin: 24px 0; }
+  .footer { border-top: 1px solid var(--border); padding: 20px 0; margin-top: 32px; text-align: center; font-size: 10px; color: var(--text-dim); line-height: 2; }
 
+  @media (max-width: 700px) {
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    .news-grid { grid-template-columns: 1fr; }
+    .modal { min-width: unset; padding: 24px 18px; }
+    .pin-pad { max-width: 220px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ═══ PIN MODAL ═══ -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal" style="text-align:center;">
+    <button class="modal-close" onclick="closeModal('pin-modal')">✕</button>
+    <div style="font-size:32px; margin-bottom:12px;" id="pin-modal-icon">🔐</div>
+    <div class="modal-title" id="pin-modal-title">Manager Mode</div>
+    <div class="modal-sub" id="pin-modal-sub">Enter your 4-digit PIN to continue</div>
+    <div class="pin-display" id="pin-display">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinInput('1')">1</button>
+      <button class="pin-key" onclick="pinInput('2')">2</button>
+      <button class="pin-key" onclick="pinInput('3')">3</button>
+      <button class="pin-key" onclick="pinInput('4')">4</button>
+      <button class="pin-key" onclick="pinInput('5')">5</button>
+      <button class="pin-key" onclick="pinInput('6')">6</button>
+      <button class="pin-key" onclick="pinInput('7')">7</button>
+      <button class="pin-key" onclick="pinInput('8')">8</button>
+      <button class="pin-key" onclick="pinInput('9')">9</button>
+      <button class="pin-key clear" onclick="pinClear()">CLR</button>
+      <button class="pin-key" onclick="pinInput('0')">0</button>
+      <button class="pin-key backspace" onclick="pinBack()">⌫</button>
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+    <div class="pin-attempts" id="pin-attempts"></div>
+  </div>
+</div>
+
+<!-- ═══ CHANGE PIN MODAL ═══ -->
+<div class="modal-overlay" id="change-pin-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('change-pin-modal')">✕</button>
+    <div class="modal-title">🔑 Change PIN</div>
+    <div class="modal-sub">Set a new 4-digit Manager PIN</div>
+    <div class="form-row">
+      <div class="form-label">Current PIN</div>
+      <input class="form-input" type="password" maxlength="4" id="cp-current" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <div class="form-row">
+      <div class="form-label">New PIN</div>
+      <input class="form-input" type="password" maxlength="4" id="cp-new" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <div class="form-row">
+      <div class="form-label">Confirm New PIN</div>
+      <input class="form-input" type="password" maxlength="4" id="cp-confirm" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <div class="pin-error-msg" id="cp-error"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('change-pin-modal')">Cancel</button>
+      <button class="btn-primary" onclick="doChangePIN()">Update PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD / EDIT TICKER MODAL ═══ -->
+<div class="modal-overlay" id="ticker-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('ticker-modal')">✕</button>
+    <div class="modal-title" id="ticker-modal-title">➕ Add Ticker</div>
+    <div class="modal-sub" id="ticker-modal-sub">Enter the stock symbol and details</div>
+
+    <div class="form-row">
+      <div class="form-label">Yahoo Finance Symbol *</div>
+      <input class="form-input" id="t-symbol" placeholder="e.g. AAPL, BTC-USD, GC=F" style="text-transform:uppercase;">
+      <div class="form-hint">Use exact Yahoo Finance ticker. Indices use ^ prefix (e.g. ^GSPC)</div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">Display Name *</div>
+      <input class="form-input" id="t-name" placeholder="e.g. Apple Inc">
+    </div>
+    <div class="form-row">
+      <div class="form-label">List</div>
+      <select class="form-select" id="t-list">
+        <option value="portfolio">💼 Portfolio</option>
+        <option value="watchlist">👁 Watch List</option>
+        <option value="crypto">🪙 Crypto / Commodities</option>
+      </select>
+    </div>
+    <div class="section-divider"></div>
+    <div style="font-size:10px; color:var(--text-dim); margin-bottom:12px;">SEED PRICES (used as fallback if live fetch fails)</div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin-bottom:0">
+        <div class="form-label">Seed Price</div>
+        <input class="form-input" id="t-price" placeholder="0.00" type="number" step="0.01">
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <div class="form-label">Prev Close</div>
+        <input class="form-input" id="t-prev" placeholder="0.00" type="number" step="0.01">
+      </div>
+    </div>
+    <div class="pin-error-msg" id="ticker-error"></div>
+    <div class="modal-actions" id="ticker-modal-actions">
+      <button class="btn-secondary" onclick="closeModal('ticker-modal')">Cancel</button>
+      <button class="btn-primary" id="ticker-save-btn" onclick="saveTicker()">Save Ticker</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM DELETE MODAL ═══ -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal" style="max-width:360px;">
+    <button class="modal-close" onclick="closeModal('delete-modal')">✕</button>
+    <div style="font-size:32px; margin-bottom:12px; text-align:center;">🗑️</div>
+    <div class="modal-title" style="text-align:center;">Remove Ticker?</div>
+    <div class="modal-sub" style="text-align:center;" id="delete-modal-sub">This will remove the ticker from the dashboard.</div>
+    <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin:16px 0; text-align:center;">
+      <div id="delete-ticker-preview" style="font-size:18px; font-weight:700; color:var(--red); letter-spacing:0.1em;"></div>
+      <div id="delete-name-preview" style="font-size:11px; color:var(--text-dim); margin-top:4px;"></div>
+    </div>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn-secondary" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon"></span>
+  <span class="toast-msg" id="toast-msg"></span>
+</div>
+
+<!-- ═══ HEADER ═══ -->
 <header class="header">
   <div class="container">
     <div class="header-inner">
@@ -562,7 +377,6 @@
           <div class="logo-sub">US Equity &amp; Pre/Post Market Dashboard</div>
         </div>
       </div>
-
       <div class="clock-area">
         <div class="clock-box">
           <span class="clock-label">HKT</span>
@@ -579,20 +393,20 @@
           <span id="market-status-text">Checking…</span>
         </div>
       </div>
-
       <div class="header-actions">
         <div class="last-updated">Last fetch: <span id="last-updated">–</span></div>
         <button class="btn-refresh" id="refresh-btn" onclick="fetchAllPrices()">⟳ Refresh</button>
+        <button class="btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
       </div>
     </div>
   </div>
 </header>
 
-<!-- MARQUEE -->
+<!-- ═══ MARQUEE ═══ -->
 <div class="marquee-wrap">
-  <div class="marquee-inner" id="marquee-inner">
+  <div class="marquee-inner">
     <span class="marquee-item"><span class="tag">⚠ GEOPOLITICAL</span>US-China trade tensions escalate on new tariff rounds — markets watching Q2 guidance closely</span>
-    <span class="marquee-item"><span class="tag">🛢 OIL</span>Brent Crude hovering near $75 amid Middle East supply uncertainty — OPEC+ output decision due next week</span>
+    <span class="marquee-item"><span class="tag">🛢 OIL</span>Brent Crude near $97 amid Middle East supply uncertainty — OPEC+ output decision due next week</span>
     <span class="marquee-item"><span class="tag">💡 PREMARKET</span>S&amp;P Futures +0.73% — Tech leading recovery after last week's selloff</span>
     <span class="marquee-item"><span class="tag">🔵 CYBER</span>PANW acquiring CyberArk for $25B — deal expected to close H2 FY2026; CRWD Falcon Flex ARR +200% YoY</span>
     <span class="marquee-item"><span class="tag">🪙 CRYPTO</span>BTC recovering above $69K — ETH following, crypto sentiment cautiously bullish</span>
@@ -604,29 +418,39 @@
 
 <div class="container" style="padding-top:24px;">
 
-  <!-- ═══════════════════════ INDEX CLOSES ═══════════════════════ -->
-  <div class="section">
-    <div class="section-title">📈 Major Index — Last Close (Mar 30, 2026)</div>
-    <div class="cards-grid" id="index-close-cards">
-      <!-- Populated by JS -->
+  <!-- MANAGER BANNER -->
+  <div class="manager-banner" id="manager-banner">
+    <span class="manager-banner-icon">⚙</span>
+    <div>
+      <div class="manager-banner-text">Manager Mode Active</div>
+      <div class="manager-banner-sub">You can add, edit and remove tickers from all lists. Changes are saved to localStorage.</div>
     </div>
+    <button class="btn-add-ticker" onclick="openAddTicker('portfolio')">+ Portfolio</button>
+    <button class="btn-add-ticker" onclick="openAddTicker('watchlist')">+ Watchlist</button>
+    <button class="btn-add-ticker" onclick="openAddTicker('crypto')">+ Crypto/Cmdty</button>
+    <button class="btn-change-pin" onclick="openModal('change-pin-modal')">🔑 Change PIN</button>
+    <button class="btn-lock" onclick="lockManager()">🔒 Lock</button>
   </div>
 
-  <!-- ═══════════════════════ INDEX FUTURES ═══════════════════════ -->
+  <!-- INDEX CLOSES -->
+  <div class="section">
+    <div class="section-title">📈 Major Index — Last Close</div>
+    <div class="cards-grid" id="index-close-cards"></div>
+  </div>
+
+  <!-- INDEX FUTURES -->
   <div class="section">
     <div class="section-title">⚡ Index Futures &amp; Commodities — Pre-Market</div>
-    <div class="cards-grid" id="futures-cards">
-      <!-- Populated by JS -->
-    </div>
+    <div class="cards-grid" id="futures-cards"></div>
   </div>
 
   <div class="divider"></div>
 
-  <!-- ═══════════════════════ PORTFOLIO TABLE ═══════════════════════ -->
+  <!-- PORTFOLIO TABLE -->
   <div class="section">
     <div class="section-title">💼 Portfolio Holdings</div>
     <div class="table-wrap">
-      <table>
+      <table id="portfolio-table">
         <thead>
           <tr>
             <th>Symbol</th>
@@ -636,6 +460,7 @@
             <th>Pre/Post</th>
             <th>Momentum</th>
             <th>Tag</th>
+            <th class="mgr-col">Actions</th>
           </tr>
         </thead>
         <tbody id="portfolio-tbody"></tbody>
@@ -643,11 +468,11 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════ WATCHLIST TABLE ═══════════════════════ -->
+  <!-- WATCHLIST TABLE -->
   <div class="section">
     <div class="section-title">👁 Watch List</div>
     <div class="table-wrap">
-      <table>
+      <table id="watchlist-table">
         <thead>
           <tr>
             <th>Symbol</th>
@@ -657,6 +482,7 @@
             <th>Pre/Post</th>
             <th>Momentum</th>
             <th>Tag</th>
+            <th class="mgr-col">Actions</th>
           </tr>
         </thead>
         <tbody id="watchlist-tbody"></tbody>
@@ -664,11 +490,11 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════ CRYPTO & COMMODITIES ═══════════════════════ -->
+  <!-- CRYPTO & COMMODITIES -->
   <div class="section">
     <div class="section-title">🪙 Crypto &amp; Commodities</div>
     <div class="table-wrap">
-      <table>
+      <table id="crypto-table">
         <thead>
           <tr>
             <th>Symbol</th>
@@ -677,6 +503,7 @@
             <th>% Change</th>
             <th>Live</th>
             <th>Tag</th>
+            <th class="mgr-col">Actions</th>
           </tr>
         </thead>
         <tbody id="crypto-tbody"></tbody>
@@ -686,7 +513,7 @@
 
   <div class="divider"></div>
 
-  <!-- ═══════════════════════ NEWS ═══════════════════════ -->
+  <!-- NEWS -->
   <div class="section">
     <div class="section-title">📰 Market Intelligence &amp; News</div>
     <div class="news-grid" id="news-grid"></div>
@@ -697,90 +524,414 @@
     <div>Data sourced live from Yahoo Finance API. Prices auto-update on page load. Seed data from Apr 1, 2026.</div>
     <div style="margin-top:8px; color: #333d4f;">⚠ This dashboard is for informational purposes only and does not constitute financial advice.</div>
   </div>
-
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-// SEED DATA (Apr 1, 2026 — updated from search)
-// ═══════════════════════════════════════════
-const SEED = {
-  // Index closes (Mar 30, 2026)
+// ═══════════════════════════════════════════════════════
+// PIN SYSTEM
+// ═══════════════════════════════════════════════════════
+const DEFAULT_PIN = '6088'; // Change default PIN here
+let managerUnlocked = false;
+let pinBuffer = '';
+let pinAttempts = 0;
+let pinLockUntil = 0;
+let pinMode = 'unlock'; // 'unlock'
+
+function getStoredPIN() {
+  return localStorage.getItem('mgr_pin') || DEFAULT_PIN;
+}
+
+function setStoredPIN(pin) {
+  localStorage.setItem('mgr_pin', pin);
+}
+
+function onManagerBtnClick() {
+  if (managerUnlocked) {
+    lockManager();
+  } else {
+    openPINModal();
+  }
+}
+
+function openPINModal() {
+  pinBuffer = '';
+  pinMode = 'unlock';
+  document.getElementById('pin-modal-title').textContent = 'Manager Mode';
+  document.getElementById('pin-modal-sub').textContent = 'Enter your 4-digit PIN to continue';
+  document.getElementById('pin-modal-icon').textContent = '🔐';
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-attempts').textContent = '';
+  updatePinDots();
+
+  const now = Date.now();
+  if (pinLockUntil > now) {
+    const secs = Math.ceil((pinLockUntil - now) / 1000);
+    document.getElementById('pin-error').textContent = `Too many attempts. Try again in ${secs}s.`;
+  }
+  openModal('pin-modal');
+}
+
+function pinInput(digit) {
+  if (Date.now() < pinLockUntil) return;
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  if (pinBuffer.length === 4) {
+    setTimeout(checkPIN, 120);
+  }
+}
+
+function pinBack() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+}
+
+function pinClear() {
+  pinBuffer = '';
+  updatePinDots();
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.remove('error');
+  }
+}
+
+function shakeDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.add('error');
+    setTimeout(() => dot.classList.remove('error'), 500);
+  }
+}
+
+function checkPIN() {
+  if (pinBuffer === getStoredPIN()) {
+    pinAttempts = 0;
+    pinBuffer = '';
+    updatePinDots();
+    closeModal('pin-modal');
+    activateManager();
+  } else {
+    pinAttempts++;
+    shakeDots();
+    pinBuffer = '';
+    setTimeout(updatePinDots, 500);
+
+    if (pinAttempts >= 5) {
+      pinLockUntil = Date.now() + 30000;
+      document.getElementById('pin-error').textContent = '⛔ Too many attempts. Locked for 30s.';
+      const countdown = setInterval(() => {
+        const rem = Math.ceil((pinLockUntil - Date.now()) / 1000);
+        if (rem <= 0) {
+          clearInterval(countdown);
+          pinAttempts = 0;
+          document.getElementById('pin-error').textContent = '';
+          document.getElementById('pin-attempts').textContent = '';
+        } else {
+          document.getElementById('pin-error').textContent = `⛔ Locked. Try again in ${rem}s.`;
+        }
+      }, 1000);
+    } else {
+      const left = 5 - pinAttempts;
+      document.getElementById('pin-error').textContent = `Incorrect PIN.`;
+      document.getElementById('pin-attempts').textContent = `${left} attempt${left !== 1 ? 's' : ''} remaining`;
+    }
+  }
+}
+
+function doChangePIN() {
+  const current = document.getElementById('cp-current').value;
+  const newPin  = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  const errEl   = document.getElementById('cp-error');
+
+  if (current !== getStoredPIN()) { errEl.textContent = 'Current PIN is incorrect.'; return; }
+  if (!/^\d{4}$/.test(newPin))    { errEl.textContent = 'New PIN must be exactly 4 digits.'; return; }
+  if (newPin !== confirm)         { errEl.textContent = 'PINs do not match.'; return; }
+
+  setStoredPIN(newPin);
+  closeModal('change-pin-modal');
+  document.getElementById('cp-current').value = '';
+  document.getElementById('cp-new').value = '';
+  document.getElementById('cp-confirm').value = '';
+  showToast('success', '✅', 'Manager PIN updated successfully.');
+}
+
+function activateManager() {
+  managerUnlocked = true;
+  document.getElementById('manager-btn').classList.add('active');
+  document.getElementById('manager-btn').textContent = '🔓 Manager';
+  document.getElementById('manager-banner').classList.add('visible');
+  document.getElementById('portfolio-table').classList.add('manager-active');
+  document.getElementById('watchlist-table').classList.add('manager-active');
+  document.getElementById('crypto-table').classList.add('manager-active');
+  renderAll();
+  showToast('success', '🔓', 'Manager Mode activated.');
+}
+
+function lockManager() {
+  managerUnlocked = false;
+  document.getElementById('manager-btn').classList.remove('active');
+  document.getElementById('manager-btn').textContent = '⚙ Manager';
+  document.getElementById('manager-banner').classList.remove('visible');
+  document.getElementById('portfolio-table').classList.remove('manager-active');
+  document.getElementById('watchlist-table').classList.remove('manager-active');
+  document.getElementById('crypto-table').classList.remove('manager-active');
+  renderAll();
+  showToast('info', '🔒', 'Manager Mode locked.');
+}
+
+// ═══════════════════════════════════════════════════════
+// TICKER DATA STORE
+// ═══════════════════════════════════════════════════════
+const SEED_DEFAULT = {
   '^GSPC':  { price: 6343.72, prev: 6368.85, name: 'S&P 500' },
   '^NDX':   { price: 20914.44, prev: 21100.00, name: 'Nasdaq 100' },
   '^RUT':   { price: 2095.80, prev: 2130.00, name: 'Russell 2000' },
   '^VIX':   { price: 28.86, prev: 30.61, name: 'VIX Volatility' },
   '^DJI':   { price: 41583.90, prev: 41800.00, name: 'Dow Jones 30' },
-
-  // Futures (Apr 1, 2026 pre-market from Yahoo Finance)
   'ES=F':   { price: 6618.50, prev: 6570.75, name: 'S&P 500 Futures' },
   'NQ=F':   { price: 24157.50, prev: 23915.00, name: 'Nasdaq 100 Futures' },
   'RTY=F':  { price: 2540.20, prev: 2511.70, name: 'Russell 2000 Futures' },
   'GC=F':   { price: 4745.00, prev: 4678.60, name: 'Gold Futures' },
   'BZ=F':   { price: 97.49, prev: 101.33, name: 'Brent Crude Oil' },
-
-  // Portfolio tickers
-  'MA':     { price: 548.30, prev: 538.20, name: 'Mastercard' },
-  'PANW':   { price: 196.40, prev: 191.80, name: 'Palo Alto Networks' },
-  'NOW':    { price: 810.50, prev: 795.00, name: 'ServiceNow' },
-  'SPOT':   { price: 582.10, prev: 570.30, name: 'Spotify' },
-  'ZS':     { price: 222.80, prev: 218.60, name: 'Zscaler' },
-  'QLYS':   { price: 152.40, prev: 149.10, name: 'Qualys Inc.' },
-  'RDW':    { price: 6.82, prev: 7.10, name: 'Redwire Corp' },
-
-  // Watchlist
-  'NVDA':   { price: 868.00, prev: 893.00, name: 'NVIDIA Corp' },
-  'TSLA':   { price: 361.85, prev: 353.25, name: 'Tesla Inc' },
-  'GOOGL':  { price: 172.85, prev: 170.40, name: 'Alphabet Inc' },
-  'META':   { price: 583.20, prev: 598.40, name: 'Meta Platforms' },
-  'MSFT':   { price: 362.92, prev: 356.90, name: 'Microsoft Corp' },
-  'AAPL':   { price: 247.05, prev: 246.30, name: 'Apple Inc' },
-  'AMZN':   { price: 201.62, prev: 200.36, name: 'Amazon.com' },
-  'INTC':   { price: 40.83, prev: 38.75, name: 'Intel Corp' },
-  'AVGO':   { price: 293.56, prev: 290.67, name: 'Broadcom Inc' },
-  'PLTR':   { price: 140.44, prev: 137.15, name: 'Palantir Tech' },
-  'CRWD':   { price: 394.80, prev: 386.50, name: 'CrowdStrike' },
-  'FTNT':   { price: 96.20, prev: 94.40, name: 'Fortinet Inc' },
-  'COIN':   { price: 198.50, prev: 192.30, name: 'Coinbase Global' },
-
-  // Crypto
   'BTC-USD':{ price: 69132.45, prev: 67252.67, name: 'Bitcoin USD' },
   'ETH-USD':{ price: 1842.30, prev: 1798.50, name: 'Ethereum USD' },
 };
 
-// Extended / pre-market seeds (simulated; JS will try live fetch)
-const EXTENDED_SEED = {
-  'NVDA': { price: 875.20, change: +0.83 },
-  'TSLA': { price: 368.10, change: +1.73 },
-  'AAPL': { price: 248.90, change: +0.75 },
-  'MSFT': { price: 366.40, change: +0.96 },
-  'META': { price: 588.00, change: +0.82 },
-  'AMZN': { price: 203.80, change: +1.08 },
-  'GOOGL':{ price: 174.50, change: +0.96 },
-  'PANW': { price: 199.10, change: +1.37 },
-  'CRWD': { price: 398.20, change: +0.86 },
-  'QLYS': { price: 154.10, change: +1.12 },
-  'ZS':   { price: 225.60, change: +1.25 },
-  'PLTR': { price: 143.80, change: +2.38 },
-  'AVGO': { price: 297.00, change: +1.17 },
-  'COIN': { price: 202.40, change: +1.97 },
-  'MA':   { price: 552.00, change: +0.67 },
+const DEFAULT_LISTS = {
+  portfolio: [
+    { sym:'MA',   name:'Mastercard',          price:548.30, prev:538.20 },
+    { sym:'PANW', name:'Palo Alto Networks',  price:196.40, prev:191.80 },
+    { sym:'NOW',  name:'ServiceNow',          price:810.50, prev:795.00 },
+    { sym:'SPOT', name:'Spotify',             price:582.10, prev:570.30 },
+    { sym:'ZS',   name:'Zscaler',             price:222.80, prev:218.60 },
+    { sym:'QLYS', name:'Qualys Inc.',         price:152.40, prev:149.10 },
+    { sym:'RDW',  name:'Redwire Corp',        price:6.82,   prev:7.10   },
+  ],
+  watchlist: [
+    { sym:'NVDA', name:'NVIDIA Corp',   price:868.00, prev:893.00 },
+    { sym:'TSLA', name:'Tesla Inc',     price:361.85, prev:353.25 },
+    { sym:'GOOGL',name:'Alphabet Inc',  price:172.85, prev:170.40 },
+    { sym:'META', name:'Meta Platforms',price:583.20, prev:598.40 },
+    { sym:'MSFT', name:'Microsoft Corp',price:362.92, prev:356.90 },
+    { sym:'AAPL', name:'Apple Inc',     price:247.05, prev:246.30 },
+    { sym:'AMZN', name:'Amazon.com',    price:201.62, prev:200.36 },
+    { sym:'INTC', name:'Intel Corp',    price:40.83,  prev:38.75  },
+    { sym:'AVGO', name:'Broadcom Inc',  price:293.56, prev:290.67 },
+    { sym:'PLTR', name:'Palantir Tech', price:140.44, prev:137.15 },
+    { sym:'CRWD', name:'CrowdStrike',   price:394.80, prev:386.50 },
+    { sym:'FTNT', name:'Fortinet Inc',  price:96.20,  prev:94.40  },
+    { sym:'COIN', name:'Coinbase Global',price:198.50,prev:192.30 },
+  ],
+  crypto: [
+    { sym:'BTC-USD', name:'Bitcoin USD',   price:69132.45, prev:67252.67, tag:'CRYPTO' },
+    { sym:'ETH-USD', name:'Ethereum USD',  price:1842.30,  prev:1798.50,  tag:'CRYPTO' },
+    { sym:'GC=F',    name:'Gold Futures',  price:4745.00,  prev:4678.60,  tag:'COMMODITY' },
+    { sym:'BZ=F',    name:'Brent Crude',   price:97.49,    prev:101.33,   tag:'COMMODITY' },
+  ],
 };
 
-// Live data store
+const EXTENDED_SEED = {
+  'NVDA':{ price:875.20, change:+0.83 }, 'TSLA':{ price:368.10, change:+1.73 },
+  'AAPL':{ price:248.90, change:+0.75 }, 'MSFT':{ price:366.40, change:+0.96 },
+  'META':{ price:588.00, change:+0.82 }, 'AMZN':{ price:203.80, change:+1.08 },
+  'GOOGL':{ price:174.50, change:+0.96 }, 'PANW':{ price:199.10, change:+1.37 },
+  'CRWD':{ price:398.20, change:+0.86 }, 'QLYS':{ price:154.10, change:+1.12 },
+  'ZS':{ price:225.60, change:+1.25 }, 'PLTR':{ price:143.80, change:+2.38 },
+  'AVGO':{ price:297.00, change:+1.17 }, 'COIN':{ price:202.40, change:+1.97 },
+  'MA':{ price:552.00, change:+0.67 },
+};
+
+function loadLists() {
+  try {
+    const saved = localStorage.getItem('dashboard_lists');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_LISTS));
+}
+
+function saveLists() {
+  localStorage.setItem('dashboard_lists', JSON.stringify(LISTS));
+}
+
+let LISTS = loadLists();
+let SEED = Object.assign({}, SEED_DEFAULT);
 let liveData = {};
 
-// ═══════════════════════════════════════
+// Sync SEED with current LISTS
+function syncSeed() {
+  [...LISTS.portfolio, ...LISTS.watchlist, ...LISTS.crypto].forEach(t => {
+    if (!SEED[t.sym]) SEED[t.sym] = { price: t.price || 0, prev: t.prev || 0, name: t.name };
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer;
+function showToast(type, icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════════
+// ADD / EDIT TICKER
+// ═══════════════════════════════════════════════════════
+let editingTicker = null; // { list, index } or null
+
+function openAddTicker(listName) {
+  editingTicker = null;
+  document.getElementById('ticker-modal-title').textContent = '➕ Add Ticker';
+  document.getElementById('ticker-modal-sub').textContent = 'Enter the stock symbol and details';
+  document.getElementById('t-symbol').value = '';
+  document.getElementById('t-symbol').disabled = false;
+  document.getElementById('t-name').value = '';
+  document.getElementById('t-list').value = listName;
+  document.getElementById('t-price').value = '';
+  document.getElementById('t-prev').value = '';
+  document.getElementById('ticker-error').textContent = '';
+  document.getElementById('ticker-save-btn').textContent = 'Add Ticker';
+
+  // Show delete button only when editing
+  const actions = document.getElementById('ticker-modal-actions');
+  const existingDel = actions.querySelector('.btn-danger');
+  if (existingDel) existingDel.remove();
+
+  openModal('ticker-modal');
+  setTimeout(() => document.getElementById('t-symbol').focus(), 100);
+}
+
+function openEditTicker(listName, index) {
+  editingTicker = { list: listName, index };
+  const ticker = LISTS[listName][index];
+  document.getElementById('ticker-modal-title').textContent = '✏️ Edit Ticker';
+  document.getElementById('ticker-modal-sub').textContent = 'Update the details for ' + ticker.sym;
+  document.getElementById('t-symbol').value = ticker.sym;
+  document.getElementById('t-symbol').disabled = true;
+  document.getElementById('t-name').value = ticker.name;
+  document.getElementById('t-list').value = listName;
+  document.getElementById('t-price').value = ticker.price || '';
+  document.getElementById('t-prev').value = ticker.prev || '';
+  document.getElementById('ticker-error').textContent = '';
+  document.getElementById('ticker-save-btn').textContent = 'Save Changes';
+
+  // Add inline delete button
+  const actions = document.getElementById('ticker-modal-actions');
+  const existingDel = actions.querySelector('.btn-danger');
+  if (!existingDel) {
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-danger';
+    delBtn.textContent = '🗑 Remove';
+    delBtn.style.marginRight = 'auto';
+    delBtn.onclick = () => { closeModal('ticker-modal'); requestDelete(listName, index); };
+    actions.insertBefore(delBtn, actions.firstChild);
+  }
+
+  openModal('ticker-modal');
+}
+
+function saveTicker() {
+  const sym   = document.getElementById('t-symbol').value.trim().toUpperCase();
+  const name  = document.getElementById('t-name').value.trim();
+  const list  = document.getElementById('t-list').value;
+  const price = parseFloat(document.getElementById('t-price').value) || 0;
+  const prev  = parseFloat(document.getElementById('t-prev').value) || 0;
+  const errEl = document.getElementById('ticker-error');
+
+  if (!sym)  { errEl.textContent = 'Symbol is required.'; return; }
+  if (!name) { errEl.textContent = 'Display name is required.'; return; }
+
+  if (!editingTicker) {
+    // Check for duplicates across all lists
+    const allSyms = [...LISTS.portfolio, ...LISTS.watchlist, ...LISTS.crypto].map(t => t.sym);
+    if (allSyms.includes(sym)) { errEl.textContent = `${sym} already exists in the dashboard.`; return; }
+
+    const newEntry = { sym, name, price, prev };
+    if (list === 'crypto') newEntry.tag = 'CRYPTO';
+    LISTS[list].push(newEntry);
+    SEED[sym] = { price, prev, name };
+    saveLists();
+    closeModal('ticker-modal');
+    renderAll();
+    fetchSymbolAndUpdate(sym);
+    showToast('success', '➕', `${sym} added to ${list}.`);
+  } else {
+    const { list: oldList, index } = editingTicker;
+    const ticker = LISTS[oldList][index];
+    ticker.name = name;
+    ticker.price = price || ticker.price;
+    ticker.prev  = prev  || ticker.prev;
+
+    // Move to different list?
+    if (list !== oldList) {
+      LISTS[oldList].splice(index, 1);
+      const newEntry = { sym: ticker.sym, name, price: ticker.price, prev: ticker.prev };
+      if (list === 'crypto') newEntry.tag = ticker.tag || 'CRYPTO';
+      LISTS[list].push(newEntry);
+    }
+
+    SEED[ticker.sym] = { price: ticker.price, prev: ticker.prev, name };
+    saveLists();
+    closeModal('ticker-modal');
+    renderAll();
+    showToast('success', '✏️', `${ticker.sym} updated.`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════════════════
+let deleteTarget = null;
+
+function requestDelete(listName, index) {
+  deleteTarget = { list: listName, index };
+  const ticker = LISTS[listName][index];
+  document.getElementById('delete-ticker-preview').textContent = ticker.sym;
+  document.getElementById('delete-name-preview').textContent = ticker.name;
+  document.getElementById('delete-modal-sub').textContent = `Remove ${ticker.sym} from ${listName}?`;
+  openModal('delete-modal');
+}
+
+function confirmDelete() {
+  if (!deleteTarget) return;
+  const { list, index } = deleteTarget;
+  const sym = LISTS[list][index].sym;
+  LISTS[list].splice(index, 1);
+  saveLists();
+  closeModal('delete-modal');
+  renderAll();
+  showToast('error', '🗑️', `${sym} removed from dashboard.`);
+  deleteTarget = null;
+}
+
+// ═══════════════════════════════════════════════════════
 // CLOCK
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function updateClocks() {
   const now = new Date();
-  const fmt = (d, tz) => {
-    return {
-      time: d.toLocaleTimeString('en-US', { timeZone: tz, hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' }),
-      date: d.toLocaleDateString('en-US', { timeZone: tz, month:'short', day:'numeric', weekday:'short' })
-    };
-  };
+  const fmt = (d, tz) => ({
+    time: d.toLocaleTimeString('en-US', { timeZone:tz, hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' }),
+    date: d.toLocaleDateString('en-US', { timeZone:tz, month:'short', day:'numeric', weekday:'short' })
+  });
   const hkt = fmt(now, 'Asia/Hong_Kong');
   const et  = fmt(now, 'America/New_York');
   document.getElementById('hkt-time').textContent = hkt.time;
@@ -788,65 +939,47 @@ function updateClocks() {
   document.getElementById('et-time').textContent  = et.time;
   document.getElementById('et-date').textContent  = et.date;
 
-  // Market status
-  const etHour = parseInt(et.time.split(':')[0]);
-  const etMin  = parseInt(et.time.split(':')[1]);
+  const etHour  = parseInt(et.time.split(':')[0]);
+  const etMin   = parseInt(et.time.split(':')[1]);
   const etTotal = etHour * 60 + etMin;
   const dot = document.getElementById('status-dot');
   const txt = document.getElementById('market-status-text');
   const etDay = now.toLocaleDateString('en-US', { timeZone:'America/New_York', weekday:'short'});
   const isWeekend = etDay === 'Sat' || etDay === 'Sun';
 
-  if (isWeekend) {
-    dot.className = 'status-dot'; txt.textContent = 'Market Closed (Weekend)';
-  } else if (etTotal >= 240 && etTotal < 570) {
-    dot.className = 'status-dot premarket'; txt.textContent = '⚡ Pre-Market Open (4:00–9:30 ET)';
-  } else if (etTotal >= 570 && etTotal < 960) {
-    dot.className = 'status-dot open'; txt.textContent = '✅ Market Open';
-  } else if (etTotal >= 960 && etTotal < 1200) {
-    dot.className = 'status-dot premarket'; txt.textContent = '🌙 After-Hours (4PM–8PM ET)';
-  } else {
-    dot.className = 'status-dot'; txt.textContent = '🔴 Market Closed';
-  }
+  if (isWeekend) { dot.className='status-dot'; txt.textContent='Market Closed (Weekend)'; }
+  else if (etTotal>=240 && etTotal<570)  { dot.className='status-dot premarket'; txt.textContent='⚡ Pre-Market (4–9:30 ET)'; }
+  else if (etTotal>=570 && etTotal<960)  { dot.className='status-dot open'; txt.textContent='✅ Market Open'; }
+  else if (etTotal>=960 && etTotal<1200) { dot.className='status-dot premarket'; txt.textContent='🌙 After-Hours (4–8PM ET)'; }
+  else { dot.className='status-dot'; txt.textContent='🔴 Market Closed'; }
 }
-
 setInterval(updateClocks, 1000);
 updateClocks();
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // PRICE HELPERS
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function calcChange(price, prev) {
   const abs = price - prev;
-  const pct = prev !== 0 ? (abs / prev) * 100 : 0;
+  const pct = prev !== 0 ? (abs/prev)*100 : 0;
   return { abs, pct };
 }
-
-function fmtPrice(price, symbol) {
-  if (['BTC-USD'].includes(symbol)) return price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-  if (price > 1000) return price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+function fmtPrice(price, sym) {
+  if (price > 9999) return price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (price > 999)  return price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
   return price.toFixed(2);
 }
+function fmtChange(val) { return (val >= 0 ? '+' : '') + val.toFixed(2); }
+function dirClass(val)  { return val > 0 ? 'up' : val < 0 ? 'down' : 'neutral'; }
+function getPrice(sym)  { return liveData[sym] || SEED[sym]; }
 
-function fmtChange(val) {
-  const s = val >= 0 ? '+' : '';
-  return s + val.toFixed(2);
-}
-
-function dirClass(val) { return val > 0 ? 'up' : val < 0 ? 'down' : 'neutral'; }
-
-function getPrice(sym) {
-  return liveData[sym] || SEED[sym];
-}
-
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // LIVE FETCH
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 async function fetchSymbol(sym) {
-  const encoded = encodeURIComponent(sym);
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?range=2d&interval=1d&includePrePost=true`;
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2d&interval=1d&includePrePost=true`;
   try {
-    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const r = await fetch(url);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     const meta = j?.chart?.result?.[0]?.meta;
@@ -854,40 +987,43 @@ async function fetchSymbol(sym) {
     const price = meta.regularMarketPrice || meta.postMarketPrice || meta.preMarketPrice;
     const prev  = meta.chartPreviousClose || meta.regularMarketPreviousClose || price;
     return { price, prev, name: SEED[sym]?.name || sym };
-  } catch {
-    return null;
-  }
+  } catch { return null; }
+}
+
+async function fetchSymbolAndUpdate(sym) {
+  const d = await fetchSymbol(sym);
+  if (d) { liveData[sym] = d; renderAll(); }
 }
 
 async function fetchAllPrices() {
   const btn = document.getElementById('refresh-btn');
   btn.textContent = '↻ Fetching…';
   btn.classList.add('loading');
-
-  const allSyms = Object.keys(SEED);
+  syncSeed();
+  const allSyms = [...new Set([
+    ...Object.keys(SEED_DEFAULT),
+    ...LISTS.portfolio.map(t=>t.sym),
+    ...LISTS.watchlist.map(t=>t.sym),
+    ...LISTS.crypto.map(t=>t.sym),
+  ])];
   const results = await Promise.allSettled(allSyms.map(s => fetchSymbol(s)));
-
   results.forEach((r, i) => {
-    const sym = allSyms[i];
-    if (r.status === 'fulfilled' && r.value) {
-      liveData[sym] = r.value;
-    }
+    if (r.status === 'fulfilled' && r.value) liveData[allSyms[i]] = r.value;
   });
-
   renderAll();
-
-  document.getElementById('last-updated').textContent = new Date().toLocaleTimeString('en-US', {timeZone:'Asia/Hong_Kong', hour12:false}) + ' HKT';
+  document.getElementById('last-updated').textContent =
+    new Date().toLocaleTimeString('en-US', {timeZone:'Asia/Hong_Kong', hour12:false}) + ' HKT';
   btn.textContent = '⟳ Refresh';
   btn.classList.remove('loading');
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // RENDER INDEX CARDS
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 const INDEX_CLOSES = ['^GSPC','^NDX','^RUT','^DJI','^VIX'];
 const FUTURES_LIST = ['ES=F','NQ=F','RTY=F','GC=F','BZ=F'];
 
-function renderIndexCards(containerId, symbols, tag) {
+function renderIndexCards(containerId, symbols, tagType) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
   symbols.forEach(sym => {
@@ -895,43 +1031,52 @@ function renderIndexCards(containerId, symbols, tag) {
     if (!d) return;
     const { abs, pct } = calcChange(d.price, d.prev);
     const dir = dirClass(pct);
-    const isVix = sym === '^VIX' || sym === '^VIX_F';
+    const isVix = sym === '^VIX';
     const vixAlert = isVix && d.price > 25 ? ' vix-alert' : '';
-    const tagLabel = tag === 'futures' ? `<span class="card-tag futures">FUTURES</span>` : `<span class="card-tag live">LIVE</span>`;
-    const link = sym.startsWith('^') ? `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/` : `https://finance.yahoo.com/quote/${sym}/`;
-
+    const tagHtml = tagType === 'futures'
+      ? `<span class="card-tag futures">FUTURES</span>`
+      : `<span class="card-tag live">CLOSE</span>`;
+    const link = `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
     el.innerHTML += `
       <a class="index-card ${dir}${vixAlert}" href="${link}" target="_blank">
-        ${tagLabel}
+        ${tagHtml}
         <div class="card-symbol">${sym.replace('^','').replace('=F','')}</div>
         <div class="card-name">${d.name}</div>
         <div class="card-price">${fmtPrice(d.price, sym)}</div>
         <div class="card-change">
           <span class="card-change-abs ${dir}">${fmtChange(abs)}</span>
           <span class="card-change-pct ${dir}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
-          ${isVix && d.price > 25 ? '<span style="font-size:10px;color:var(--vix-alert);font-weight:700;">⚠ ALERT</span>' : ''}
+          ${isVix && d.price > 25 ? '<span style="font-size:10px;color:var(--vix-alert);font-weight:700;">⚠ HIGH</span>' : ''}
         </div>
       </a>`;
   });
 }
 
-// ═══════════════════════════════════════
-// RENDER STOCK TABLES
-// ═══════════════════════════════════════
-function renderStockTable(tbodyId, symbols, tagClass, tagLabel) {
+// ═══════════════════════════════════════════════════════
+// RENDER STOCK TABLE
+// ═══════════════════════════════════════════════════════
+function renderStockTable(tbodyId, listName, tagClass, tagLabel) {
   const tbody = document.getElementById(tbodyId);
   tbody.innerHTML = '';
-  symbols.forEach(sym => {
-    const d = getPrice(sym);
-    if (!d) return;
+  LISTS[listName].forEach((ticker, index) => {
+    const sym = ticker.sym;
+    const d = getPrice(sym) || { price: ticker.price || 0, prev: ticker.prev || 0, name: ticker.name };
     const { abs, pct } = calcChange(d.price, d.prev);
     const dir = dirClass(pct);
     const barW = Math.min(Math.abs(pct) * 15, 100).toFixed(0);
     const ext = EXTENDED_SEED[sym];
     const extHtml = ext
-      ? `<span class="extended-price">${ext.price.toFixed(2)} <span class="${ext.change >= 0 ? 'up' : 'down'}" style="font-size:10px;">${ext.change >= 0 ? '+' : ''}${ext.change.toFixed(2)}%</span></span> <span class="premarket-badge">PRE</span>`
+      ? `<span class="extended-price">${ext.price.toFixed(2)} <span class="${ext.change>=0?'up':'down'}" style="font-size:10px;">${ext.change>=0?'+':''}${ext.change.toFixed(2)}%</span></span> <span class="premarket-badge">PRE</span>`
       : `<span style="color:var(--text-dim);font-size:10px;">–</span>`;
 
+    const mgr = managerUnlocked ? `
+      <td>
+        <div class="mgr-actions">
+          <button class="btn-edit-row" onclick="openEditTicker('${listName}', ${index})">✏ Edit</button>
+          <button class="btn-del-row"  onclick="requestDelete('${listName}', ${index})">✕</button>
+        </div>
+      </td>` : '<td></td>';
+
     tbody.innerHTML += `
       <tr>
         <td>
@@ -940,35 +1085,37 @@ function renderStockTable(tbodyId, symbols, tagClass, tagLabel) {
         </td>
         <td class="price-cell">$${fmtPrice(d.price, sym)}</td>
         <td class="change-cell ${dir}">${fmtChange(abs)}</td>
-        <td class="change-cell ${dir}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</td>
+        <td class="change-cell ${dir}">${pct>=0?'+':''}${pct.toFixed(2)}%</td>
         <td>${extHtml}</td>
-        <td>
-          <div class="momentum-bar-wrap">
-            <div class="momentum-bar ${dir}" style="width:${barW}%"></div>
-          </div>
-        </td>
+        <td><div class="momentum-bar-wrap"><div class="momentum-bar ${dir}" style="width:${barW}%"></div></div></td>
         <td><span class="tag-badge ${tagClass}">${tagLabel}</span></td>
+        ${mgr}
       </tr>`;
   });
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // RENDER CRYPTO TABLE
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function renderCryptoTable() {
-  const rows = [
-    { sym:'BTC-USD', tag:'tag-crypto', label:'CRYPTO' },
-    { sym:'ETH-USD', tag:'tag-crypto', label:'CRYPTO' },
-    { sym:'GC=F',   tag:'tag-commodity', label:'COMMODITY' },
-    { sym:'BZ=F',   tag:'tag-commodity', label:'COMMODITY' },
-  ];
   const tbody = document.getElementById('crypto-tbody');
   tbody.innerHTML = '';
-  rows.forEach(({sym, tag, label}) => {
-    const d = getPrice(sym);
-    if (!d) return;
+  LISTS.crypto.forEach((ticker, index) => {
+    const sym = ticker.sym;
+    const d = getPrice(sym) || { price: ticker.price || 0, prev: ticker.prev || 0, name: ticker.name };
     const { abs, pct } = calcChange(d.price, d.prev);
     const dir = dirClass(pct);
+    const tag = ticker.tag || 'CRYPTO';
+    const tagClass = tag === 'COMMODITY' ? 'tag-commodity' : 'tag-crypto';
+
+    const mgr = managerUnlocked ? `
+      <td>
+        <div class="mgr-actions">
+          <button class="btn-edit-row" onclick="openEditTicker('crypto', ${index})">✏ Edit</button>
+          <button class="btn-del-row"  onclick="requestDelete('crypto', ${index})">✕</button>
+        </div>
+      </td>` : '<td></td>';
+
     tbody.innerHTML += `
       <tr>
         <td>
@@ -977,109 +1124,78 @@ function renderCryptoTable() {
         </td>
         <td class="price-cell">$${fmtPrice(d.price, sym)}</td>
         <td class="change-cell ${dir}">${fmtChange(abs)}</td>
-        <td class="change-cell ${dir}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</td>
-        <td><span class="tag-badge tag-crypto" style="font-size:9px;">${sym === 'GC=F' || sym === 'BZ=F' ? '⚡ LIVE' : '⚡ LIVE'}</span></td>
-        <td><span class="tag-badge ${tag}">${label}</span></td>
+        <td class="change-cell ${dir}">${pct>=0?'+':''}${pct.toFixed(2)}%</td>
+        <td><span class="tag-badge tag-crypto" style="font-size:9px;">⚡ LIVE</span></td>
+        <td><span class="tag-badge ${tagClass}">${tag}</span></td>
+        ${mgr}
       </tr>`;
   });
 }
 
-// ═══════════════════════════════════════
-// NEWS DATA
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// NEWS
+// ═══════════════════════════════════════════════════════
 const NEWS = [
-  {
-    cat: 'cat-premarket', catLabel: '💡 Premarket Movers',
-    headline: 'S&P Futures Rally +0.73% — Tech-Led Bounce After Volatile March',
-    summary: 'US equity futures are pointing higher on April 1 with S&P Futures at 6,618 (+0.73%) and Nasdaq Futures at 24,157 (+1.01%), indicating a broad recovery after the prior session\'s selloff. Dow Futures are up +0.66%, with Russell 2000 leading gains at +1.11%, suggesting renewed risk appetite in small caps.',
-    source: 'Yahoo Finance', date: 'Apr 1, 2026', impact: 'HIGH'
-  },
-  {
-    cat: 'cat-geo', catLabel: '🔴 Geopolitical Risk',
-    headline: 'US-China Trade Tensions Escalate — New Tariff Rounds Under Review',
-    summary: 'Washington is considering additional tariff measures targeting Chinese technology exports, rattling supply chains and semiconductor stocks. Markets are watching closely as Beijing signals retaliatory measures. Analysts warn of potential Q2 earnings guidance cuts from affected multinationals with significant China exposure.',
-    source: 'Reuters / Bloomberg', date: 'Apr 1, 2026', impact: 'HIGH'
-  },
-  {
-    cat: 'cat-oil', catLabel: '🛢 Oil Markets',
-    headline: 'Brent Crude Near $97 — OPEC+ Meeting Outcome Looms',
-    summary: 'Brent Crude is trading around $97.49 (-3.84%), pulling back from recent highs ahead of the OPEC+ production decision expected next week. Demand concerns from a slowing Chinese economy are weighing on the commodity, while Middle East supply disruptions continue to provide a price floor for WTI and Brent.',
-    source: 'Bloomberg Commodities', date: 'Apr 1, 2026', impact: 'MEDIUM'
-  },
-  {
-    cat: 'cat-cyber', catLabel: '🔵 Cybersecurity',
-    headline: 'PANW Acquires CyberArk for $25B — Identity Security Play Ahead of AI Agent Era',
-    summary: 'Palo Alto Networks\' $25B acquisition of CyberArk is expected to close in H2 FY2026. The deal adds identity-aware security to PANW\'s Strata and Cortex platforms and enables just-in-time least-privilege access for agentic AI deployments. PANW recently announced AI-powered security for autonomous agents at RSA. Management expects operating margins to converge from 20% to 30%+ within two years.',
-    source: 'PANW Press Release / Motley Fool', date: 'Mar 30, 2026', impact: 'HIGH'
-  },
-  {
-    cat: 'cat-cyber', catLabel: '🔵 Cybersecurity',
-    headline: 'CrowdStrike Falcon Flex ARR +200% YoY — CRWD Net New ARR Up 73%',
-    summary: 'CrowdStrike Q3 FY26 results showed Net New ARR up 73% year-over-year, with the Falcon Flex subscription model driving larger, stickier enterprise deals. Management raised full-year ARR growth guidance to 23% with H2 Net New ARR projected at +50%. CRWD is actively encroaching on PANW and FTNT market share with its unified Falcon platform.',
-    source: 'Seeking Alpha / CrowdStrike IR', date: 'Mar 28, 2026', impact: 'MEDIUM'
-  },
-  {
-    cat: 'cat-crypto', catLabel: '🪙 Crypto',
-    headline: 'Bitcoin Rebounds Above $69K — ETH Follows Amid Cautious Bullish Sentiment',
-    summary: 'Bitcoin USD is trading at $69,132 (+2.80%) in pre-market, recovering from last week\'s dip below $66K. Ethereum has also recovered to ~$1,842 as macro risk appetite improves. Coinbase (COIN) shares are expected to benefit, with pre-market pricing indicating a 2%+ bounce.',
-    source: 'Yahoo Finance Crypto', date: 'Apr 1, 2026', impact: 'MEDIUM'
-  },
-  {
-    cat: 'cat-macro', catLabel: '🟢 Macro / VIX',
-    headline: 'VIX Elevated at 28 — Market Anxiety Persists Amid Fed Uncertainty',
-    summary: 'The CBOE Volatility Index remains elevated in the 25–30 range, well above the long-term average of ~18. The 10-year Treasury yield is easing to ~4.31% (-0.031) as investors rotate into bonds. The Fed is widely expected to hold rates at its next meeting pending further inflation data, with rate cuts now pushed to H2 2026 at the earliest.',
-    source: 'FRED / CBOE / Investing.com', date: 'Apr 1, 2026', impact: 'HIGH'
-  },
-  {
-    cat: 'cat-tech', catLabel: '🟢 Tech / Semis',
-    headline: 'ARK Invest Sells NVDA, META & AMD — Cathie Wood Rotates Into AI Infrastructure',
-    summary: 'ARK Invest trimmed positions in Nvidia, Meta Platforms, and AMD as Cathie Wood rotates into earlier-stage AI infrastructure plays. NVDA faces near-term technical pressure with one trader issuing 40,000 put contracts expiring in April. Despite this, Wall Street\'s long-term AI narrative for NVDA remains intact, with earnings estimates continuing to rise.',
-    source: 'CNBC / Yahoo Finance', date: 'Apr 1, 2026', impact: 'MEDIUM'
-  }
+  { cat:'cat-premarket', catLabel:'💡 Premarket Movers', headline:'S&P Futures Rally +0.73% — Tech-Led Bounce After Volatile March', summary:'US equity futures are pointing higher on April 1 with S&P Futures at 6,618 (+0.73%) and Nasdaq Futures at 24,157 (+1.01%). Dow Futures are up +0.66%, with Russell 2000 leading gains at +1.11%, suggesting renewed risk appetite in small caps.', source:'Yahoo Finance', date:'Apr 1, 2026', impact:'HIGH' },
+  { cat:'cat-geo', catLabel:'🔴 Geopolitical Risk', headline:'US-China Trade Tensions Escalate — New Tariff Rounds Under Review', summary:'Washington is considering additional tariff measures targeting Chinese technology exports, rattling supply chains and semiconductor stocks. Markets are watching closely as Beijing signals retaliatory measures. Analysts warn of potential Q2 earnings guidance cuts from affected multinationals.', source:'Reuters / Bloomberg', date:'Apr 1, 2026', impact:'HIGH' },
+  { cat:'cat-oil', catLabel:'🛢 Oil Markets', headline:'Brent Crude Near $97 — OPEC+ Meeting Outcome Looms', summary:'Brent Crude is trading around $97.49 (-3.84%), pulling back from recent highs ahead of the OPEC+ production decision expected next week. Demand concerns from a slowing Chinese economy are weighing on the commodity, while Middle East supply disruptions continue to provide a price floor.', source:'Bloomberg Commodities', date:'Apr 1, 2026', impact:'MEDIUM' },
+  { cat:'cat-cyber', catLabel:'🔵 Cybersecurity', headline:'PANW Acquires CyberArk for $25B — Identity Security Play Ahead of AI Agent Era', summary:'Palo Alto Networks\' $25B acquisition of CyberArk is expected to close in H2 FY2026. The deal adds identity-aware security to PANW\'s Strata and Cortex platforms. Management expects operating margins to converge from 20% to 30%+ within two years.', source:'PANW Press Release', date:'Mar 30, 2026', impact:'HIGH' },
+  { cat:'cat-cyber', catLabel:'🔵 Cybersecurity', headline:'CrowdStrike Falcon Flex ARR +200% YoY — CRWD Net New ARR Up 73%', summary:'CrowdStrike Q3 FY26 results showed Net New ARR up 73% YoY, with the Falcon Flex subscription model driving larger enterprise deals. Management raised full-year ARR growth guidance to 23% with H2 Net New ARR projected at +50%.', source:'Seeking Alpha / CRWD IR', date:'Mar 28, 2026', impact:'MEDIUM' },
+  { cat:'cat-crypto', catLabel:'🪙 Crypto', headline:'Bitcoin Rebounds Above $69K — ETH Follows Amid Cautious Bullish Sentiment', summary:'Bitcoin USD is trading at $69,132 (+2.80%) in pre-market, recovering from last week\'s dip below $66K. Ethereum has also recovered to ~$1,842. Coinbase (COIN) shares are expected to benefit with pre-market pricing indicating a 2%+ bounce.', source:'Yahoo Finance Crypto', date:'Apr 1, 2026', impact:'MEDIUM' },
+  { cat:'cat-macro', catLabel:'🟢 Macro / VIX', headline:'VIX Elevated at 28 — Market Anxiety Persists Amid Fed Uncertainty', summary:'The CBOE Volatility Index remains elevated in the 25–30 range, well above the long-term average of ~18. The 10-year Treasury yield is easing to ~4.31% as investors rotate into bonds. The Fed is expected to hold rates pending further inflation data.', source:'FRED / CBOE', date:'Apr 1, 2026', impact:'HIGH' },
+  { cat:'cat-tech', catLabel:'🟢 Tech / Semis', headline:'ARK Invest Sells NVDA, META & AMD — Cathie Wood Rotates Into AI Infrastructure', summary:'ARK Invest trimmed positions in Nvidia, Meta, and AMD as Cathie Wood rotates into earlier-stage AI infrastructure plays. NVDA faces near-term technical pressure with 40,000 put contracts expiring in April. Long-term AI narrative remains intact.', source:'CNBC / Yahoo Finance', date:'Apr 1, 2026', impact:'MEDIUM' }
 ];
 
 function renderNews() {
   const grid = document.getElementById('news-grid');
   grid.innerHTML = '';
   NEWS.forEach(n => {
-    const impactClass = n.impact === 'HIGH' ? 'impact-high' : n.impact === 'MEDIUM' ? 'impact-medium' : 'impact-low';
+    const ic = n.impact==='HIGH'?'impact-high':n.impact==='MEDIUM'?'impact-medium':'impact-low';
     grid.innerHTML += `
       <div class="news-card">
         <div class="news-category">
           <span class="news-cat-label ${n.cat}">${n.catLabel}</span>
-          <span class="impact-badge ${impactClass}">${n.impact} IMPACT</span>
+          <span class="impact-badge ${ic}">${n.impact} IMPACT</span>
         </div>
         <div class="news-headline">${n.headline}</div>
         <div class="news-summary">${n.summary}</div>
-        <div class="news-footer">
-          <span class="news-source">📰 ${n.source} · ${n.date}</span>
-        </div>
+        <div class="news-footer"><span class="news-source">📰 ${n.source} · ${n.date}</span></div>
       </div>`;
   });
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // RENDER ALL
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function renderAll() {
+  syncSeed();
   renderIndexCards('index-close-cards', INDEX_CLOSES, 'close');
   renderIndexCards('futures-cards', FUTURES_LIST, 'futures');
-  renderStockTable('portfolio-tbody', ['MA','PANW','NOW','SPOT','ZS','QLYS','RDW'], 'tag-portfolio', 'PORTFOLIO');
-  renderStockTable('watchlist-tbody', ['NVDA','TSLA','GOOGL','META','MSFT','AAPL','AMZN','INTC','AVGO','PLTR','CRWD','FTNT','COIN'], 'tag-watch', 'WATCH');
+  renderStockTable('portfolio-tbody', 'portfolio', 'tag-portfolio', 'PORTFOLIO');
+  renderStockTable('watchlist-tbody', 'watchlist', 'tag-watch', 'WATCH');
   renderCryptoTable();
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// KEYBOARD SUPPORT FOR PIN
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  const pinOpen = document.getElementById('pin-modal').classList.contains('open');
+  if (!pinOpen) return;
+  if (e.key >= '0' && e.key <= '9') pinInput(e.key);
+  else if (e.key === 'Backspace') pinBack();
+  else if (e.key === 'Escape') closeModal('pin-modal');
+});
+
+// ═══════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 renderAll();
 renderNews();
 
-// Try live fetch on page load
 (async () => {
-  try { await fetchAllPrices(); } catch(e) {
-    document.getElementById('last-updated').textContent = 'Seed data (fetch failed)';
-  }
+  try { await fetchAllPrices(); }
+  catch(e) { document.getElementById('last-updated').textContent = 'Seed data (fetch failed)'; }
 })();
 </script>
 </body>
