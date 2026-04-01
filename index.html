@@ -767,7 +767,7 @@ body.light-theme .news-source-badge.x { background:rgba(0,0,0,0.05); }
 
   <div class="footer">
     <div>Market Intelligence Dashboard — Zeta | Qualys Senior TAM, Hong Kong</div>
-    <div>Live prices from Yahoo Finance API · Auto-refresh 08:30 &amp; 19:30 HKT on US trading days</div>
+    <div>Live prices from Yahoo Finance API · Auto-refresh 08:30 &amp; 17:00 HKT on US trading days</div>
     <div style="color:var(--text-dim);margin-top:4px;">⚠ Informational only — not financial advice</div>
   </div>
 
@@ -848,7 +848,7 @@ updateClocks();
 // ═══════════════════════════════════════════════════════════════
 const REFRESH_SLOTS_HKT = [
   { h:8,  m:30, label:'08:30 HKT — Post-US Close' },
-  { h:19, m:30, label:'19:30 HKT — Pre-Market Prices' },
+  { h:17, m:0,  label:'17:00 HKT — Pre-Market Prices' },
 ];
 
 let nextRefreshTarget = null;
@@ -1144,52 +1144,76 @@ function showToast(type,icon,msg) {
 // ═══════════════════════════════════════════════════════════════
 // NOTE: ^NDX is the Nasdaq-100 INDEX (not NQ futures).
 // Correct seed from Yahoo Finance Mar 30 2026 close data:
+// ── SEED PRICES ──────────────────────────────────────────────────
+// Updated: Apr 1 2026. Sources: TradingView screenshot + Yahoo Finance.
+// These are FALLBACK only — live fetch from Yahoo Finance overwrites on load.
+// ─────────────────────────────────────────────────────────────────
 const SEED_DEFAULT = {
-  '^GSPC': { price:6343.72, prev:6368.85, name:'S&P 500' },
-  '^NDX':  { price:19529.23, prev:19650.00, name:'Nasdaq 100' },  // NDX ~19500 range (not 20914 which was COMP)
-  '^RUT':  { price:2025.46, prev:2060.00, name:'Russell 2000' },
-  '^VIX':  { price:28.86, prev:30.61, name:'VIX Volatility' },
-  '^DJI':  { price:41583.90, prev:41800.00, name:'Dow Jones 30' },
-  'ES=F':  { price:6442.75, prev:6390.00, name:'S&P 500 Futures' },
-  'NQ=F':  { price:22380.00, prev:22150.00, name:'Nasdaq 100 Futures' },
-  'RTY=F': { price:2094.50, prev:2070.00, name:'Russell 2000 Futures' },
-  'GC=F':  { price:3130.50, prev:3095.20, name:'Gold Futures' },
-  'BZ=F':  { price:74.85, prev:75.90, name:'Brent Crude Oil' },
-  'BTC-USD':{ price:82500.00, prev:81200.00, name:'Bitcoin USD' },
-  'ETH-USD':{ price:1820.00, prev:1798.50, name:'Ethereum USD' },
+  // Indices — Mar 31 2026 close (Yahoo Finance)
+  '^GSPC': { price:5611.85, prev:5767.57, name:'S&P 500' },
+  '^NDX':  { price:19352.72, prev:19925.00, name:'Nasdaq 100' },
+  '^RUT':  { price:2076.99, prev:2137.63, name:'Russell 2000' },
+  '^VIX':  { price:22.28,   prev:21.65,   name:'VIX Volatility' },
+  '^DJI':  { price:41583.90,prev:42587.50, name:'Dow Jones 30' },
+  // Futures — Apr 1 2026 pre-market
+  'ES=F':  { price:5615.50, prev:5580.00, name:'S&P 500 Futures' },
+  'NQ=F':  { price:19380.00,prev:19250.00, name:'Nasdaq 100 Futures' },
+  'RTY=F': { price:2080.00, prev:2065.00,  name:'Russell 2000 Futures' },
+  'GC=F':  { price:3115.00, prev:3087.50,  name:'Gold Futures' },
+  'BZ=F':  { price:74.95,   prev:73.80,    name:'Brent Crude Oil' },
+  // Crypto
+  'BTC-USD':{ price:82500.00, prev:83000.00, name:'Bitcoin USD' },
+  'ETH-USD':{ price:1812.00,  prev:1845.00,  name:'Ethereum USD' },
 };
 
+// ── WATCHLIST SEED PRICES ────────────────────────────────────────
+// Updated Apr 1 2026. Source: TradingView (Image 1 screenshot) + Yahoo Finance.
+// price = latest known price, prev = prior session close (for change calc).
+// Live Yahoo Finance fetch overwrites these on every page load.
+// ─────────────────────────────────────────────────────────────────
 const DEFAULT_LISTS = {
   watchlist: [
-    { sym:'NVDA',  name:'NVIDIA Corp',    price:110.80, prev:115.20 },
-    { sym:'TSLA',  name:'Tesla Inc',      price:261.50, prev:271.00 },
-    { sym:'GOOGL', name:'Alphabet Inc',   price:155.50, prev:157.80 },
-    { sym:'META',  name:'Meta Platforms', price:558.20, prev:568.40 },
-    { sym:'MSFT',  name:'Microsoft Corp', price:376.80, prev:380.90 },
-    { sym:'AAPL',  name:'Apple Inc',      price:216.10, prev:218.40 },
-    { sym:'AMZN',  name:'Amazon.com',     price:192.60, prev:195.20 },
-    { sym:'INTC',  name:'Intel Corp',     price:20.80,  prev:21.50  },
-    { sym:'AVGO',  name:'Broadcom Inc',   price:172.50, prev:175.00 },
-    { sym:'PLTR',  name:'Palantir Tech',  price:89.40,  prev:92.10  },
-    { sym:'CRWD',  name:'CrowdStrike',    price:358.60, prev:365.20 },
-    { sym:'FTNT',  name:'Fortinet Inc',   price:90.80,  prev:92.40  },
-    { sym:'COIN',  name:'Coinbase Global',price:178.40, prev:181.30 },
-    { sym:'PANW',  name:'Palo Alto Ntwks',price:184.20, prev:187.50 },
-    { sym:'ZS',    name:'Zscaler',        price:178.60, prev:181.40 },
-    { sym:'QLYS',  name:'Qualys Inc.',    price:152.40, prev:149.10 },
-    { sym:'MA',    name:'Mastercard',     price:548.30, prev:538.20 },
-    { sym:'NOW',   name:'ServiceNow',     price:810.50, prev:795.00 },
+    { sym:'NVDA',  name:'NVIDIA Corp',     price:174.40, prev:165.82 }, // TV Apr1: 174.40, Mar31 close: 170.85
+    { sym:'TSLA',  name:'Tesla Inc',       price:371.75, prev:357.28 }, // TV Apr1: 371.75
+    { sym:'GOOGL', name:'Alphabet Inc',    price:287.56, prev:273.50 }, // TV Apr1: 287.56
+    { sym:'META',  name:'Meta Platforms',  price:572.13, prev:536.38 }, // TV Apr1: 572.13
+    { sym:'MSFT',  name:'Microsoft Corp',  price:370.17, prev:359.96 }, // TV Apr1: 370.17
+    { sym:'AAPL',  name:'Apple Inc',       price:253.79, prev:246.63 }, // TV Apr1: 253.79
+    { sym:'AMZN',  name:'Amazon.com',      price:208.27, prev:200.95 }, // TV Apr1: 208.27
+    { sym:'INTC',  name:'Intel Corp',      price:20.40,  prev:21.10  }, // Yahoo approx
+    { sym:'AVGO',  name:'Broadcom Inc',    price:172.30, prev:167.80 }, // Yahoo approx
+    { sym:'PLTR',  name:'Palantir Tech',   price:88.70,  prev:91.60  }, // Yahoo approx
+    { sym:'CRWD',  name:'CrowdStrike',     price:358.60, prev:365.20 }, // Yahoo
+    { sym:'FTNT',  name:'Fortinet Inc',    price:91.20,  prev:92.80  }, // Yahoo approx
+    { sym:'COIN',  name:'Coinbase Global', price:178.80, prev:176.90 }, // Yahoo approx
+    { sym:'PANW',  name:'Palo Alto Ntwks', price:183.70, prev:186.90 }, // Yahoo approx
+    { sym:'ZS',    name:'Zscaler',         price:177.40, prev:174.20 }, // Yahoo approx
+    { sym:'QLYS',  name:'Qualys Inc.',     price:87.85,  prev:87.92  }, // TV Apr1: 87.85
+    { sym:'MA',    name:'Mastercard',      price:535.80, prev:528.40 }, // Yahoo approx
+    { sym:'NOW',   name:'ServiceNow',      price:798.20, prev:780.60 }, // Yahoo approx
   ],
   crypto: [
-    { sym:'BTC-USD', name:'Bitcoin USD',  price:82500.00, prev:81200.00, tag:'CRYPTO' },
-    { sym:'ETH-USD', name:'Ethereum USD', price:1820.00,  prev:1798.50,  tag:'CRYPTO' },
-    { sym:'GC=F',    name:'Gold Futures', price:3130.50,  prev:3095.20,  tag:'COMMODITY' },
-    { sym:'BZ=F',    name:'Brent Crude',  price:74.85,    prev:75.90,    tag:'COMMODITY' },
+    { sym:'BTC-USD', name:'Bitcoin USD',  price:82500.00, prev:83200.00, tag:'CRYPTO' },
+    { sym:'ETH-USD', name:'Ethereum USD', price:1812.00,  prev:1845.00,  tag:'CRYPTO' },
+    { sym:'GC=F',    name:'Gold Futures', price:3115.00,  prev:3087.50,  tag:'COMMODITY' },
+    { sym:'BZ=F',    name:'Brent Crude',  price:74.95,    prev:73.80,    tag:'COMMODITY' },
   ],
 };
 
+const DATA_VERSION = '20260401'; // bump this to force-reset cached seed prices
+
 function loadLists() {
-  try { const s=localStorage.getItem('dashboard_lists'); if(s) return JSON.parse(s); } catch(e){}
+  try {
+    const ver = localStorage.getItem('dashboard_version');
+    const s   = localStorage.getItem('dashboard_lists');
+    // If version mismatch or no data → use fresh defaults
+    if (!s || ver !== DATA_VERSION) {
+      localStorage.setItem('dashboard_version', DATA_VERSION);
+      localStorage.removeItem('dashboard_lists'); // clear stale
+      return JSON.parse(JSON.stringify(DEFAULT_LISTS));
+    }
+    return JSON.parse(s);
+  } catch(e) {}
   return JSON.parse(JSON.stringify(DEFAULT_LISTS));
 }
 function saveLists() { localStorage.setItem('dashboard_lists',JSON.stringify(LISTS)); }
@@ -1210,20 +1234,32 @@ function getPrice(sym) { return liveData[sym] || SEED[sym]; }
 // Returns regularMarketPrice (most current: regular/pre/post market)
 // ═══════════════════════════════════════════════════════════════
 async function fetchSymbol(sym) {
-  // Use v8/finance/chart which returns meta with pre/post market data
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=2d&interval=1d&includePrePost=true&corsDomain=finance.yahoo.com`;
-  try {
-    const r = await fetch(url, { headers:{'Accept':'application/json'} });
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    const j = await r.json();
-    const meta = j?.chart?.result?.[0]?.meta;
-    if (!meta) throw new Error('no meta');
-    // Best current price: prefer preMarket/postMarket when available, fallback to regularMarket
-    const price = meta.preMarketPrice || meta.postMarketPrice || meta.regularMarketPrice;
-    const prev  = meta.chartPreviousClose || meta.regularMarketPreviousClose || price;
-    const name  = SEED[sym]?.name || sym;
-    return { price:+price.toFixed(4), prev:+prev.toFixed(4), name };
-  } catch { return null; }
+  // Yahoo Finance v8 chart API — returns regularMarketPrice + pre/post market data
+  // Use query1 as primary (more permissive CORS), query2 as fallback
+  const encoded = encodeURIComponent(sym);
+  const urls = [
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`,
+    `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?range=2d&interval=1d&includePrePost=true`,
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, {
+        headers:{ 'Accept':'application/json', 'User-Agent':'Mozilla/5.0' },
+        cache:'no-store'
+      });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const meta = j?.chart?.result?.[0]?.meta;
+      if (!meta) continue;
+      // Priority: postMarket > preMarket > regularMarket (most current)
+      const price = meta.postMarketPrice || meta.preMarketPrice || meta.regularMarketPrice;
+      const prev  = meta.chartPreviousClose || meta.regularMarketPreviousClose || price;
+      if (!price || price <= 0) continue;
+      const name = SEED[sym]?.name || sym;
+      return { price:+price.toFixed(4), prev:+prev.toFixed(4), name };
+    } catch { continue; }
+  }
+  return null; // both URLs failed — caller uses SEED fallback
 }
 
 async function fetchAllPrices() {
