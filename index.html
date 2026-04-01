@@ -408,6 +408,7 @@ body.light-theme .manager-banner-text { color:#92400e; }
   display:inline-block; font-size:9px; font-weight:700; padding:2px 6px;
   border-radius:3px; white-space:nowrap;
 }
+.nb-defense  { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.3); }
 .nb-ai       { background:rgba(139,92,246,0.15); color:var(--purple);       border:1px solid rgba(139,92,246,0.3); }
 .nb-bigtech  { background:rgba(59,130,246,0.15);  color:var(--accent-blue);  border:1px solid rgba(59,130,246,0.3); }
 .nb-cyber    { background:rgba(6,182,212,0.15);   color:var(--accent-cyan);  border:1px solid rgba(6,182,212,0.3); }
@@ -448,6 +449,21 @@ body.light-theme .manager-banner-text { color:#92400e; }
 .tag-input-field { flex:1; background:var(--bg-secondary); border:1px solid var(--border);
   color:var(--text-primary); font-size:12px; padding:7px 10px; border-radius:6px; outline:none; }
 .tag-input-field:focus { border-color:var(--accent-blue); }
+
+
+/* ── MA TAG ── */
+.ma-tag-select {
+  background:var(--bg-secondary); border:1px solid var(--border);
+  color:var(--text-secondary); font-size:9px; padding:3px 6px;
+  border-radius:4px; outline:none; cursor:pointer; max-width:120px;
+  font-family:inherit; transition:border-color 0.15s;
+}
+.ma-tag-select:focus { border-color:var(--accent-blue); }
+.ma-tag-badge {
+  display:inline-block; font-size:9px; padding:2px 6px; border-radius:3px;
+  background:rgba(245,158,11,0.12); color:var(--amber);
+  border:1px solid rgba(245,158,11,0.3); white-space:nowrap;
+}
 
 /* ── INDEX CARDS — market open vs closed state ── */
 .index-card.market-open::before  { opacity:1; animation:vix-pulse 3s ease-in-out infinite; }
@@ -898,7 +914,6 @@ body.light-theme .alert-item.oil-alert-bar {
         <div class="last-updated">Fetched: <span id="last-updated">–</span></div>
         <span class="auto-refresh-badge inactive" id="auto-badge" title="Auto-refresh schedule">⏰ Auto</span>
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
-        <button class="btn btn-refresh" id="refresh-btn" onclick="fetchAllPrices()" style="display:none;">⟳ Refresh</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
       </div>
     </div>
@@ -976,27 +991,20 @@ body.light-theme .alert-item.oil-alert-bar {
   <div class="section">
     <div class="section-title" style="margin-bottom:8px;">👁 Watch List</div>
 
-    <!-- Watchlist/Crypto tab switcher -->
-    <div class="wl-header-row">
-      <div class="wl-section-tabs">
-        <button class="wl-stab active" onclick="switchWatchlistTab('stocks',this)">👁 Watchlist</button>
-        <button class="wl-stab" onclick="switchWatchlistTab('crypto',this)">🪙 Crypto &amp; Commodities</button>
-      </div>
-    </div>
 
-    <div id="wl-pane-stocks">
+
     <!-- Narrative mini-tabs -->
     <div class="narrative-tabs" id="narrative-tabs">
       <button class="ntab active" data-narrative="all" onclick="setNarrativeFilter('all',this)">All</button>
       <button class="ntab" data-narrative="AI Infra" onclick="setNarrativeFilter('AI Infra',this)">🤖 AI Infra</button>
+      <button class="ntab" data-narrative="Aerospace Defense" onclick="setNarrativeFilter('Aerospace Defense',this)">🛡 Defense</button>
       <button class="ntab" data-narrative="Big Tech" onclick="setNarrativeFilter('Big Tech',this)">🖥 Big Tech</button>
-      <button class="ntab" data-narrative="Cybersecurity" onclick="setNarrativeFilter('Cybersecurity',this)">🔵 Cybersecurity</button>
-      <button class="ntab" data-narrative="Cloud SaaS" onclick="setNarrativeFilter('Cloud SaaS',this)">☁ Cloud SaaS</button>
-      <button class="ntab" data-narrative="EV / Auto" onclick="setNarrativeFilter('EV / Auto',this)">⚡ EV / Auto</button>
-      <button class="ntab" data-narrative="Fintech" onclick="setNarrativeFilter('Fintech',this)">💳 Fintech</button>
-      <button class="ntab" data-narrative="Energy" onclick="setNarrativeFilter('Energy',this)">🛢 Energy</button>
+      <button class="ntab" data-narrative="Cybersecurity" onclick="setNarrativeFilter('Cybersecurity',this)">🔵 Cyber</button>
+      <button class="ntab" data-narrative="Cloud SaaS" onclick="setNarrativeFilter('Cloud SaaS',this)">☁ SaaS</button>
+      <button class="ntab" data-narrative="Fintech" onclick="setNarrativeFilter('Fintech',this)">💳 FSI</button>
+      <button class="ntab" data-narrative="Energy" onclick="setNarrativeFilter('Energy',this)">⚡ Energy</button>
       <button class="ntab" data-narrative="Critical Materials" onclick="setNarrativeFilter('Critical Materials',this)">⛏ Materials</button>
-      <button class="ntab" data-narrative="Crypto" onclick="setNarrativeFilter('Crypto',this)">🪙 Crypto/Cmdty</button>
+      <button class="ntab" data-narrative="EV / Auto" onclick="setNarrativeFilter('EV / Auto',this)">🚗 EV</button>
     </div>
 
     <!-- Sort bar -->
@@ -1005,7 +1013,6 @@ body.light-theme .alert-item.oil-alert-bar {
       <button class="sort-btn active" data-col="sym" onclick="setSortCol('sym',this)">Symbol ↕</button>
       <button class="sort-btn" data-col="price" onclick="setSortCol('price',this)">Price ↕</button>
       <button class="sort-btn" data-col="pct" onclick="setSortCol('pct',this)">% Chg ↕</button>
-      <button class="sort-btn" data-col="industry" onclick="setSortCol('industry',this)">Industry ↕</button>
       <button class="sort-btn" data-col="narrative" onclick="setSortCol('narrative',this)">Theme ↕</button>
     </div>
 
@@ -1017,34 +1024,14 @@ body.light-theme .alert-item.oil-alert-bar {
           <th onclick="setSortCol('price',null)" style="cursor:pointer;">Price</th>
           <th onclick="setSortCol('pct',null)" style="cursor:pointer;">% Chg</th>
           <th>Status</th>
-          <th>Industry</th>
           <th>Theme</th>
+          <th>MA Tag</th>
           <th>Tags</th>
           <th class="mgr-col">Actions</th>
         </tr></thead>
         <tbody id="watchlist-tbody"></tbody>
       </table>
     </div>
-    </div><!-- /wl-pane-stocks -->
-
-    <!-- CRYPTO / COMMODITIES PANE -->
-    <div id="wl-pane-crypto" style="display:none;">
-      <div class="scroll-hint">← swipe to see all columns →</div>
-      <div class="table-wrap" id="crypto-wrap">
-        <table id="crypto-table">
-          <thead><tr>
-            <th>Symbol</th>
-            <th>Price</th>
-            <th>% Chg</th>
-            <th>Status</th>
-            <th>Industry / Type</th>
-            <th>Tags</th>
-            <th class="mgr-col">Actions</th>
-          </tr></thead>
-          <tbody id="crypto-tbody"></tbody>
-        </table>
-      </div>
-    </div><!-- /wl-pane-crypto -->
 
   </div><!-- /section -->
 
@@ -1099,7 +1086,7 @@ body.light-theme .alert-item.oil-alert-bar {
 
   <div class="footer">
     <div>Market Intelligence Dashboard — Zeta | Qualys Senior TAM, Hong Kong</div>
-    <div>Live prices from Yahoo Finance API · Auto-refresh 08:30 &amp; 17:00 HKT on US trading days</div>
+    <div>Live prices from Yahoo Finance API · Auto-sync 08:30 HKT (post-US close) &amp; 20:30 HKT (US pre-market) · weekdays only</div>
     <div style="color:var(--text-dim);margin-top:4px;">⚠ Informational only — not financial advice</div>
   </div>
 
@@ -1183,8 +1170,8 @@ setInterval(() => { if (typeof renderTopWidget === 'function') renderTopWidget()
 // 19:30 HKT → pre-market prices for coming session
 // ═══════════════════════════════════════════════════════════════
 const REFRESH_SLOTS_HKT = [
-  { h:8,  m:30, label:'08:30 HKT — Post-US Close' },
-  { h:17, m:0,  label:'17:00 HKT — Pre-Market Prices' },
+  { h:8,  m:30, label:'08:30 HKT — Post-US Extended Hours' },
+  { h:20, m:30, label:'20:30 HKT — US Pre-Market Hours' },
 ];
 
 let nextRefreshTarget = null;
@@ -1429,19 +1416,16 @@ function activateManager() {
   portfolioUnlocked=true;
   document.getElementById('manager-btn').classList.add('active');
   document.getElementById('manager-btn').textContent='🔓 Manager';
-  document.getElementById('refresh-btn').style.display='inline-block';
   document.getElementById('manager-banner').classList.add('visible');
   document.getElementById('tab-btn-portfolio').classList.add('unlocked');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   renderAll();
-  showToast('success','🔓','Manager Mode activated. Fetching live prices…');
-  fetchAllPrices();
+  showToast('success','🔓','Manager Mode activated.');
 }
 function lockManager() {
   managerUnlocked=false;
   document.getElementById('manager-btn').classList.remove('active');
   document.getElementById('manager-btn').textContent='⚙ Manager';
-  document.getElementById('refresh-btn').style.display='none';
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
   renderAll();
@@ -1528,34 +1512,161 @@ const SEED_DEFAULT = {
 // ─────────────────────────────────────────────────────────────────
 const DEFAULT_LISTS = {
   watchlist: [
-    { sym:'NVDA',  name:'NVIDIA Corp',     price:170.85, prev:165.82 }, // Robinhood Mar31
-    { sym:'TSLA',  name:'Tesla Inc',       price:361.85, prev:357.28 }, // Google Finance
-    { sym:'GOOGL', name:'Alphabet Inc',    price:273.41, prev:268.90 }, // Google Finance
-    { sym:'META',  name:'Meta Platforms',  price:536.38, prev:559.80 }, // Yahoo Finance
-    { sym:'MSFT',  name:'Microsoft Corp',  price:362.92, prev:356.70 }, // Google Finance
-    { sym:'AAPL',  name:'Apple Inc',       price:247.05, prev:243.80 }, // Google Finance
-    { sym:'AMZN',  name:'Amazon.com',      price:201.62, prev:197.90 }, // Google Finance
-    { sym:'INTC',  name:'Intel Corp',      price:20.40,  prev:21.10  }, // Yahoo approx
-    { sym:'AVGO',  name:'Broadcom Inc',    price:293.56, prev:286.50 }, // Google Finance
-    { sym:'PLTR',  name:'Palantir Tech',   price:140.44, prev:137.60 }, // Google Finance
-    { sym:'CRWD',  name:'CrowdStrike',     price:358.60, prev:365.20 }, // Yahoo
-    { sym:'FTNT',  name:'Fortinet Inc',    price:91.20,  prev:92.80  }, // Yahoo approx
-    { sym:'COIN',  name:'Coinbase Global', price:178.80, prev:176.90 }, // Yahoo approx
-    { sym:'PANW',  name:'Palo Alto Ntwks', price:183.70, prev:186.90 }, // Yahoo approx
-    { sym:'ZS',    name:'Zscaler',         price:177.40, prev:174.20 }, // Yahoo approx
-    { sym:'QLYS',  name:'Qualys Inc.',     price:87.85,  prev:87.92  }, // Yahoo
-    { sym:'MA',    name:'Mastercard',      price:535.80, prev:528.40 }, // Yahoo approx
-    { sym:'NOW',   name:'ServiceNow',      price:798.20, prev:780.60 }, // Yahoo approx
+    // ── MAG7 ──────────────────────────────────────────────────
+    { sym:'NVDA',  name:'NVIDIA Corp',          price:175.75, prev:165.82, narrative:'AI Infra',      tags:['MAG7','AI','Semis'] },
+    { sym:'META',  name:'Meta Platforms',        price:579.23, prev:559.80, narrative:'Big Tech',      tags:['MAG7','Social','AI'] },
+    { sym:'GOOGL', name:'Alphabet Inc',          price:297.39, prev:268.90, narrative:'Big Tech',      tags:['MAG7','Search','AI'] },
+    { sym:'AMZN',  name:'Amazon.com',            price:210.57, prev:197.90, narrative:'Cloud SaaS',   tags:['MAG7','Cloud','AWS'] },
+    { sym:'MSFT',  name:'Microsoft Corp',        price:369.37, prev:356.70, narrative:'Big Tech',      tags:['MAG7','Cloud','AI'] },
+    { sym:'AAPL',  name:'Apple Inc',             price:255.63, prev:243.80, narrative:'Big Tech',      tags:['MAG7','Consumer'] },
+    { sym:'TSLA',  name:'Tesla Inc',             price:381.26, prev:357.28, narrative:'EV / Auto',     tags:['MAG7','EV','AI'] },
+    { sym:'QLYS',  name:'Qualys Inc.',           price:86.21,  prev:87.92,  narrative:'Cybersecurity', tags:['VMDR','SaaS'] },
+    // ── AI INFRA — Semiconductors ─────────────────────────────
+    { sym:'SOXX',  name:'iShares Semis ETF',     price:338.54, prev:328.00, narrative:'AI Infra',      tags:['ETF','Semis'] },
+    { sym:'TSM',   name:'TSMC',                  price:341.49, prev:328.00, narrative:'AI Infra',      tags:['Foundry','Semis'] },
+    { sym:'MU',    name:'Micron Technology',     price:367.85, prev:345.00, narrative:'AI Infra',      tags:['Memory','HBM'] },
+    { sym:'AMD',   name:'Advanced Micro Devices',price:210.21, prev:198.00, narrative:'AI Infra',      tags:['GPU','CPU','AI'] },
+    { sym:'INTC',  name:'Intel Corp',            price:48.03,  prev:44.00,  narrative:'AI Infra',      tags:['CPU','Foundry'] },
+    { sym:'ARM',   name:'Arm Holdings',          price:155.07, prev:148.00, narrative:'AI Infra',      tags:['CPU-IP','Mobile'] },
+    { sym:'MCHP',  name:'Microchip Technology',  price:65.38,  prev:62.00,  narrative:'AI Infra',      tags:['MCU','Embedded'] },
+    { sym:'SMTC',  name:'Semtech Corp',          price:80.04,  prev:76.00,  narrative:'AI Infra',      tags:['Silicon','IoT'] },
+    // AI Infra — Silicon Photonics & Optical Interconnects
+    { sym:'AVGO',  name:'Broadcom Inc',          price:313.49, prev:290.00, narrative:'AI Infra',      tags:['Networking','AI-ASIC'] },
+    { sym:'APH',   name:'Amphenol',              price:127.70, prev:122.00, narrative:'AI Infra',      tags:['Connectors','Datacenter'] },
+    { sym:'MRVL',  name:'Marvell Technology',    price:106.71, prev:101.00, narrative:'AI Infra',      tags:['DPU','Optical'] },
+    { sym:'CIEN',  name:'Ciena Corp',            price:415.39, prev:395.00, narrative:'AI Infra',      tags:['Optical','Network'] },
+    { sym:'COHR',  name:'Coherent Corp',         price:247.80, prev:235.00, narrative:'AI Infra',      tags:['Optical','Laser'] },
+    { sym:'LITE',  name:'Lumentum Holdings',     price:764.65, prev:720.00, narrative:'AI Infra',      tags:['Optical','Laser'] },
+    { sym:'GFS',   name:'GlobalFoundries',       price:44.24,  prev:42.00,  narrative:'AI Infra',      tags:['Foundry','Semis'] },
+    { sym:'POET',  name:'POET Technologies',     price:5.60,   prev:5.20,   narrative:'AI Infra',      tags:['Optical','Micro-cap'] },
+    // AI Infra — Launch & Orbital Services
+    { sym:'LMT',   name:'Lockheed Martin',       price:617.64, prev:595.00, narrative:'Aerospace Defense', tags:['Defense','Space'] },
+    { sym:'LHX',   name:'L3Harris Technologies', price:353.91, prev:340.00, narrative:'Aerospace Defense', tags:['Defense','Electronics'] },
+    { sym:'RKLB',  name:'Rocket Lab',            price:65.52,  prev:60.00,  narrative:'AI Infra',      tags:['Launch','Space'] },
+    { sym:'LUNR',  name:'Intuitive Machines',    price:20.24,  prev:18.50,  narrative:'AI Infra',      tags:['Lunar','Space'] },
+    { sym:'RDW',   name:'Redwire Corp',          price:9.08,   prev:8.50,   narrative:'AI Infra',      tags:['Space','Manufacturing'] },
+    // AI Infra — Nuclear SMR
+    { sym:'BWXT',  name:'BWX Technologies',      price:212.81, prev:200.00, narrative:'AI Infra',      tags:['Nuclear','SMR'] },
+    { sym:'OKLO',  name:'Oklo Inc',              price:48.07,  prev:44.00,  narrative:'AI Infra',      tags:['SMR','Nuclear'] },
+    { sym:'LEU',   name:'Centrus Energy',        price:183.16, prev:170.00, narrative:'AI Infra',      tags:['Uranium','Nuclear'] },
+    { sym:'UUUU',  name:'Energy Fuels',          price:17.95,  prev:16.50,  narrative:'Critical Materials', tags:['Uranium','REE'] },
+    // ── AEROSPACE DEFENSE ─────────────────────────────────────
+    { sym:'KTOS',  name:'Kratos Defense',        price:67.70,  prev:63.00,  narrative:'Aerospace Defense', tags:['Drones','DROID'] },
+    { sym:'ONDS',  name:'Ondas Holdings',        price:8.81,   prev:8.20,   narrative:'Aerospace Defense', tags:['Drones','Autonomy'] },
+    { sym:'RCAT',  name:'Red Cat Holdings',      price:12.15,  prev:11.20,  narrative:'Aerospace Defense', tags:['Drones','Defense'] },
+    { sym:'PLTR',  name:'Palantir Tech',         price:146.49, prev:137.60, narrative:'Aerospace Defense', tags:['AI','Intelligence'] },
+    { sym:'NOC',   name:'Northrop Grumman',      price:697.00, prev:668.00, narrative:'Aerospace Defense', tags:['Defense','Space'] },
+    { sym:'CACI',  name:'CACI International',    price:561.15, prev:537.00, narrative:'Aerospace Defense', tags:['Defense','IT'] },
+    { sym:'PL',    name:'Planet Labs',           price:30.71,  prev:28.50,  narrative:'Aerospace Defense', tags:['Satellite','Earth-Obs'] },
+    { sym:'BBAI',  name:'BigBear.ai',            price:3.42,   prev:3.10,   narrative:'Aerospace Defense', tags:['AI','Defense'] },
+    { sym:'GE',    name:'GE Aerospace',          price:292.68, prev:278.00, narrative:'Aerospace Defense', tags:['Engines','Defense'] },
+    { sym:'RTX',   name:'RTX Corp',              price:194.72, prev:185.00, narrative:'Aerospace Defense', tags:['Missiles','Defense'] },
+    { sym:'BA',    name:'Boeing',                price:207.32, prev:198.00, narrative:'Aerospace Defense', tags:['Aircraft','Defense'] },
+    { sym:'ASTS',  name:'AST SpaceMobile',       price:83.99,  prev:78.00,  narrative:'Aerospace Defense', tags:['Satellite','Broadband'] },
+    { sym:'MP',    name:'MP Materials',          price:48.41,  prev:44.00,  narrative:'Critical Materials', tags:['RareEarth','Defense'] },
+    { sym:'PPTA',  name:'Perpetua Resources',    price:29.52,  prev:27.00,  narrative:'Critical Materials', tags:['Gold','Antimony'] },
+    { sym:'TMQ',   name:'Trilogy Metals',        price:3.77,   prev:3.40,   narrative:'Critical Materials', tags:['Copper','Alaska'] },
+    { sym:'CRML',  name:'Critical Metals',       price:8.31,   prev:7.60,   narrative:'Critical Materials', tags:['RareEarth','Mining'] },
+    // ── SPACEX / SPECIAL SITUATIONS ───────────────────────────
+    { sym:'ATI',   name:'ATI Inc',               price:151.25, prev:142.00, narrative:'Aerospace Defense', tags:['Specialty-Metals','Defense'] },
+    { sym:'CRS',   name:'Carpenter Technology',  price:404.32, prev:382.00, narrative:'Aerospace Defense', tags:['Specialty-Metals','Aero'] },
+    { sym:'SOLS',  name:'Surgalign Holdings',     price:77.52,  prev:72.00,  narrative:'Critical Materials', tags:['Materials'] },
+    { sym:'ETN',   name:'Eaton Corp',            price:365.56, prev:348.00, narrative:'Energy',            tags:['Power','Infrastructure'] },
+    { sym:'PH',    name:'Parker Hannifin',        price:920.77, prev:875.00, narrative:'Aerospace Defense', tags:['Hydraulics','Aero'] },
+    // ── CLOUD / SaaS ──────────────────────────────────────────
+    { sym:'IGV',   name:'iShares Software ETF',  price:79.77,  prev:75.00,  narrative:'Cloud SaaS',       tags:['ETF','SaaS'] },
+    { sym:'ORCL',  name:'Oracle Corp',           price:145.23, prev:138.00, narrative:'Cloud SaaS',       tags:['Cloud','DB','AI'] },
+    { sym:'IBM',   name:'IBM Corp',              price:243.14, prev:230.00, narrative:'Cloud SaaS',       tags:['Hybrid-Cloud','AI'] },
+    { sym:'SAP',   name:'SAP SE',               price:171.36, prev:163.00, narrative:'Cloud SaaS',       tags:['ERP','Enterprise'] },
+    { sym:'CRM',   name:'Salesforce',            price:186.24, prev:177.00, narrative:'Cloud SaaS',       tags:['CRM','AI'] },
+    { sym:'APP',   name:'AppLovin',              price:387.84, prev:368.00, narrative:'Cloud SaaS',       tags:['AdTech','AI'] },
+    { sym:'SHOP',  name:'Shopify',              price:118.52, prev:112.00, narrative:'Cloud SaaS',       tags:['E-Commerce','Merchant'] },
+    { sym:'UBER',  name:'Uber Technologies',    price:71.71,  prev:68.00,  narrative:'Cloud SaaS',       tags:['Rideshare','Marketplace'] },
+    { sym:'INTU',  name:'Intuit Inc',           price:425.87, prev:404.00, narrative:'Cloud SaaS',       tags:['FinTech','SMB'] },
+    { sym:'NOW',   name:'ServiceNow',           price:104.04, prev:98.00,  narrative:'Cloud SaaS',       tags:['ITSM','Enterprise','AI'] },
+    { sym:'ADBE',  name:'Adobe Inc',            price:241.37, prev:229.00, narrative:'Cloud SaaS',       tags:['Creative','AI'] },
+    { sym:'SNPS',  name:'Synopsys',             price:396.74, prev:377.00, narrative:'Cloud SaaS',       tags:['EDA','Semis'] },
+    { sym:'SNOW',  name:'Snowflake',            price:153.12, prev:145.00, narrative:'Cloud SaaS',       tags:['DataCloud','AI'] },
+    // ── FINTECH / FSI ─────────────────────────────────────────
+    { sym:'XLF',   name:'Financial Select ETF', price:49.44,  prev:47.50,  narrative:'Fintech',          tags:['ETF','Finance'] },
+    { sym:'JPM',   name:'JPMorgan Chase',       price:295.38, prev:281.00, narrative:'Fintech',          tags:['Bank','Dividend'] },
+    { sym:'V',     name:'Visa Inc',             price:298.51, prev:284.00, narrative:'Fintech',          tags:['Payments','Network'] },
+    { sym:'MA',    name:'Mastercard',           price:491.65, prev:467.00, narrative:'Fintech',          tags:['Payments','Network'] },
+    { sym:'GS',    name:'Goldman Sachs',        price:860.21, prev:818.00, narrative:'Fintech',          tags:['IBank','Trading'] },
+    { sym:'MS',    name:'Morgan Stanley',       price:166.17, prev:158.00, narrative:'Fintech',          tags:['IBank','Wealth'] },
+    { sym:'C',     name:'Citigroup',            price:115.30, prev:110.00, narrative:'Fintech',          tags:['Bank','Global'] },
+    { sym:'BLK',   name:'BlackRock',            price:957.40, prev:910.00, narrative:'Fintech',          tags:['Asset-Mgmt','ETF'] },
+    { sym:'HOOD',  name:'Robinhood Markets',    price:70.11,  prev:66.00,  narrative:'Fintech',          tags:['Retail-Broker','Crypto'] },
+    { sym:'SOFI',  name:'SoFi Technologies',    price:15.63,  prev:14.80,  narrative:'Fintech',          tags:['Neo-Bank','Student-Loans'] },
+    // ── ENERGY ────────────────────────────────────────────────
+    { sym:'XLE',   name:'Energy Select ETF',    price:58.97,  prev:56.50,  narrative:'Energy',           tags:['ETF','Oil-Gas'] },
+    // Power/Data Center
+    { sym:'GEV',   name:'GE Vernova',           price:894.78, prev:850.00, narrative:'Energy',           tags:['Power','Grid'] },
+    { sym:'NEE',   name:'NextEra Energy',       price:92.85,  prev:88.00,  narrative:'Energy',           tags:['Renewable','Utility'] },
+    { sym:'VRT',   name:'Vertiv Holdings',      price:259.37, prev:246.00, narrative:'Energy',           tags:['Cooling','Datacenter'] },
+    // Nuclear
+    { sym:'CEG',   name:'Constellation Energy', price:279.46, prev:265.00, narrative:'Energy',           tags:['Nuclear','Utility'] },
+    { sym:'VST',   name:'Vistra Corp',          price:153.96, prev:146.00, narrative:'Energy',           tags:['Nuclear','Power'] },
+    // Off-Grid Power
+    { sym:'BE',    name:'Bloom Energy',         price:132.45, prev:125.00, narrative:'Energy',           tags:['FuelCell','Off-Grid'] },
+    { sym:'POWL',  name:'Powell Industries',    price:554.05, prev:526.00, narrative:'Energy',           tags:['Power','Industrial'] },
+    { sym:'EOSE',  name:'Eos Energy',           price:4.99,   prev:4.60,   narrative:'Energy',           tags:['Battery','Storage'] },
+    { sym:'FLNC',  name:'Fluence Energy',       price:13.02,  prev:12.00,  narrative:'Energy',           tags:['Battery','Grid'] },
+    // Solar
+    { sym:'FSLR',  name:'First Solar',         price:199.42, prev:189.00, narrative:'Energy',           tags:['Solar','Manufacturer'] },
+    { sym:'NXT',   name:'Nextracker',           price:120.38, prev:114.00, narrative:'Energy',           tags:['Solar','Tracker'] },
+    { sym:'SEDG',  name:'SolarEdge',            price:51.87,  prev:49.00,  narrative:'Energy',           tags:['Solar','Inverter'] },
+    // Power Mining / Data Center Load
+    { sym:'IREN',  name:'Iris Energy',          price:34.09,  prev:32.00,  narrative:'Energy',           tags:['Bitcoin-Mining','Power'] },
+    { sym:'CIFR',  name:'Cipher Mining',        price:12.64,  prev:11.80,  narrative:'Energy',           tags:['Bitcoin-Mining'] },
+    { sym:'HUT',   name:'Hut 8 Corp',           price:47.36,  prev:44.00,  narrative:'Energy',           tags:['Bitcoin-Mining'] },
+    { sym:'APLD',  name:'Applied Digital',      price:24.49,  prev:22.80,  narrative:'Energy',           tags:['Datacenter','HPC'] },
+    // Oil
+    { sym:'XOM',   name:'Exxon Mobil',          price:160.78, prev:152.00, narrative:'Energy',           tags:['Oil','Dividend'] },
+    { sym:'CVX',   name:'Chevron Corp',         price:197.41, prev:187.00, narrative:'Energy',           tags:['Oil','Dividend'] },
+    // ── CYBERSECURITY ─────────────────────────────────────────
+    { sym:'BUG',   name:'Cybersecurity ETF',    price:25.34,  prev:24.20,  narrative:'Cybersecurity',    tags:['ETF','Cyber'] },
+    { sym:'CSCO',  name:'Cisco Systems',        price:77.93,  prev:74.00,  narrative:'Cybersecurity',    tags:['Network','Security'] },
+    { sym:'PANW',  name:'Palo Alto Networks',   price:160.67, prev:153.00, narrative:'Cybersecurity',    tags:['SASE','AI','Platform'] },
+    { sym:'CRWD',  name:'CrowdStrike',          price:393.31, prev:365.20, narrative:'Cybersecurity',    tags:['EDR','AI','SaaS'] },
+    { sym:'NET',   name:'Cloudflare',           price:205.43, prev:195.00, narrative:'Cybersecurity',    tags:['Edge','ZeroTrust'] },
+    { sym:'FTNT',  name:'Fortinet',             price:81.15,  prev:77.00,  narrative:'Cybersecurity',    tags:['Firewall','UTM'] },
+    { sym:'ZS',    name:'Zscaler',              price:136.67, prev:130.00, narrative:'Cybersecurity',    tags:['ZeroTrust','Cloud'] },
+    { sym:'ZM',    name:'Zoom Video',           price:80.70,  prev:76.50,  narrative:'Cybersecurity',    tags:['Video','Comm'] },
+    { sym:'CHKP',  name:'Check Point Software', price:145.76, prev:138.00, narrative:'Cybersecurity',    tags:['Firewall','Enterprise'] },
+    { sym:'AKAM',  name:'Akamai Technologies',  price:115.75, prev:110.00, narrative:'Cybersecurity',    tags:['CDN','Security'] },
+    { sym:'OKTA',  name:'Okta Inc',             price:79.15,  prev:75.00,  narrative:'Cybersecurity',    tags:['IAM','ZeroTrust'] },
+    { sym:'GEN',   name:'Gen Digital',          price:18.71,  prev:17.80,  narrative:'Cybersecurity',    tags:['Consumer','Security'] },
+    { sym:'RBRK',  name:'Rubrik Inc',           price:48.59,  prev:46.00,  narrative:'Cybersecurity',    tags:['DataSec','Cloud'] },
+    { sym:'S',     name:'SentinelOne',          price:13.31,  prev:12.60,  narrative:'Cybersecurity',    tags:['EDR','AI'] },
+    { sym:'TENB',  name:'Tenable Holdings',     price:17.05,  prev:16.20,  narrative:'Cybersecurity',    tags:['Vuln-Mgmt','CAASM'] },
+    // ── CRITICAL MATERIALS ────────────────────────────────────
+    { sym:'GLDM',  name:'Gold MiniShares ETF',  price:94.30,  prev:89.50,  narrative:'Critical Materials', tags:['Gold','ETF'] },
+    { sym:'AG',    name:'First Majestic Silver', price:22.17,  prev:21.00,  narrative:'Critical Materials', tags:['Silver','Mining'] },
+    { sym:'SLV',   name:'iShares Silver ETF',   price:68.14,  prev:64.80,  narrative:'Critical Materials', tags:['Silver','ETF'] },
+    { sym:'COPX',  name:'Copper Miners ETF',    price:78.15,  prev:74.00,  narrative:'Critical Materials', tags:['Copper','ETF'] },
+    { sym:'CPER',  name:'Copper ETF',           price:34.34,  prev:32.60,  narrative:'Critical Materials', tags:['Copper','ETF'] },
+    { sym:'PPLT',  name:'Platinum ETF',         price:178.44, prev:169.50, narrative:'Critical Materials', tags:['Platinum','ETF'] },
+    { sym:'NEM',   name:'Newmont Corp',         price:113.79, prev:108.00, narrative:'Critical Materials', tags:['Gold','Mining'] },
+    { sym:'WPM',   name:'Wheaton Precious',     price:136.80, prev:130.00, narrative:'Critical Materials', tags:['Streaming','Gold'] },
+    { sym:'HBM',   name:'Hudbay Minerals',      price:22.00,  prev:20.80,  narrative:'Critical Materials', tags:['Copper','Mining'] },
+    { sym:'BMNR',  name:'BM Technologies',      price:19.69,  prev:18.60,  narrative:'Critical Materials', tags:['Mining','Materials'] },
+    { sym:'CCJ',   name:'Cameco Corp',          price:111.13, prev:105.00, narrative:'Critical Materials', tags:['Uranium','Nuclear'] },
+    { sym:'UEC',   name:'Uranium Energy',       price:13.43,  prev:12.70,  narrative:'Critical Materials', tags:['Uranium','Mining'] },
+    { sym:'URNJ',  name:'Sprott Jr Uranium ETF',price:29.87,  prev:28.30,  narrative:'Critical Materials', tags:['Uranium','ETF'] },
+    { sym:'REMX',  name:'VanEck Rare Earth ETF',price:88.53,  prev:84.00,  narrative:'Critical Materials', tags:['RareEarth','ETF'] },
+    { sym:'NB',    name:'NioCorp Developments', price:4.54,   prev:4.20,   narrative:'Critical Materials', tags:['Niobium','REE'] },
+    { sym:'METC',  name:'Metals Acquisition',   price:14.83,  prev:14.00,  narrative:'Critical Materials', tags:['Copper','Mining'] },
   ],
   crypto: [
-    { sym:'BTC-USD', name:'Bitcoin USD',  price:67946.00, prev:66520.00, tag:'CRYPTO' }, // CoinGecko
-    { sym:'ETH-USD', name:'Ethereum USD', price:2103.49,  prev:2168.00,  tag:'CRYPTO' }, // CoinGecko
-    { sym:'GC=F',    name:'Gold Futures', price:4767.40,  prev:4678.60,  tag:'COMMODITY'}, // Yahoo screenshot
-    { sym:'BZ=F',    name:'Brent Crude',  price:100.80,   prev:98.50,    tag:'COMMODITY' },  // TV: UKOIL ~$98.79 + Brent premium
+    { sym:'BTC-USD', name:'Bitcoin USD',  price:67946.00, prev:66520.00, industry:'Cryptocurrency', narrative:'Crypto', tag:'CRYPTO', tags:['Store-of-Value','ETF'] },
+    { sym:'ETH-USD', name:'Ethereum USD', price:2103.49,  prev:2168.00,  industry:'Cryptocurrency', narrative:'Crypto', tag:'CRYPTO', tags:['Smart-Contract','DeFi'] },
+    { sym:'GC=F',    name:'Gold Futures', price:4810.00,  prev:4714.00,  industry:'Commodity',      narrative:'Macro',  tag:'COMMODITY', tags:['Safe-Haven'] },
+    { sym:'BZ=F',    name:'Brent Crude',  price:100.80,   prev:98.50,    industry:'Commodity',      narrative:'Energy', tag:'COMMODITY', tags:['Oil','Geopolitical'] },
   ],
 };
 
-const DATA_VERSION = '20260402c'; // Apr2 — single adaptive widget, crypto in watchlist tab // bump this to force-reset cached seed prices
+const DATA_VERSION = '20260402e'; // full ticker universe + no manual refresh // Apr2 — single adaptive widget, crypto in watchlist tab // bump this to force-reset cached seed prices
 
 function loadLists() {
   try {
@@ -1618,8 +1729,7 @@ async function fetchSymbol(sym) {
 }
 
 async function fetchAllPrices() {
-  const btn = document.getElementById('refresh-btn');
-  btn.textContent = '↻ Fetching…'; btn.classList.add('loading');
+  // Auto-sync triggered
   syncSeed();
   const extraSyms = ['^DXY','CL=F','YM=F'];
   // Ensure YM=F (Dow futures) always in seed
@@ -1634,7 +1744,6 @@ async function fetchAllPrices() {
   renderAll();
   const ts = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false})+' HKT';
   document.getElementById('last-updated').textContent = ts;
-  btn.textContent='⟳ Refresh'; btn.classList.remove('loading');
   setTimeout(checkTableOverflow, 100);
   checkAlerts();
 }
@@ -1805,7 +1914,7 @@ function setSortCol(col, btn) {
 
 function getNarrativeClass(narrative) {
   const map = {
-    'AI Infra':'nb-ai','Big Tech':'nb-bigtech','Cybersecurity':'nb-cyber',
+    'AI Infra':'nb-ai','Big Tech':'nb-bigtech','Cybersecurity':'nb-cyber','Aerospace Defense':'nb-defense',
     'Cloud SaaS':'nb-cloud','EV / Auto':'nb-ev','Fintech':'nb-fintech',
     'Energy':'nb-energy','Critical Materials':'nb-materials',
     'Crypto':'nb-crypto','Macro':'nb-macro',
@@ -1886,6 +1995,19 @@ function setNarrativeForTicker(listName, idx, narrative) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// MA TAG HELPERS
+// ═══════════════════════════════════════════════════════════════
+function setMaTag(listName, idx, value) {
+  const ticker = LISTS[listName][idx];
+  if (!ticker.tags) ticker.tags = [];
+  // Remove any existing MA tags
+  ticker.tags = ticker.tags.filter(t => !t.startsWith('Below Weekly'));
+  if (value) ticker.tags.push(value);
+  saveLists(); renderAll();
+  showToast('info','📊', value ? value + ' tagged.' : 'MA tag cleared.');
+}
+
+// ═══════════════════════════════════════════════════════════════
 // RENDER WATCH LIST TABLE (fully rebuilt)
 // Columns: Symbol | Price | % Chg | Industry | Theme | Tags | [Actions]
 // ═══════════════════════════════════════════════════════════════
@@ -1955,6 +2077,16 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     const narrBadge = narr
       ? `<span class="narrative-badge ${getNarrativeClass(narr)}">${narr}</span>` : '–';
 
+    // MA tag dropdown
+    const maTags = ['Below Weekly MA200','Below Weekly MA100','Below Weekly MA50','Below Weekly MA20','Below Weekly MA10'];
+    const curMaTag = (ticker.tags||[]).find(t=>t.startsWith('Below Weekly')) || '';
+    const maDropdown = managerUnlocked
+      ? `<select class="ma-tag-select" onchange="setMaTag('${listName}',${idx},this.value)">
+          <option value="">— MA Tag —</option>
+          ${maTags.map(t=>`<option value="${t}"${curMaTag===t?' selected':''}>${t}</option>`).join('')}
+         </select>`
+      : (curMaTag ? `<span class="ma-tag-badge">${curMaTag.replace('Below Weekly ','<br>')}</span>` : '–');
+
     // Manager actions
     const mgr = managerUnlocked ? `<td><div class="mgr-actions">
       <button class="btn-edit-row" onclick="openEditTicker('${listName}',${idx})">✏</button>
@@ -1985,6 +2117,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       <td>${statusBadge}</td>
       <td>${indBadge}</td>
       <td>${narrBadge}</td>
+      <td>${maDropdown}</td>
       <td style="font-size:10px;color:var(--text-dim);">prev $${fmtP(prevClose,sym)}</td>
       ${mgr}
     </tr>`;
