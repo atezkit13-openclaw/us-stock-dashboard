@@ -413,7 +413,6 @@ body.light-theme .manager-banner-text { color:#92400e; }
 .nb-bigtech  { background:rgba(59,130,246,0.15);  color:var(--accent-blue);  border:1px solid rgba(59,130,246,0.3); }
 .nb-cyber    { background:rgba(6,182,212,0.15);   color:var(--accent-cyan);  border:1px solid rgba(6,182,212,0.3); }
 .nb-cloud    { background:rgba(16,185,129,0.15);  color:var(--green);        border:1px solid rgba(16,185,129,0.3); }
-.nb-ev       { background:rgba(245,158,11,0.15);  color:var(--amber);        border:1px solid rgba(245,158,11,0.3); }
 .nb-fintech  { background:rgba(251,191,36,0.15);  color:var(--gold);         border:1px solid rgba(251,191,36,0.3); }
 .nb-energy   { background:rgba(239,68,68,0.12);   color:#f87171;             border:1px solid rgba(239,68,68,0.3); }
 .nb-materials{ background:rgba(167,139,250,0.15); color:#a78bfa;             border:1px solid rgba(167,139,250,0.3); }
@@ -463,6 +462,15 @@ body.light-theme .manager-banner-text { color:#92400e; }
   display:inline-block; font-size:9px; padding:2px 6px; border-radius:3px;
   background:rgba(245,158,11,0.12); color:var(--amber);
   border:1px solid rgba(245,158,11,0.3); white-space:nowrap;
+}
+
+
+/* ── WEEKLY SMA TAG ── */
+.sma-select { border-color:rgba(6,182,212,0.4) !important; }
+.sma-tag-badge {
+  display:inline-block; font-size:9px; padding:2px 7px; border-radius:3px;
+  background:rgba(6,182,212,0.12); color:var(--accent-cyan);
+  border:1px solid rgba(6,182,212,0.35); white-space:nowrap; font-weight:600;
 }
 
 /* ── INDEX CARDS — market open vs closed state ── */
@@ -862,10 +870,10 @@ body.light-theme .alert-item.oil-alert-bar {
       <select class="form-select" id="tag-narrative-select" onchange="applyNarrativeFromEditor()">
         <option value="">— Select theme —</option>
         <option value="AI Infra">🤖 AI Infra</option>
-        <option value="Big Tech">🖥 Big Tech</option>
+        <option value="Aerospace Defense">🛡 Aerospace &amp; Defense</option>
+        <option value="Big Tech">⭐ MAG7</option>
         <option value="Cybersecurity">🔵 Cybersecurity</option>
         <option value="Cloud SaaS">☁ Cloud SaaS</option>
-        <option value="EV / Auto">⚡ EV / Auto</option>
         <option value="Fintech">💳 Fintech</option>
         <option value="Energy">🛢 Energy</option>
         <option value="Critical Materials">⛏ Critical Materials</option>
@@ -997,14 +1005,13 @@ body.light-theme .alert-item.oil-alert-bar {
     <div class="narrative-tabs" id="narrative-tabs">
       <button class="ntab active" data-narrative="all" onclick="setNarrativeFilter('all',this)">All</button>
       <button class="ntab" data-narrative="AI Infra" onclick="setNarrativeFilter('AI Infra',this)">🤖 AI Infra</button>
-      <button class="ntab" data-narrative="Aerospace Defense" onclick="setNarrativeFilter('Aerospace Defense',this)">🛡 Defense</button>
-      <button class="ntab" data-narrative="Big Tech" onclick="setNarrativeFilter('Big Tech',this)">🖥 Big Tech</button>
-      <button class="ntab" data-narrative="Cybersecurity" onclick="setNarrativeFilter('Cybersecurity',this)">🔵 Cyber</button>
+      <button class="ntab" data-narrative="Aerospace Defense" onclick="setNarrativeFilter('Aerospace Defense',this)">🛡 Aerospace &amp; Defense</button>
+      <button class="ntab" data-narrative="Big Tech" onclick="setNarrativeFilter('Big Tech',this)">⭐ MAG7</button>
+      <button class="ntab" data-narrative="Cybersecurity" onclick="setNarrativeFilter('Cybersecurity',this)">🔵 Cybersecurity</button>
       <button class="ntab" data-narrative="Cloud SaaS" onclick="setNarrativeFilter('Cloud SaaS',this)">☁ SaaS</button>
       <button class="ntab" data-narrative="Fintech" onclick="setNarrativeFilter('Fintech',this)">💳 FSI</button>
       <button class="ntab" data-narrative="Energy" onclick="setNarrativeFilter('Energy',this)">⚡ Energy</button>
-      <button class="ntab" data-narrative="Critical Materials" onclick="setNarrativeFilter('Critical Materials',this)">⛏ Materials</button>
-      <button class="ntab" data-narrative="EV / Auto" onclick="setNarrativeFilter('EV / Auto',this)">🚗 EV</button>
+      <button class="ntab" data-narrative="Critical Materials" onclick="setNarrativeFilter('Critical Materials',this)">⛏ Critical Materials</button>
     </div>
 
     <!-- Sort bar -->
@@ -1024,9 +1031,8 @@ body.light-theme .alert-item.oil-alert-bar {
           <th onclick="setSortCol('price',null)" style="cursor:pointer;">Price</th>
           <th onclick="setSortCol('pct',null)" style="cursor:pointer;">% Chg</th>
           <th>Status</th>
-          <th>Theme</th>
-          <th>MA Tag</th>
-          <th>Tags</th>
+          <th>Weekly SMA</th>
+          <th>Tags &amp; Theme</th>
           <th class="mgr-col">Actions</th>
         </tr></thead>
         <tbody id="watchlist-tbody"></tbody>
@@ -1519,7 +1525,7 @@ const DEFAULT_LISTS = {
     { sym:'AMZN',  name:'Amazon.com',            price:210.57, prev:197.90, narrative:'Cloud SaaS',   tags:['MAG7','Cloud','AWS'] },
     { sym:'MSFT',  name:'Microsoft Corp',        price:369.37, prev:356.70, narrative:'Big Tech',      tags:['MAG7','Cloud','AI'] },
     { sym:'AAPL',  name:'Apple Inc',             price:255.63, prev:243.80, narrative:'Big Tech',      tags:['MAG7','Consumer'] },
-    { sym:'TSLA',  name:'Tesla Inc',             price:381.26, prev:357.28, narrative:'EV / Auto',     tags:['MAG7','EV','AI'] },
+    { sym:'TSLA',  name:'Tesla Inc',             price:381.26, prev:357.28, narrative:'Big Tech',      tags:['MAG7','EV','AI'] },
     { sym:'QLYS',  name:'Qualys Inc.',           price:86.21,  prev:87.92,  narrative:'Cybersecurity', tags:['VMDR','SaaS'] },
     // ── AI INFRA — Semiconductors ─────────────────────────────
     { sym:'SOXX',  name:'iShares Semis ETF',     price:338.54, prev:328.00, narrative:'AI Infra',      tags:['ETF','Semis'] },
@@ -1666,7 +1672,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402e'; // full ticker universe + no manual refresh // Apr2 — single adaptive widget, crypto in watchlist tab // bump this to force-reset cached seed prices
+const DATA_VERSION = '20260402h'; // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1914,8 +1920,8 @@ function setSortCol(col, btn) {
 
 function getNarrativeClass(narrative) {
   const map = {
-    'AI Infra':'nb-ai','Big Tech':'nb-bigtech','Cybersecurity':'nb-cyber','Aerospace Defense':'nb-defense',
-    'Cloud SaaS':'nb-cloud','EV / Auto':'nb-ev','Fintech':'nb-fintech',
+    'AI Infra':'nb-ai','Big Tech':'nb-bigtech','Cybersecurity':'nb-cyber','Aerospace Defense':'nb-defense','MAG7':'nb-bigtech',
+    'Cloud SaaS':'nb-cloud','Fintech':'nb-fintech',
     'Energy':'nb-energy','Critical Materials':'nb-materials',
     'Crypto':'nb-crypto','Macro':'nb-macro',
   };
@@ -1997,6 +2003,16 @@ function setNarrativeForTicker(listName, idx, narrative) {
 // ═══════════════════════════════════════════════════════════════
 // MA TAG HELPERS
 // ═══════════════════════════════════════════════════════════════
+function setSmaTag(listName, idx, value) {
+  const ticker = LISTS[listName][idx];
+  if (!ticker.tags) ticker.tags = [];
+  // Remove any existing SMA tags
+  ticker.tags = ticker.tags.filter(t => !t.startsWith('SMA:'));
+  if (value) ticker.tags.push('SMA:' + value);
+  saveLists(); renderAll();
+  showToast('info', '📊', value ? 'SMA tag: ' + value : 'SMA tag cleared.');
+}
+
 function setMaTag(listName, idx, value) {
   const ticker = LISTS[listName][idx];
   if (!ticker.tags) ticker.tags = [];
@@ -2077,7 +2093,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     const narrBadge = narr
       ? `<span class="narrative-badge ${getNarrativeClass(narr)}">${narr}</span>` : '–';
 
-    // MA tag dropdown
+    // MA tag dropdown (stored in tags array)
     const maTags = ['Below Weekly MA200','Below Weekly MA100','Below Weekly MA50','Below Weekly MA20','Below Weekly MA10'];
     const curMaTag = (ticker.tags||[]).find(t=>t.startsWith('Below Weekly')) || '';
     const maDropdown = managerUnlocked
@@ -2085,7 +2101,20 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
           <option value="">— MA Tag —</option>
           ${maTags.map(t=>`<option value="${t}"${curMaTag===t?' selected':''}>${t}</option>`).join('')}
          </select>`
-      : (curMaTag ? `<span class="ma-tag-badge">${curMaTag.replace('Below Weekly ','<br>')}</span>` : '–');
+      : (curMaTag ? `<span class="ma-tag-badge">${curMaTag.replace('Below Weekly ','')}</span>` : '–');
+
+    // Weekly SMA dropdown (stored as 'SMA:Below Weekly SMA200' etc.)
+    const smaTags = ['Below Weekly SMA200','Below Weekly SMA100','Below Weekly SMA50','Below Weekly SMA20'];
+    const curSmaRaw = (ticker.tags||[]).find(t=>t.startsWith('SMA:')) || '';
+    const curSmaTag = curSmaRaw.replace('SMA:','');
+    const smaDropdown = managerUnlocked
+      ? `<select class="ma-tag-select sma-select" onchange="setSmaTag('${listName}',${idx},this.value)">
+          <option value="">— Weekly SMA —</option>
+          ${smaTags.map(t=>`<option value="${t}"${curSmaTag===t?' selected':''}>${t}</option>`).join('')}
+         </select>`
+      : (curSmaTag
+          ? `<span class="sma-tag-badge">${curSmaTag.replace('Below Weekly ','')}</span>`
+          : '<span style="color:var(--text-dim);font-size:10px;">–</span>');
 
     // Manager actions
     const mgr = managerUnlocked ? `<td><div class="mgr-actions">
@@ -2106,19 +2135,29 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       statusBadge = `<span class="status-closed">CLOSED</span>`;
     }
 
+    // Combined tags cell: narrative badge + MA tag badge + user tags + prev price
+    const allTagsHtml = `<div class="ticker-tags" style="flex-wrap:wrap;gap:3px;">
+      ${narrBadge}
+      ${maDropdown}
+      ${tags.filter(t=>!t.startsWith('Below Weekly')&&!t.startsWith('SMA:')).map((t,ti) => {
+        const globalTi = (ticker.tags||[]).indexOf(t);
+        return `<span class="ticker-tag" title="${managerUnlocked?'Click to remove':t}"
+          ${managerUnlocked ? `onclick="removeTagInline('${listName}',${idx},${globalTi})"` : ''}>${t}</span>`;
+      }).join('')}
+      ${managerUnlocked ? `<span class="ticker-tag-add" onclick="openTagEditor('${listName}',${idx})">+ tag</span>` : ''}
+    </div>
+    <div style="font-size:9px;color:var(--text-dim);margin-top:3px;">prev $${fmtP(prevClose,sym)}</div>`;
+
     tbody.innerHTML += `<tr>
       <td>
         <a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
         <div class="ticker-name">${ticker.name}</div>
-        ${tagsHtml}
       </td>
       <td class="price-cell">$${fmtP(curPrice, sym)}</td>
       <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
       <td>${statusBadge}</td>
-      <td>${indBadge}</td>
-      <td>${narrBadge}</td>
-      <td>${maDropdown}</td>
-      <td style="font-size:10px;color:var(--text-dim);">prev $${fmtP(prevClose,sym)}</td>
+      <td>${smaDropdown}</td>
+      <td>${allTagsHtml}</td>
       ${mgr}
     </tr>`;
   });
