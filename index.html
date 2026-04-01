@@ -438,6 +438,54 @@ body.light-theme .news-source-badge.x { background:rgba(0,0,0,0.05); }
   .footer { font-size:9px; }
 }
 
+
+
+/* News headline link */
+.news-headline-link {
+  color:var(--text-primary); text-decoration:none;
+  transition:color 0.15s;
+}
+.news-headline-link:hover { color:var(--accent-blue); text-decoration:none; }
+
+/* ── ALERT BANNERS ── */
+.alert-strip { display:none; }
+.alert-strip.visible { display:flex; flex-direction:column; gap:0; }
+.alert-item {
+  padding:10px 20px;
+  font-size:12px; font-weight:600;
+  display:flex; align-items:center; gap:10px;
+  animation:alert-pulse 3s ease-in-out infinite;
+}
+.alert-item.vix-alert-bar {
+  background:linear-gradient(90deg,#450a0a,#7f1d1d,#450a0a);
+  border-bottom:1px solid #ef4444;
+  color:#fca5a5;
+}
+.alert-item.oil-alert-bar {
+  background:linear-gradient(90deg,#451a03,#78350f,#451a03);
+  border-bottom:1px solid #f59e0b;
+  color:#fde68a;
+}
+body.light-theme .alert-item.vix-alert-bar {
+  background:linear-gradient(90deg,#fee2e2,#fecaca,#fee2e2);
+  color:#991b1b; border-bottom-color:#ef4444;
+}
+body.light-theme .alert-item.oil-alert-bar {
+  background:linear-gradient(90deg,#fef3c7,#fde68a,#fef3c7);
+  color:#92400e; border-bottom-color:#f59e0b;
+}
+@keyframes alert-pulse {
+  0%,100%{ opacity:1; }
+  50%{ opacity:0.82; }
+}
+.alert-icon { font-size:18px; flex-shrink:0; }
+.alert-text { flex:1; line-height:1.4; }
+.alert-text strong { letter-spacing:0.04em; }
+.alert-dismiss { background:none; border:1px solid currentColor; border-radius:4px;
+  color:inherit; font-size:10px; padding:2px 8px; cursor:pointer; opacity:0.7;
+  font-weight:700; transition:opacity 0.15s; flex-shrink:0; }
+.alert-dismiss:hover { opacity:1; }
+
 /* ── PORTFOLIO LOCK GATE ── */
 .pf-lock-gate {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -625,7 +673,7 @@ body.light-theme .news-source-badge.x { background:rgba(0,0,0,0.05); }
         <div class="last-updated">Fetched: <span id="last-updated">–</span></div>
         <span class="auto-refresh-badge inactive" id="auto-badge" title="Auto-refresh schedule">⏰ Auto</span>
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
-        <button class="btn btn-refresh" id="refresh-btn" onclick="fetchAllPrices()">⟳ Refresh</button>
+        <button class="btn btn-refresh" id="refresh-btn" onclick="fetchAllPrices()" style="display:none;">⟳ Refresh</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
       </div>
     </div>
@@ -643,6 +691,20 @@ body.light-theme .news-source-badge.x { background:rgba(0,0,0,0.05); }
     <span class="marquee-item"><span class="tag">🔺 VIX</span>VIX ~28 · ABOVE 25 THRESHOLD — elevated volatility regime continues</span>
     <span class="marquee-item"><span class="tag">🌍 WAR</span>Iran-US-Israel tensions: diplomatic backchannel talks reported · oil risk premium intact</span>
     <span class="marquee-item"><span class="tag">📦 MACRO</span>10Y yield ~4.31% · Fed holding · rate cut expectations pushed to H2 2026</span>
+  </div>
+</div>
+
+<!-- ═══ ALERT BANNERS ═══ -->
+<div class="alert-strip" id="alert-strip">
+  <div class="alert-item vix-alert-bar" id="vix-alert-bar" style="display:none;">
+    <span class="alert-icon">🔴</span>
+    <span class="alert-text"><strong>⚠ VIX ALERT:</strong> Volatility Index is above 25 — <span id="vix-alert-val"></span>. Elevated fear in the market. <strong>NOT a trading signal</strong> — review positions and risk exposure carefully.</span>
+    <button class="alert-dismiss" onclick="document.getElementById('vix-alert-bar').style.display='none'">✕ Dismiss</button>
+  </div>
+  <div class="alert-item oil-alert-bar" id="oil-alert-bar" style="display:none;">
+    <span class="alert-icon">🛢️</span>
+    <span class="alert-text"><strong>⚠ OIL ALERT:</strong> Brent Crude is above $95 — <span id="oil-alert-val"></span>. Iran-US geopolitical tensions remain a major supply risk. Monitor escalation closely.</span>
+    <button class="alert-dismiss" onclick="document.getElementById('oil-alert-bar').style.display='none'">✕ Dismiss</button>
   </div>
 </div>
 
@@ -1093,6 +1155,7 @@ function activateManager() {
   portfolioUnlocked=true;
   document.getElementById('manager-btn').classList.add('active');
   document.getElementById('manager-btn').textContent='🔓 Manager';
+  document.getElementById('refresh-btn').style.display='inline-block';
   document.getElementById('manager-banner').classList.add('visible');
   document.getElementById('tab-btn-portfolio').classList.add('unlocked');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
@@ -1103,6 +1166,7 @@ function lockManager() {
   managerUnlocked=false;
   document.getElementById('manager-btn').classList.remove('active');
   document.getElementById('manager-btn').textContent='⚙ Manager';
+  document.getElementById('refresh-btn').style.display='none';
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
   renderAll();
@@ -1145,62 +1209,70 @@ function showToast(type,icon,msg) {
 // NOTE: ^NDX is the Nasdaq-100 INDEX (not NQ futures).
 // Correct seed from Yahoo Finance Mar 30 2026 close data:
 // ── SEED PRICES ──────────────────────────────────────────────────
-// Updated: Apr 1 2026. Sources: TradingView screenshot + Yahoo Finance.
-// These are FALLBACK only — live fetch from Yahoo Finance overwrites on load.
+// Updated: Apr 1 2026 17:07 HKT
+// Sources: Yahoo Finance screenshot (your upload) + CoinGecko + Robinhood
+// Yahoo Finance live bar: S&P Fut 6618 · Dow Fut 46883 · Nasdaq Fut 24162
+//   Russell Fut 2538 · VIX 24.77 · Gold 4767 · BTC 68783
+// CoinGecko: BTC $67,946 · ETH $2,103
+// Robinhood: NVDA $170.85 (Mar31 close)
+// FALLBACK ONLY — live Yahoo Finance fetch overwrites these on every load.
 // ─────────────────────────────────────────────────────────────────
 const SEED_DEFAULT = {
-  // Indices — Mar 31 2026 close (Yahoo Finance)
-  '^GSPC': { price:5611.85, prev:5767.57, name:'S&P 500' },
-  '^NDX':  { price:19352.72, prev:19925.00, name:'Nasdaq 100' },
-  '^RUT':  { price:2076.99, prev:2137.63, name:'Russell 2000' },
-  '^VIX':  { price:22.28,   prev:21.65,   name:'VIX Volatility' },
-  '^DJI':  { price:41583.90,prev:42587.50, name:'Dow Jones 30' },
-  // Futures — Apr 1 2026 pre-market
-  'ES=F':  { price:5615.50, prev:5580.00, name:'S&P 500 Futures' },
-  'NQ=F':  { price:19380.00,prev:19250.00, name:'Nasdaq 100 Futures' },
-  'RTY=F': { price:2080.00, prev:2065.00,  name:'Russell 2000 Futures' },
-  'GC=F':  { price:3115.00, prev:3087.50,  name:'Gold Futures' },
-  'BZ=F':  { price:74.95,   prev:73.80,    name:'Brent Crude Oil' },
-  // Crypto
-  'BTC-USD':{ price:82500.00, prev:83000.00, name:'Bitcoin USD' },
-  'ETH-USD':{ price:1812.00,  prev:1845.00,  name:'Ethereum USD' },
+  // Indices — last US close (Yahoo Finance)
+  '^GSPC': { price:5611.85,  prev:5693.31,  name:'S&P 500' },
+  '^NDX':  { price:19352.72, prev:19714.00,  name:'Nasdaq 100' },
+  '^RUT':  { price:2076.99,  prev:2116.63,   name:'Russell 2000' },
+  '^VIX':  { price:24.77,    prev:21.65,     name:'VIX Volatility' },
+  '^DJI':  { price:41583.90, prev:42299.70,  name:'Dow Jones 30' },
+  // Futures — from Yahoo Finance live bar (your screenshot)
+  'ES=F':  { price:6618.00,  prev:6560.00,   name:'S&P 500 Futures' },
+  'NQ=F':  { price:24162.50, prev:23910.00,  name:'Nasdaq 100 Futures' },
+  'RTY=F': { price:2538.50,  prev:2510.00,   name:'Russell 2000 Futures' },
+  'GC=F':  { price:4767.40,  prev:4678.60,   name:'Gold Futures' },
+  'BZ=F':  { price:74.95,    prev:73.80,     name:'Brent Crude Oil' },
+  // Crypto — CoinGecko Apr 1 2026
+  'BTC-USD':{ price:67946.00, prev:66520.00,  name:'Bitcoin USD' },
+  'ETH-USD':{ price:2103.49,  prev:2168.00,   name:'Ethereum USD' },
 };
 
 // ── WATCHLIST SEED PRICES ────────────────────────────────────────
-// Updated Apr 1 2026. Source: TradingView (Image 1 screenshot) + Yahoo Finance.
-// price = latest known price, prev = prior session close (for change calc).
-// Live Yahoo Finance fetch overwrites these on every page load.
+// Updated Apr 1 2026 17:07 HKT
+// Source: Google Finance live (search result) + Yahoo Finance screenshot
+// TSLA 361.85 · AAPL 247.05 · MSFT 362.92 · AMZN 201.62 · PLTR 140.44
+// AVGO 293.56 · GOOGL 273.41 · NVDA ~170.85 (Robinhood Mar31)
+// CRWD/PANW/ZS/QLYS/FTNT/COIN/MA/NOW — Yahoo Finance approximations
+// Live Yahoo Finance fetch overwrites every page load — seeds are fallback only.
 // ─────────────────────────────────────────────────────────────────
 const DEFAULT_LISTS = {
   watchlist: [
-    { sym:'NVDA',  name:'NVIDIA Corp',     price:174.40, prev:165.82 }, // TV Apr1: 174.40, Mar31 close: 170.85
-    { sym:'TSLA',  name:'Tesla Inc',       price:371.75, prev:357.28 }, // TV Apr1: 371.75
-    { sym:'GOOGL', name:'Alphabet Inc',    price:287.56, prev:273.50 }, // TV Apr1: 287.56
-    { sym:'META',  name:'Meta Platforms',  price:572.13, prev:536.38 }, // TV Apr1: 572.13
-    { sym:'MSFT',  name:'Microsoft Corp',  price:370.17, prev:359.96 }, // TV Apr1: 370.17
-    { sym:'AAPL',  name:'Apple Inc',       price:253.79, prev:246.63 }, // TV Apr1: 253.79
-    { sym:'AMZN',  name:'Amazon.com',      price:208.27, prev:200.95 }, // TV Apr1: 208.27
+    { sym:'NVDA',  name:'NVIDIA Corp',     price:170.85, prev:165.82 }, // Robinhood Mar31
+    { sym:'TSLA',  name:'Tesla Inc',       price:361.85, prev:357.28 }, // Google Finance
+    { sym:'GOOGL', name:'Alphabet Inc',    price:273.41, prev:268.90 }, // Google Finance
+    { sym:'META',  name:'Meta Platforms',  price:536.38, prev:559.80 }, // Yahoo Finance
+    { sym:'MSFT',  name:'Microsoft Corp',  price:362.92, prev:356.70 }, // Google Finance
+    { sym:'AAPL',  name:'Apple Inc',       price:247.05, prev:243.80 }, // Google Finance
+    { sym:'AMZN',  name:'Amazon.com',      price:201.62, prev:197.90 }, // Google Finance
     { sym:'INTC',  name:'Intel Corp',      price:20.40,  prev:21.10  }, // Yahoo approx
-    { sym:'AVGO',  name:'Broadcom Inc',    price:172.30, prev:167.80 }, // Yahoo approx
-    { sym:'PLTR',  name:'Palantir Tech',   price:88.70,  prev:91.60  }, // Yahoo approx
+    { sym:'AVGO',  name:'Broadcom Inc',    price:293.56, prev:286.50 }, // Google Finance
+    { sym:'PLTR',  name:'Palantir Tech',   price:140.44, prev:137.60 }, // Google Finance
     { sym:'CRWD',  name:'CrowdStrike',     price:358.60, prev:365.20 }, // Yahoo
     { sym:'FTNT',  name:'Fortinet Inc',    price:91.20,  prev:92.80  }, // Yahoo approx
     { sym:'COIN',  name:'Coinbase Global', price:178.80, prev:176.90 }, // Yahoo approx
     { sym:'PANW',  name:'Palo Alto Ntwks', price:183.70, prev:186.90 }, // Yahoo approx
     { sym:'ZS',    name:'Zscaler',         price:177.40, prev:174.20 }, // Yahoo approx
-    { sym:'QLYS',  name:'Qualys Inc.',     price:87.85,  prev:87.92  }, // TV Apr1: 87.85
+    { sym:'QLYS',  name:'Qualys Inc.',     price:87.85,  prev:87.92  }, // Yahoo
     { sym:'MA',    name:'Mastercard',      price:535.80, prev:528.40 }, // Yahoo approx
     { sym:'NOW',   name:'ServiceNow',      price:798.20, prev:780.60 }, // Yahoo approx
   ],
   crypto: [
-    { sym:'BTC-USD', name:'Bitcoin USD',  price:82500.00, prev:83200.00, tag:'CRYPTO' },
-    { sym:'ETH-USD', name:'Ethereum USD', price:1812.00,  prev:1845.00,  tag:'CRYPTO' },
-    { sym:'GC=F',    name:'Gold Futures', price:3115.00,  prev:3087.50,  tag:'COMMODITY' },
+    { sym:'BTC-USD', name:'Bitcoin USD',  price:67946.00, prev:66520.00, tag:'CRYPTO' }, // CoinGecko
+    { sym:'ETH-USD', name:'Ethereum USD', price:2103.49,  prev:2168.00,  tag:'CRYPTO' }, // CoinGecko
+    { sym:'GC=F',    name:'Gold Futures', price:4767.40,  prev:4678.60,  tag:'COMMODITY'}, // Yahoo screenshot
     { sym:'BZ=F',    name:'Brent Crude',  price:74.95,    prev:73.80,    tag:'COMMODITY' },
   ],
 };
 
-const DATA_VERSION = '20260401'; // bump this to force-reset cached seed prices
+const DATA_VERSION = '20260401b'; // bump this to force-reset cached seed prices
 
 function loadLists() {
   try {
@@ -1278,6 +1350,7 @@ async function fetchAllPrices() {
   document.getElementById('last-updated').textContent = ts;
   btn.textContent='⟳ Refresh'; btn.classList.remove('loading');
   setTimeout(checkTableOverflow, 100);
+  checkAlerts();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1396,6 +1469,30 @@ function renderAll() {
   renderIndexCards('futures-cards', FUTURES_LIST, 'futures');
   renderStockTable('watchlist-tbody','watchlist','tag-watch','WATCH');
   renderCryptoTable();
+  checkAlerts();
+}
+
+function checkAlerts() {
+  const strip = document.getElementById('alert-strip');
+  // VIX alert
+  const vixData = getPrice('^VIX');
+  const vixBar  = document.getElementById('vix-alert-bar');
+  if (vixData && vixData.price > 25) {
+    document.getElementById('vix-alert-val').textContent =
+      'Current VIX: ' + vixData.price.toFixed(2);
+    vixBar.style.display = 'flex';
+  }
+  // Oil alert — Brent Crude
+  const oilData = getPrice('BZ=F');
+  const oilBar  = document.getElementById('oil-alert-bar');
+  if (oilData && oilData.price > 95) {
+    document.getElementById('oil-alert-val').textContent =
+      'Brent Crude: $' + oilData.price.toFixed(2) + '/bbl';
+    oilBar.style.display = 'flex';
+  }
+  // Show strip if any alert visible
+  const anyVisible = vixBar.style.display !== 'none' || oilBar.style.display !== 'none';
+  strip.classList.toggle('visible', anyVisible);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1495,14 +1592,15 @@ let currentFilter = 'all';
 
 const NEWS_STATIC = [
   { cat:'premarket', catLabel:'💡 Premarket', src:'Yahoo Finance', srcType:'yf',
+    url:'https://finance.yahoo.com/markets/',
     headline:'S&P Futures +0.73%, Nasdaq +1.01% — Risk-On Bounce Into April',
     summary:'US equity futures are pointing firmly higher on April 1 with S&P Futures at 6,442 (+0.73%) and Nasdaq Futures at 22,380 (+1.01%), signalling a broad recovery after Q1 volatility. Russell 2000 is leading with +1.30%, suggesting renewed appetite for small-cap risk.',
     date:'Apr 1, 2026', impact:'HIGH' },
-  { cat:'war', catLabel:'⚔️ Iran-US-Israel', src:'Reuters', srcType:'yf',
+  { cat:'war', catLabel:'⚔️ Iran-US-Israel', src:'Reuters', srcType:'yf', url:'https://www.reuters.com/markets/',
     headline:'Iran-US-Israel: Backchannel Talks Reported — Oil Risk Premium Intact',
     summary:'Diplomatic sources report indirect backchannel negotiations between Washington and Tehran, mediated through Oman, but no formal ceasefire framework has been agreed. Israel\'s northern front remains active. Analysts warn crude oil\'s $5-7/bbl risk premium will persist through Q2 given regional uncertainty.',
     date:'Apr 1, 2026', impact:'HIGH' },
-  { cat:'geo', catLabel:'🌍 Geopolitical', src:'Bloomberg', srcType:'yf',
+  { cat:'geo', catLabel:'🌍 Geopolitical', src:'Bloomberg', srcType:'yf', url:'https://www.bloomberg.com/markets/stocks',
     headline:'US-China Tariff Escalation: New Semiconductor Export Restrictions Under Review',
     summary:'The Biden administration is reviewing an additional tranche of semiconductor export restrictions targeting advanced AI chips destined for Chinese datacenters. NVDA and AVGO face potential supply chain disruption if measures pass. Beijing has signalled symmetrical retaliation against US cloud providers operating in China.',
     date:'Apr 1, 2026', impact:'HIGH' },
@@ -1510,35 +1608,35 @@ const NEWS_STATIC = [
     headline:'VIX Stays Elevated at 28 — Market Anxiety Persists Ahead of Fed Decision',
     summary:'CBOE Volatility Index remains well above the 25 threshold at ~28, indicating persistent options hedging demand. 10-year Treasury yield eased to 4.31% as flight-to-safety bids increased. Fed is universally expected to hold at the May meeting with rate cut odds for July sitting at just 32%.',
     date:'Apr 1, 2026', impact:'HIGH' },
-  { cat:'cyber', catLabel:'🔵 Cybersecurity', src:'PANW IR', srcType:'yf',
+  { cat:'cyber', catLabel:'🔵 Cybersecurity', src:'PANW IR', srcType:'yf', url:'https://investors.paloaltonetworks.com/',
     headline:'PANW Acquires CyberArk $25B — Identity Security Platform for AI Agent Era',
     summary:'Palo Alto Networks\' transformative $25B acquisition of CyberArk is expected to close in H2 FY2026. The deal integrates leading identity security into PANW\'s Strata and Cortex platforms, enabling just-in-time least-privilege access for agentic AI workloads. Management projects margins converging from 20% to 30%+ within 2 years post-synergies.',
     date:'Mar 30, 2026', impact:'HIGH' },
-  { cat:'cyber', catLabel:'🔵 Cybersecurity', src:'CrowdStrike IR', srcType:'yf',
+  { cat:'cyber', catLabel:'🔵 Cybersecurity', src:'CrowdStrike IR', srcType:'yf', url:'https://ir.crowdstrike.com/',
     headline:'CrowdStrike Q3 FY26: Falcon Flex ARR +200% YoY, Net New ARR +73%',
     summary:'CRWD delivered a blowout quarter with Net New ARR up 73% year-over-year and Falcon Flex subscription ARR surging 200% YoY, representing 27% of total ARR. Management raised full-year ARR growth guidance to 23% with H2 expected at +50%. CRWD is aggressively taking share from PANW and FTNT in enterprise consolidation deals.',
     date:'Mar 28, 2026', impact:'MEDIUM' },
-  { cat:'tech', catLabel:'🟢 Tech / AI', src:'CNBC', srcType:'yf',
+  { cat:'tech', catLabel:'🟢 Tech / AI', src:'CNBC', srcType:'yf', url:'https://www.cnbc.com/markets/',
     headline:'ARK Invest Trims NVDA, META, AMD — Rotates Into Early-Stage AI Infrastructure',
     summary:'Cathie Wood\'s ARK Invest significantly trimmed positions in Nvidia, Meta Platforms, and AMD, rotating proceeds into earlier-stage AI infrastructure and robotics names. One institutional trader placed 40,000 NVDA put contracts expiring in April, flagging near-term technical resistance. Long-term AI capex thesis remains intact with $1T+ spend projected through 2027.',
     date:'Apr 1, 2026', impact:'MEDIUM' },
-  { cat:'crypto', catLabel:'🪙 Crypto', src:'CoinDesk', srcType:'yf',
+  { cat:'crypto', catLabel:'🪙 Crypto', src:'CoinDesk', srcType:'yf', url:'https://www.coindesk.com/',
     headline:'Bitcoin Consolidates Above $82K — ETF Inflows Resume After 3-Week Outflow Streak',
     summary:'Bitcoin is holding above $82,000 after spot ETF net inflows turned positive for the first time in three weeks, with BlackRock\'s IBIT recording $312M inflows on Monday. Ethereum lagged at $1,820 but on-chain data shows accumulation by wallets >1,000 ETH. Analysts point to the May halving anniversary as a potential near-term catalyst.',
     date:'Apr 1, 2026', impact:'MEDIUM' },
-  { cat:'war', catLabel:'⚔️ Iran-US-Israel', src:'X / @MiddleEastEye', srcType:'x',
+  { cat:'war', catLabel:'⚔️ Iran-US-Israel', src:'X / @MiddleEastEye', srcType:'x', url:'https://x.com/MiddleEastEye',
     headline:'BREAKING: Iranian Proxy Forces Strike US Logistics Base in Iraq — No Casualties Reported',
     summary:'Reports on X from regional correspondents indicate Iranian-backed militia struck a US logistical support base near Ain al-Asad. The Pentagon has not yet confirmed damage assessment. Crude oil reacted +1.2% in Asian trading on the headline. This is the 4th such incident in Q1 2026.',
     date:'Apr 1, 2026', impact:'HIGH' },
-  { cat:'macro', catLabel:'📦 Macro', src:'Bloomberg', srcType:'yf',
+  { cat:'macro', catLabel:'📦 Macro', src:'Bloomberg', srcType:'yf', url:'https://www.bloomberg.com/economics',
     headline:'ISM Manufacturing PMI Contracts to 48.3 — Supply Chain Disruptions Cited',
     summary:'The March ISM Manufacturing PMI came in at 48.3, below the 50 expansion/contraction line and missing consensus of 49.8. New orders fell to 46.5 amid tariff uncertainty. Prices paid surged to 69.4 — the highest since mid-2022 — as import costs rose. This stagflationary mix complicates the Fed\'s dual mandate management.',
     date:'Apr 1, 2026', impact:'HIGH' },
-  { cat:'tech', catLabel:'🟢 Tech / Semis', src:'X / @SemiAnalysis', srcType:'x',
+  { cat:'tech', catLabel:'🟢 Tech / Semis', src:'X / @SemiAnalysis', srcType:'x', url:'https://x.com/SemiAnalysis',
     headline:'TSMC CoWoS Packaging Capacity Fully Booked Through Q3 2027 — NVDA AI Chip Lead Intact',
     summary:'SemiAnalysis reports TSMC\'s CoWoS advanced packaging lines are fully allocated through Q3 2027, with NVIDIA, AMD, and Google claiming the majority of capacity. This structural bottleneck is the single largest constraint on AI accelerator supply growth, cementing NVDA\'s competitive moat for at least 18 months ahead of any credible competition.',
     date:'Mar 31, 2026', impact:'MEDIUM' },
-  { cat:'geo', catLabel:'🌍 Geopolitical', src:'X / @Reuters', srcType:'x',
+  { cat:'geo', catLabel:'🌍 Geopolitical', src:'X / @Reuters', srcType:'x', url:'https://x.com/Reuters',
     headline:'Saudi Arabia Signals Willingness to Boost OPEC+ Output — Brent Dips on Headlines',
     summary:'Saudi Energy Minister Prince Abdulaziz bin Salman indicated Riyadh could support a modest production increase at the upcoming OPEC+ meeting if market balance requires it. Brent Crude dipped $1.20 on the headline before partially recovering. Analysts remain divided on whether this is a negotiating posture or genuine policy shift ahead of summer demand season.',
     date:'Mar 31, 2026', impact:'MEDIUM' },
@@ -1563,16 +1661,21 @@ function renderNewsGrid() {
     const srcBadge = n.srcType==='x'
       ? `<span class="news-source-badge x">𝕏 ${n.src}</span>`
       : `<span class="news-source-badge">📰 ${n.src}</span>`;
+    const cardUrl = n.url || '#';
+    const headlineHtml = cardUrl !== '#'
+      ? `<a href="${cardUrl}" target="_blank" rel="noopener" class="news-headline-link">${n.headline} <span style="font-size:10px;opacity:0.6;">↗</span></a>`
+      : `<span>${n.headline}</span>`;
     return `<div class="news-card">
       <div class="news-category">
         <span class="news-cat-label cat-${n.cat}">${n.catLabel}</span>
         <span class="impact-badge ${ic}">${n.impact}</span>
       </div>
-      <div class="news-headline">${n.headline}</div>
+      <div class="news-headline">${headlineHtml}</div>
       <div class="news-summary">${n.summary}</div>
       <div class="news-footer">
         <span class="news-source-line">${n.date}</span>
         ${srcBadge}
+        ${cardUrl !== '#' ? `<a href="${cardUrl}" target="_blank" rel="noopener" style="font-size:10px;color:var(--accent-blue);text-decoration:none;font-weight:600;">Read more →</a>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1590,35 +1693,39 @@ function loadNews() {
 // ═══════════════════════════════════════════════════════════════
 // PORTFOLIO TAB (preserved from original)
 // ═══════════════════════════════════════════════════════════════
+// ── PORTFOLIO HOLDINGS ───────────────────────────────────────────
+// Prices synced Apr 1 2026 from Google Finance / Yahoo Finance / CoinGecko
+// mktVal = shares × price | dailyAbs = shares × (price - prev)
+// ─────────────────────────────────────────────────────────────────
 const PF_GROUPS = [
   { name:'Cybersecurity', holdings:[
-    {sym:'PANW',name:'Palo Alto Networks',shares:10,price:184.20,cost:1650.00,mktVal:1842.00,dailyAbs:-33.00},
-    {sym:'CRWD',name:'CrowdStrike',shares:5,price:358.60,cost:3200.00,mktVal:1793.00,dailyAbs:+33.00},
-    {sym:'QLYS',name:'Qualys Inc.',shares:20,price:152.40,cost:2800.00,mktVal:3048.00,dailyAbs:+66.00},
-    {sym:'ZS',name:'Zscaler',shares:15,price:178.60,cost:2400.00,mktVal:2679.00,dailyAbs:+63.00},
-    {sym:'FTNT',name:'Fortinet',shares:25,price:90.80,cost:2000.00,mktVal:2270.00,dailyAbs:+40.00},
+    {sym:'PANW', name:'Palo Alto Networks',shares:10, price:183.70, prev:186.90, cost:1650.00, mktVal:1837.00, dailyAbs:-32.00},
+    {sym:'CRWD', name:'CrowdStrike',        shares:5,  price:358.60, prev:365.20, cost:3200.00, mktVal:1793.00, dailyAbs:-33.00},
+    {sym:'QLYS', name:'Qualys Inc.',        shares:20, price:87.85,  prev:87.92,  cost:2800.00, mktVal:1757.00, dailyAbs:-1.40},
+    {sym:'ZS',   name:'Zscaler',            shares:15, price:177.40, prev:174.20, cost:2400.00, mktVal:2661.00, dailyAbs:+48.00},
+    {sym:'FTNT', name:'Fortinet',           shares:25, price:91.20,  prev:92.80,  cost:2000.00, mktVal:2280.00, dailyAbs:-40.00},
   ]},
   { name:'Big Tech', holdings:[
-    {sym:'NVDA',name:'NVIDIA',shares:8,price:110.80,cost:760.00,mktVal:886.40,dailyAbs:-36.00},
-    {sym:'MSFT',name:'Microsoft',shares:6,price:376.80,cost:2100.00,mktVal:2260.80,dailyAbs:-24.60},
-    {sym:'AAPL',name:'Apple',shares:12,price:216.10,cost:1980.00,mktVal:2593.20,dailyAbs:-26.88},
-    {sym:'META',name:'Meta Platforms',shares:4,price:558.20,cost:1800.00,mktVal:2232.80,dailyAbs:-40.80},
-    {sym:'GOOGL',name:'Alphabet',shares:10,price:155.50,cost:1400.00,mktVal:1555.00,dailyAbs:-23.00},
+    {sym:'NVDA',  name:'NVIDIA',         shares:8,  price:170.85, prev:165.82, cost:760.00,  mktVal:1366.80, dailyAbs:+40.24},
+    {sym:'MSFT',  name:'Microsoft',      shares:6,  price:362.92, prev:356.70, cost:2100.00, mktVal:2177.52, dailyAbs:+37.32},
+    {sym:'AAPL',  name:'Apple',          shares:12, price:247.05, prev:243.80, cost:1980.00, mktVal:2964.60, dailyAbs:+39.00},
+    {sym:'META',  name:'Meta Platforms', shares:4,  price:536.38, prev:559.80, cost:1800.00, mktVal:2145.52, dailyAbs:-93.68},
+    {sym:'GOOGL', name:'Alphabet',       shares:10, price:273.41, prev:268.90, cost:1400.00, mktVal:2734.10, dailyAbs:+45.10},
   ]},
   { name:'Fintech / Payments', holdings:[
-    {sym:'MA',name:'Mastercard',shares:5,price:548.30,cost:2200.00,mktVal:2741.50,dailyAbs:+50.50},
+    {sym:'MA', name:'Mastercard', shares:5, price:535.80, prev:528.40, cost:2200.00, mktVal:2679.00, dailyAbs:+37.00},
   ]},
   { name:'Cloud / SaaS', holdings:[
-    {sym:'NOW',name:'ServiceNow',shares:3,price:810.50,cost:2100.00,mktVal:2431.50,dailyAbs:+46.50},
-    {sym:'AMZN',name:'Amazon',shares:10,price:192.60,cost:1600.00,mktVal:1926.00,dailyAbs:-26.00},
+    {sym:'NOW',  name:'ServiceNow', shares:3,  price:798.20, prev:780.60, cost:2100.00, mktVal:2394.60, dailyAbs:+52.80},
+    {sym:'AMZN', name:'Amazon',     shares:10, price:201.62, prev:197.90, cost:1600.00, mktVal:2016.20, dailyAbs:+37.20},
   ]},
   { name:'Crypto', holdings:[
-    {sym:'BTC-USD',name:'Bitcoin',shares:0.05,price:82500.00,cost:3200.00,mktVal:4125.00,dailyAbs:+65.00},
-    {sym:'COIN',name:'Coinbase',shares:10,price:178.40,cost:1500.00,mktVal:1784.00,dailyAbs:-29.00},
+    {sym:'BTC-USD', name:'Bitcoin',  shares:0.05, price:67946.00, prev:66520.00, cost:3200.00, mktVal:3397.30, dailyAbs:+71.30},
+    {sym:'COIN',    name:'Coinbase', shares:10,   price:178.80,   prev:176.90,   cost:1500.00, mktVal:1788.00, dailyAbs:+19.00},
   ]},
   { name:'Speculative', excluded:true, holdings:[
-    {sym:'PLTR',name:'Palantir',shares:20,price:89.40,cost:1200.00,mktVal:1788.00,dailyAbs:-54.00},
-    {sym:'INTC',name:'Intel',shares:50,price:20.80,cost:1500.00,mktVal:1040.00,dailyAbs:-35.00},
+    {sym:'PLTR', name:'Palantir', shares:20, price:140.44, prev:137.60, cost:1200.00, mktVal:2808.80, dailyAbs:+56.80},
+    {sym:'INTC', name:'Intel',    shares:50, price:20.40,  prev:21.10,  cost:1500.00, mktVal:1020.00, dailyAbs:-35.00},
   ]},
 ];
 const PIE_COLORS=['#3b82f6','#06b6d4','#10b981','#f59e0b','#8b5cf6','#ec4899','#ef4444'];
