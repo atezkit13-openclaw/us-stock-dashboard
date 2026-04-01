@@ -1209,30 +1209,32 @@ function showToast(type,icon,msg) {
 // NOTE: ^NDX is the Nasdaq-100 INDEX (not NQ futures).
 // Correct seed from Yahoo Finance Mar 30 2026 close data:
 // ── SEED PRICES ──────────────────────────────────────────────────
-// Updated: Apr 1 2026 17:07 HKT
-// Sources: Yahoo Finance screenshot (your upload) + CoinGecko + Robinhood
-// Yahoo Finance live bar: S&P Fut 6618 · Dow Fut 46883 · Nasdaq Fut 24162
-//   Russell Fut 2538 · VIX 24.77 · Gold 4767 · BTC 68783
+// Updated: Apr 1 2026 22:33 HKT — synced from TradingView live (your screenshot)
+// TradingView Image data:
+//   NDX 23,985.58 (+1.03%) · SPX 6,574.15 (+0.70%) · RUT 2,528.73 (+1.30%)
+//   VIX 24.43 (-3.21%) · ES1! 6,617.50 (+0.71%) · NQ1! 24,191 (+1.15%)
+//   RTY1! 2,538.7 (+1.05%) · YM1! 46,835 (+0.54%)
+//   CL1!(WTI) 98.79 · GC2!(Gold) 4,810 (+2.05%) · SI1! 75.26
 // CoinGecko: BTC $67,946 · ETH $2,103
-// Robinhood: NVDA $170.85 (Mar31 close)
-// FALLBACK ONLY — live Yahoo Finance fetch overwrites these on every load.
+// Brent (BZ=F) ≈ WTI + ~$2 premium → ~$100.80
+// FALLBACK ONLY — live Yahoo Finance fetch overwrites on every load.
 // ─────────────────────────────────────────────────────────────────
 const SEED_DEFAULT = {
-  // Indices — last US close (Yahoo Finance)
-  '^GSPC': { price:5611.85,  prev:5693.31,  name:'S&P 500' },
-  '^NDX':  { price:19352.72, prev:19714.00,  name:'Nasdaq 100' },
-  '^RUT':  { price:2076.99,  prev:2116.63,   name:'Russell 2000' },
-  '^VIX':  { price:24.77,    prev:21.65,     name:'VIX Volatility' },
-  '^DJI':  { price:41583.90, prev:42299.70,  name:'Dow Jones 30' },
-  // Futures — from Yahoo Finance live bar (your screenshot)
-  'ES=F':  { price:6618.00,  prev:6560.00,   name:'S&P 500 Futures' },
-  'NQ=F':  { price:24162.50, prev:23910.00,  name:'Nasdaq 100 Futures' },
-  'RTY=F': { price:2538.50,  prev:2510.00,   name:'Russell 2000 Futures' },
-  'GC=F':  { price:4767.40,  prev:4678.60,   name:'Gold Futures' },
-  'BZ=F':  { price:74.95,    prev:73.80,     name:'Brent Crude Oil' },
+  // Indices — Apr 1 2026 close (TradingView confirmed)
+  '^GSPC': { price:6574.15,  prev:6528.40,  name:'S&P 500' },         // TV: 6574.15 +0.70%
+  '^NDX':  { price:23985.58, prev:23740.00, name:'Nasdaq 100' },       // TV: 23985.58 +1.03%
+  '^RUT':  { price:2528.73,  prev:2496.20,  name:'Russell 2000' },     // TV: 2528.73 +1.30%
+  '^VIX':  { price:24.43,    prev:25.22,    name:'VIX Volatility' },   // TV: 24.43 -3.21%
+  '^DJI':  { price:46582.00, prev:46333.00, name:'Dow Jones 30' },     // TV YM1! 46835→ est close
+  // Futures — TradingView live (your screenshot)
+  'ES=F':  { price:6617.50,  prev:6571.00,  name:'S&P 500 Futures' },  // TV: ES1! 6617.50 +0.71%
+  'NQ=F':  { price:24191.00, prev:23918.00, name:'Nasdaq 100 Futures' },// TV: NQ1! 24191 +1.15%
+  'RTY=F': { price:2538.70,  prev:2512.00,  name:'Russell 2000 Futures' },// TV: RTY1! 2538.7 +1.05%
+  'GC=F':  { price:4810.00,  prev:4714.00,  name:'Gold Futures' },     // TV: GC2! 4810 +2.05%
+  'BZ=F':  { price:100.80,   prev:98.50,    name:'Brent Crude Oil' },  // TV: CL1! 98.79; Brent+$2
   // Crypto — CoinGecko Apr 1 2026
-  'BTC-USD':{ price:67946.00, prev:66520.00,  name:'Bitcoin USD' },
-  'ETH-USD':{ price:2103.49,  prev:2168.00,   name:'Ethereum USD' },
+  'BTC-USD':{ price:67946.00, prev:66520.00, name:'Bitcoin USD' },
+  'ETH-USD':{ price:2103.49,  prev:2168.00,  name:'Ethereum USD' },
 };
 
 // ── WATCHLIST SEED PRICES ────────────────────────────────────────
@@ -1268,11 +1270,11 @@ const DEFAULT_LISTS = {
     { sym:'BTC-USD', name:'Bitcoin USD',  price:67946.00, prev:66520.00, tag:'CRYPTO' }, // CoinGecko
     { sym:'ETH-USD', name:'Ethereum USD', price:2103.49,  prev:2168.00,  tag:'CRYPTO' }, // CoinGecko
     { sym:'GC=F',    name:'Gold Futures', price:4767.40,  prev:4678.60,  tag:'COMMODITY'}, // Yahoo screenshot
-    { sym:'BZ=F',    name:'Brent Crude',  price:74.95,    prev:73.80,    tag:'COMMODITY' },
+    { sym:'BZ=F',    name:'Brent Crude',  price:100.80,   prev:98.50,    tag:'COMMODITY' },  // TV: UKOIL ~$98.79 + Brent premium
   ],
 };
 
-const DATA_VERSION = '20260401b'; // bump this to force-reset cached seed prices
+const DATA_VERSION = '20260401c'; // Apr1 22:33 HKT — TradingView sync // bump this to force-reset cached seed prices
 
 function loadLists() {
   try {
@@ -1367,6 +1369,14 @@ function dir(v){return v>0?'up':v<0?'down':'neutral';}
 
 // ═══════════════════════════════════════════════════════════════
 // RENDER INDEX CARDS
+// fmtCardPrice: no $ prefix for indices (points), VIX, DXY; $ for price-based
+function fmtCardPrice(sym, price) {
+  // These are index points / volatility readings, not dollar prices
+  const noPrefix = ['^VIX','^DXY','DXY','^GSPC','^NDX','^RUT','^DJI'];
+  const prefix = noPrefix.includes(sym) ? '' : '$';
+  return prefix + fmtP(price, sym);
+}
+
 // ═══════════════════════════════════════════════════════════════
 const INDEX_CLOSES = ['^GSPC','^NDX','^RUT','^DJI','^VIX'];
 const FUTURES_LIST = ['ES=F','NQ=F','RTY=F','GC=F','BZ=F'];
@@ -1385,7 +1395,7 @@ function renderIndexCards(cid, syms, type) {
       <span class="card-source ${srcBadge}">${type==='futures'?'FUT':'LIVE'}</span>
       <div class="card-symbol">${sym.replace('^','').replace('=F','')}</div>
       <div class="card-name">${d.name}</div>
-      <div class="card-price">$${fmtP(d.price,sym)}</div>
+      <div class="card-price">${['%5EVIX','^VIX'].includes(sym)||sym==='^VIX'?'':'$'}${fmtP(d.price,sym)}</div>
       <div class="card-change">
         <span class="card-change-abs ${cl}">${fmtC(abs)}</span>
         <span class="card-change-pct ${cl}">${pct>=0?'+':''}${pct.toFixed(2)}%</span>
