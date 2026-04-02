@@ -1108,7 +1108,7 @@ body.light-theme .alert-item.oil-alert-bar {
       <div class="news-live-indicator">
         <span class="live-dot"></span>
         <span id="news-last-updated">Fetching…</span>
-        <button onclick="loadNews()" style="background:none;border:1px solid var(--border);color:var(--text-secondary);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;">⟳ Reload</button>
+        <button id="news-reload-btn" onclick="reloadNewsManager()" style="display:none;background:none;border:1px solid rgba(245,158,11,0.4);color:var(--amber);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;" title="Manager only">⟳ Reload</button>
       </div>
     </div>
 
@@ -1466,6 +1466,7 @@ function activateManager() {
   document.getElementById('tab-btn-portfolio').classList.add('unlocked');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   renderAll();
+  updateNewsReloadBtn(); updateSyncBtn();
   showToast('success','🔓','Manager Mode activated.');
 }
 function lockManager() {
@@ -1477,6 +1478,7 @@ function lockManager() {
   renderAll();
   // Also lock portfolio when manager locks
   lockPortfolio();
+  updateNewsReloadBtn(); updateSyncBtn();
   showToast('info','🔒','Manager Mode & Portfolio locked.');
 }
 
@@ -1712,7 +1714,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402u'; // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402v'; // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -2854,12 +2856,47 @@ function renderNewsGrid() {
 }
 
 let newsLoaded = false;
+let newsAutoTimer = null;
+
 function loadNews() {
   allNewsItems = [...NEWS_STATIC];
   renderNewsGrid();
   document.getElementById('news-last-updated').textContent =
     'Updated ' + new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false}) + ' HKT';
   newsLoaded = true;
+}
+
+// Manager-only manual reload
+function reloadNewsManager() {
+  if (!managerUnlocked) return;
+  loadNews();
+  showToast('success','📰','News reloaded.');
+}
+
+// Show/hide Reload button based on manager state
+function updateNewsReloadBtn() {
+  const btn = document.getElementById('news-reload-btn');
+  if (btn) btn.style.display = managerUnlocked ? 'inline-block' : 'none';
+}
+
+// Schedule auto news refresh at 09:00 HKT daily
+function scheduleNewsRefresh() {
+  clearTimeout(newsAutoTimer);
+  const now  = new Date();
+  const hkt  = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Hong_Kong' }));
+  const next = new Date(hkt);
+  next.setHours(9, 0, 0, 0);
+  // If 09:00 HKT already passed today, schedule for tomorrow
+  if (next <= hkt) next.setDate(next.getDate() + 1);
+  const msUntil = next - hkt;
+  const hh = Math.floor(msUntil/3600000);
+  const mm = Math.floor((msUntil%3600000)/60000);
+  console.log(`[News] Auto-refresh scheduled in ${hh}h ${mm}m (09:00 HKT)`);
+  newsAutoTimer = setTimeout(() => {
+    loadNews();
+    showToast('info','📰','News auto-refreshed — 09:00 HKT daily update.');
+    scheduleNewsRefresh(); // reschedule for next day
+  }, msUntil);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3325,6 +3362,7 @@ renderAll();
     document.getElementById('last-updated').textContent='Seed data (fetch failed)';
   }
   scheduleNextAutoRefresh();
+  scheduleNewsRefresh(); // auto news at 09:00 HKT daily
   // Eagerly fetch live prices on first load (non-blocking, 2s delay for page render)
   setTimeout(async () => {
     try {
