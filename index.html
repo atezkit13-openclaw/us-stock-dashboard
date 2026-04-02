@@ -1712,7 +1712,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402q'; // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402r'; // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1742,131 +1742,142 @@ function syncSeed() {
 function getPrice(sym) { return liveData[sym] || SEED[sym]; }
 
 // ═══════════════════════════════════════════════════════════════
-// LIVE FETCH — Batch Yahoo Finance v7/quote via CORS proxies
+// LIVE FETCH — Yahoo Finance v8/chart with candle-based pre/post market
 //
-// KEY INSIGHT: v7/quote reliably returns preMarketPrice + postMarketPrice.
-// v8/chart meta does NOT reliably return these fields.
+// CONFIRMED WORKING (Apr 2026):
+//   v8/chart interval=1m&range=1d&includePrePost=true
+//   → indicators.quote[0].close = actual candle prices (pre + regular + post)
+//   → meta.regularMarketPrice   = last official close
+//   → meta.chartPreviousClose   = prior day close
+//   → meta.currentTradingPeriod = timestamps for pre/regular/post windows
+//   → meta.preMarketPrice       = UNRELIABLE (always null) — DO NOT USE
 //
-// BATCH STRATEGY: fetch 10 symbols per request → much faster
-//   Direct Yahoo → blocked by CORS on GH Pages
-//   allorigins.win → free CORS proxy, works reliably
-//   corsproxy.io   → fallback
-//
-// fetchAllPrices() now calls batchFetchSymbols() instead of
-// individual fetchSymbol() calls.
+// CORS: Works directly with Referer header (no proxy needed)
 // ═══════════════════════════════════════════════════════════════
 
-const YF_FIELDS = [
-  'regularMarketPrice','regularMarketPreviousClose',
-  'preMarketPrice','preMarketChange','preMarketChangePercent',
-  'postMarketPrice','postMarketChange','postMarketChangePercent',
-  'longName','shortName'
-].join(',');
+const YF_HEADERS = {
+  'Accept': 'application/json',
+  'Referer': 'https://finance.yahoo.com/',
+};
 
-// Parse a single v7 quote result object
-function parseQuoteResult(q, sym) {
-  if (!q) return null;
-  const closePrice = q.regularMarketPrice;
-  if (!closePrice || closePrice <= 0) return null;
-  const prevClose = q.regularMarketPreviousClose || closePrice;
-  const prePrice  = (q.preMarketPrice  && q.preMarketPrice  > 0) ? q.preMarketPrice  : null;
-  const postPrice = (q.postMarketPrice && q.postMarketPrice > 0) ? q.postMarketPrice : null;
-  const name = q.longName || q.shortName || SEED[sym]?.name || sym;
-  return {
-    price:     +closePrice.toFixed(4),
-    prev:      +prevClose.toFixed(4),
-    prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
-    postPrice: postPrice ? +postPrice.toFixed(4) : null,
-    name,
-  };
-}
+// Extract price data from Yahoo v8 chart response
+function parseV8Chart(data, sym) {
+  try {
+    const result = data?.chart?.result?.[0];
+    if (!result) return null;
+    const meta       = result.meta || {};
+    const timestamps = result.timestamp || [];
+    const closes     = result.indicators?.quote?.[0]?.close || [];
 
-// Parse a single v8 chart meta object (fallback, no pre/post)
-function parseChartMeta(meta, sym) {
-  if (!meta) return null;
-  const closePrice = meta.regularMarketPrice;
-  if (!closePrice || closePrice <= 0) return null;
-  const prevClose = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
-  const name = meta.longName || meta.shortName || SEED[sym]?.name || sym;
-  // v8 chart preMarketPrice is unreliable — only use if explicitly present
-  const prePrice  = (meta.preMarketPrice  && meta.preMarketPrice  > 0) ? meta.preMarketPrice  : null;
-  const postPrice = (meta.postMarketPrice && meta.postMarketPrice > 0) ? meta.postMarketPrice : null;
-  return {
-    price:     +closePrice.toFixed(4),
-    prev:      +prevClose.toFixed(4),
-    prePrice, postPrice, name,
-  };
-}
+    const closePrice = meta.regularMarketPrice;
+    const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
+    if (!closePrice || closePrice <= 0) return null;
 
-// Batch fetch up to 10 symbols via Yahoo v7/quote through a proxy
-async function batchFetchQuote(syms, proxyFn) {
-  const encoded = syms.map(s => encodeURIComponent(s)).join(',');
-  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=${YF_FIELDS}&crumb=`;
-  const proxiedUrl = proxyFn ? proxyFn(url) : url;
-  const r = await fetch(proxiedUrl, { cache:'no-store', headers:{'Accept':'application/json'} });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const j = await r.json();
-  const raw = typeof j === 'string' ? JSON.parse(j) : j;
-  const results = raw?.quoteResponse?.result || [];
-  const map = {};
-  results.forEach(q => {
-    const parsed = parseQuoteResult(q, q.symbol);
-    if (parsed) map[q.symbol] = parsed;
-  });
-  return map;
-}
+    // Get trading period windows
+    const ctp      = meta.currentTradingPeriod || {};
+    const preStart = ctp.pre?.start  || 0;
+    const preEnd   = ctp.pre?.end    || 0;
+    const regStart = ctp.regular?.start || 0;
+    const regEnd   = ctp.regular?.end   || 0;
+    const nowTs    = Date.now() / 1000;
 
-// Single symbol fallback via v8 chart
-async function fetchSingleChart(sym, proxyFn) {
-  const encoded = encodeURIComponent(sym);
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`;
-  const proxiedUrl = proxyFn ? proxyFn(url) : url;
-  const r = await fetch(proxiedUrl, { cache:'no-store', headers:{'Accept':'application/json'} });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const j = await r.json();
-  const raw = typeof j === 'string' ? JSON.parse(j) : j;
-  return parseChartMeta(raw?.chart?.result?.[0]?.meta, sym);
-}
-
-const PROXY_ALLORIGINS = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
-const PROXY_CORSPROXY  = (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`;
-const PROXY_NONE = null; // direct (works locally, blocked on GH Pages)
-
-// Fetch a single symbol — try v7 batch first (size-1 batch), then v8 chart
-async function fetchSymbol(sym) {
-  const proxies = [PROXY_NONE, PROXY_ALLORIGINS, PROXY_CORSPROXY];
-  // Try v7 quote (has preMarketPrice) via each proxy
-  for (const proxy of proxies) {
-    try {
-      const map = await batchFetchQuote([sym], proxy);
-      if (map[sym]) {
-        console.log('[YF v7]', sym, '| close:', map[sym].price, '| pre:', map[sym].prePrice, '| proxy:', proxy?'proxy':'direct');
-        return map[sym];
+    // Helper: get last non-null close in a timestamp range
+    function lastClose(start, end) {
+      let last = null;
+      for (let i = timestamps.length - 1; i >= 0; i--) {
+        const t = timestamps[i];
+        if (t >= start && t < end && closes[i] != null) {
+          last = closes[i];
+          break;
+        }
       }
-    } catch(e) { console.debug('[YF v7 fail]', sym, proxy?'proxy':'direct', e.message); }
+      return last;
+    }
+
+    // Determine pre-market price (last candle in pre window)
+    let prePrice  = null;
+    let postPrice = null;
+
+    if (preStart && preEnd && nowTs >= preStart && nowTs < regStart) {
+      // Currently in pre-market → last pre candle is the live pre-market price
+      prePrice = lastClose(preStart, preEnd);
+    } else if (nowTs >= regEnd) {
+      // After regular close → last post-market candle
+      postPrice = lastClose(regEnd, regEnd + 4 * 3600);
+    } else if (nowTs >= regStart && nowTs < regEnd) {
+      // Market open → regularMarketPrice IS the live price; check for any pre data too
+      prePrice = lastClose(preStart, regStart); // pre-market close (for reference)
+    }
+
+    // Also try: last candle overall (most current price available)
+    let lastCandlePrice = null;
+    for (let i = timestamps.length - 1; i >= 0; i--) {
+      if (closes[i] != null) { lastCandlePrice = closes[i]; break; }
+    }
+
+    const name = meta.longName || meta.shortName || SEED[sym]?.name || sym;
+
+    return {
+      price:     +closePrice.toFixed(4),         // last official close (meta)
+      prev:      +prevClose.toFixed(4),           // prior day close
+      prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
+      postPrice: postPrice ? +postPrice.toFixed(4) : null,
+      lastCandle: lastCandlePrice ? +lastCandlePrice.toFixed(4) : null,
+      name,
+    };
+  } catch(e) {
+    console.warn('[parseV8Chart error]', sym, e.message);
+    return null;
   }
-  // Fallback: v8 chart (no pre/post usually)
-  for (const proxy of proxies) {
+}
+
+async function fetchSymbol(sym) {
+  const enc  = encodeURIComponent(sym);
+  const urls = [
+    `https://query1.finance.yahoo.com/v8/finance/chart/${enc}?interval=1m&range=1d&includePrePost=true`,
+    `https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1m&range=1d&includePrePost=true`,
+  ];
+  for (const url of urls) {
     try {
-      const result = await fetchSingleChart(sym, proxy);
+      const r = await fetch(url, { headers: YF_HEADERS, cache: 'no-store' });
+      if (!r.ok) continue;
+      const j      = await r.json();
+      const result = parseV8Chart(j, sym);
       if (result) {
-        console.log('[YF v8]', sym, '| close:', result.price, '| pre:', result.prePrice, '| proxy:', proxy?'proxy':'direct');
+        console.log('[YF]', sym,
+          '| close:', result.price,
+          '| pre:', result.prePrice,
+          '| post:', result.postPrice,
+          '| lastCandle:', result.lastCandle);
         return result;
       }
-    } catch(e) { console.debug('[YF v8 fail]', sym, e.message); }
+    } catch(e) { console.debug('[YF fail]', sym, url.includes('query2')?'q2':'q1', e.message); }
   }
-  console.warn('[YF] All failed for:', sym);
+  console.warn('[YF] Failed:', sym);
   return null;
 }
 
-// ── DUMMY for legacy compat ──
+// Legacy compat
 async function tryFetch(url, opts={}) {
   const r = await fetch(url, { cache:'no-store', ...opts });
   if (!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
+function parseChartMeta(meta, sym)  { return null; } // replaced by parseV8Chart
+function parseQuoteResult(q, sym)   { return null; } // v7 is 401, removed
 
+// Batch fetch — calls fetchSymbol concurrently (parallel, fast)
+const PROXY_ALLORIGINS = null; // not needed anymore
+const PROXY_CORSPROXY  = null;
+const PROXY_NONE       = null;
 
+async function batchFetchQuote(syms, _proxy) {
+  // Execute all fetches in parallel
+  const results = await Promise.allSettled(syms.map(s => fetchSymbol(s)));
+  const map = {};
+  results.forEach((r,i) => { if (r.status==='fulfilled' && r.value) map[syms[i]] = r.value; });
+  return map;
+}
 // ─── Sync rate-limit: once per hour ───────────────────────────
 const SYNC_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 let lastSyncTime = 0;
@@ -1945,39 +1956,13 @@ async function fetchAllPrices() {
     ...LISTS.crypto.map(t=>t.sym),
   ])];
 
-  // ── Phase 1: Batch fetch watchlist via v7/quote (10 at a time) ──
-  // v7/quote returns preMarketPrice reliably
-  const BATCH = 10;
-  const proxies = [PROXY_NONE, PROXY_ALLORIGINS, PROXY_CORSPROXY];
+  // Fetch all symbols in parallel (v8/chart works with direct CORS)
   const fetched = {};
-
-  // Batch the full symbol list
-  for (let i = 0; i < allSyms.length; i += BATCH) {
-    const batch = allSyms.slice(i, i+BATCH);
-    let success = false;
-    for (const proxy of proxies) {
-      try {
-        const map = await batchFetchQuote(batch, proxy);
-        Object.assign(fetched, map);
-        const got = Object.keys(map).length;
-        console.log(`[Batch ${Math.floor(i/BATCH)+1}] proxy:${proxy?'yes':'direct'} got ${got}/${batch.length}`);
-        if (got > 0) { success = true; break; }
-      } catch(e) {
-        console.debug(`[Batch fail] proxy:${proxy?'yes':'direct'}`, e.message);
-      }
-    }
-    if (!success) {
-      // Per-symbol fallback for this batch
-      await Promise.allSettled(batch.map(async s => {
-        const r = await fetchSymbol(s);
-        if (r) fetched[s] = r;
-      }));
-    }
-  }
-
-  // Merge into liveData
+  const results = await Promise.allSettled(allSyms.map(s => fetchSymbol(s)));
+  results.forEach((r,i) => { if (r.status==='fulfilled' && r.value) fetched[allSyms[i]] = r.value; });
   Object.assign(liveData, fetched);
-  const syms = allSyms; // keep for compat below
+  const syms = allSyms;
+  console.log('[fetchAllPrices] done:', Object.keys(fetched).length, '/', allSyms.length, 'symbols');
   renderAll();
   const ts = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false})+' HKT';
   document.getElementById('last-updated').textContent = ts;
@@ -2325,7 +2310,9 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     const lv        = liveData[sym];
     const closePrice  = (lv && lv.price > 0) ? lv.price : d.price;     // last official close
     const prevClose   = (lv && lv.prev > 0)  ? lv.prev  : d.prev;      // prior day close
-    // Pre/after-hours price from fetch result; null if not available
+    // Pre/after-hours price: prePrice (pre-market), postPrice (after-hours)
+    // During pre-market: prePrice = last candle in pre window
+    // During after-hours: postPrice = last candle in post window
     const extPrice = lv
       ? (lv.prePrice || lv.postPrice || null)
       : null;
