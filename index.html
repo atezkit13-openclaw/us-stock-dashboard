@@ -91,6 +91,17 @@ body::before { content:''; position:fixed; inset:0;
 .btn { border-radius:6px; cursor:pointer; font-size:11px; font-weight:600;
   letter-spacing:0.04em; transition:all 0.2s; text-transform:uppercase; padding:7px 14px;
   font-family:SFMono-Regular,'SF Mono',Menlo,Consolas,monospace; }
+
+/* ── SYNC NOW BUTTON ── */
+.btn-sync-now {
+  background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.35);
+  color:var(--green); padding:5px 12px; border-radius:6px;
+  font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s;
+  font-family:inherit; white-space:nowrap;
+}
+.btn-sync-now:hover { background:rgba(16,185,129,0.2); border-color:var(--green); }
+.btn-sync-now:disabled { cursor:not-allowed; }
+
 .btn-refresh { background:linear-gradient(135deg,#1e3a5f,#1e4d7a); border:1px solid var(--accent-blue);
   color:var(--accent-blue); }
 .btn-refresh:hover { background:linear-gradient(135deg,#1e4d7a,#1e6bad); color:#fff; }
@@ -947,6 +958,7 @@ body.light-theme .alert-item.oil-alert-bar {
       </div>
       <div class="header-actions">
         <div class="last-updated">Fetched: <span id="last-updated">–</span></div>
+        <button class="btn-sync-now" id="sync-btn" onclick="syncNow()" title="Fetch latest prices from Yahoo Finance">⟳ Sync</button>
         <span class="auto-refresh-badge inactive" id="auto-badge" title="Auto-refresh schedule">⏰ Auto</span>
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
@@ -1699,7 +1711,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402j'; // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402k'; // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1732,14 +1744,53 @@ function getPrice(sym) { return liveData[sym] || SEED[sym]; }
 // LIVE FETCH — Yahoo Finance v8 chart API
 // Returns regularMarketPrice (most current: regular/pre/post market)
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// LIVE FETCH — Multi-endpoint Yahoo Finance strategy
+// v7/quote  → primary  (best pre/post market data, quote fields)
+// v8/chart  → fallback (chart meta, includePrePost)
+// ═══════════════════════════════════════════════════════════════
 async function fetchSymbol(sym) {
-  // Yahoo Finance v8 chart API — separate close, pre-market, post-market prices
   const encoded = encodeURIComponent(sym);
-  const urls = [
+
+  // ── Strategy 1: v7 quote endpoint (most complete pre/post data) ──
+  const quoteEndpoints = [
+    `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,preMarketChangePercent,postMarketPrice,postMarketChange,postMarketChangePercent,longName,shortName`,
+    `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,preMarketChangePercent,postMarketPrice,postMarketChange,postMarketChangePercent,longName,shortName`,
+  ];
+  for (const url of quoteEndpoints) {
+    try {
+      const r = await fetch(url, {
+        headers:{ 'Accept':'application/json', 'User-Agent':'Mozilla/5.0' },
+        cache:'no-store', mode:'cors'
+      });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const q = j?.quoteResponse?.result?.[0];
+      if (!q) continue;
+      const closePrice = q.regularMarketPrice;
+      const prevClose  = q.regularMarketPreviousClose || closePrice;
+      const prePrice   = q.preMarketPrice  || null;
+      const postPrice  = q.postMarketPrice || null;
+      const name       = q.longName || q.shortName || SEED[sym]?.name || sym;
+      if (!closePrice || closePrice <= 0) continue;
+      console.log('[YF v7]', sym, '| close:', closePrice, '| pre:', prePrice, '| post:', postPrice);
+      return {
+        price:     +closePrice.toFixed(4),
+        prev:      +prevClose.toFixed(4),
+        prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
+        postPrice: postPrice ? +postPrice.toFixed(4) : null,
+        name,
+        src: 'v7',
+      };
+    } catch(e) { console.warn('[YF v7 fail]', sym, e.message); continue; }
+  }
+
+  // ── Strategy 2: v8 chart endpoint (fallback) ──
+  const chartEndpoints = [
     `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`,
     `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?range=2d&interval=1d&includePrePost=true`,
   ];
-  for (const url of urls) {
+  for (const url of chartEndpoints) {
     try {
       const r = await fetch(url, {
         headers:{ 'Accept':'application/json', 'User-Agent':'Mozilla/5.0' },
@@ -1749,22 +1800,38 @@ async function fetchSymbol(sym) {
       const j = await r.json();
       const meta = j?.chart?.result?.[0]?.meta;
       if (!meta) continue;
-      const closePrice = meta.regularMarketPrice;   // official last close / live
-      const prePrice   = meta.preMarketPrice || null;  // pre-market (may be null)
-      const postPrice  = meta.postMarketPrice || null; // after-hours (may be null)
+      const closePrice = meta.regularMarketPrice;
+      const prePrice   = meta.preMarketPrice  || null;
+      const postPrice  = meta.postMarketPrice || null;
       const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
       const name       = meta.longName || meta.shortName || SEED[sym]?.name || sym;
       if (!closePrice || closePrice <= 0) continue;
+      console.log('[YF v8]', sym, '| close:', closePrice, '| pre:', prePrice, '| post:', postPrice);
       return {
-        price:      +closePrice.toFixed(4),  // regularMarketPrice = last official close
-        prev:       +prevClose.toFixed(4),   // prior day close (for % change baseline)
-        prePrice:   prePrice  ? +prePrice.toFixed(4)  : null,
-        postPrice:  postPrice ? +postPrice.toFixed(4) : null,
+        price:     +closePrice.toFixed(4),
+        prev:      +prevClose.toFixed(4),
+        prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
+        postPrice: postPrice ? +postPrice.toFixed(4) : null,
         name,
+        src: 'v8',
       };
-    } catch { continue; }
+    } catch(e) { console.warn('[YF v8 fail]', sym, e.message); continue; }
   }
+
+  console.warn('[YF] All endpoints failed for:', sym, '— using seed');
   return null;
+}
+
+async function syncNow() {
+  const btn = document.getElementById('sync-btn');
+  btn.textContent = '⟳ Syncing…';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  try { await fetchAllPrices(); } catch(e) { console.error(e); }
+  btn.textContent = '⟳ Sync';
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  showToast('success','📡','Prices synced from Yahoo Finance.');
 }
 
 async function fetchAllPrices() {
@@ -2823,6 +2890,13 @@ renderAll();
     document.getElementById('last-updated').textContent='Seed data (fetch failed)';
   }
   scheduleNextAutoRefresh();
+  // Eagerly fetch live prices on first load (non-blocking, 2s delay for page render)
+  setTimeout(async () => {
+    try {
+      console.log('[Init] Fetching live prices on page load…');
+      await fetchAllPrices();
+    } catch(e) { console.warn('[Init] Price fetch failed:', e); }
+  }, 2000);
 })();
 </script>
 </body>
