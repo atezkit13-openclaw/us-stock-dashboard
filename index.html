@@ -346,6 +346,14 @@ body.light-theme .manager-banner-text { color:#92400e; }
 }
 
 /* ── STATUS BADGE IN TABLE ── */
+
+.status-pre {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(139,92,246,0.12); color:var(--purple);
+  border:1px solid rgba(139,92,246,0.3); border-radius:4px;
+  padding:2px 6px; font-size:9px; font-weight:700; letter-spacing:0.08em;
+}
+
 .status-live {
   display:inline-flex; align-items:center; gap:4px;
   background:rgba(16,185,129,0.12); color:var(--green);
@@ -807,32 +815,41 @@ body.light-theme .alert-item.oil-alert-bar {
   <div class="modal">
     <button class="modal-close" onclick="closeModal('ticker-modal')">✕</button>
     <div class="modal-title" id="ticker-modal-title">➕ Add Ticker</div>
-    <div class="modal-sub" id="ticker-modal-sub">Enter the stock symbol and details</div>
+    <div class="modal-sub" id="ticker-modal-sub">Enter the Yahoo Finance symbol — name fetched automatically</div>
     <div class="form-row">
       <div class="form-label">Yahoo Finance Symbol *</div>
-      <input class="form-input" id="t-symbol" placeholder="e.g. AAPL, BTC-USD, GC=F" style="text-transform:uppercase;">
+      <input class="form-input" id="t-symbol" placeholder="e.g. AAPL, BTC-USD, GC=F" style="text-transform:uppercase;" oninput="onSymbolInput(this.value)">
       <div class="form-hint">Indices use ^ prefix (^GSPC). Futures use =F suffix (ES=F).</div>
     </div>
-    <div class="form-row"><div class="form-label">Display Name *</div>
-      <input class="form-input" id="t-name" placeholder="e.g. Apple Inc"></div>
-    <div class="form-row"><div class="form-label">List</div>
-      <select class="form-select" id="t-list">
-        <option value="watchlist">👁 Watch List</option>
-        <option value="crypto">🪙 Crypto / Commodities</option>
-      </select>
+    <!-- Auto-fetched name preview -->
+    <div id="t-name-preview" style="display:none;margin-bottom:12px;padding:8px 12px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:6px;font-size:12px;color:var(--green);">
+      <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;color:var(--text-dim);display:block;margin-bottom:2px;">NAME (AUTO-FETCHED)</span>
+      <span id="t-name-text">—</span>
     </div>
-    <div class="section-divider"></div>
-    <div style="font-size:10px;color:var(--text-dim);margin-bottom:10px;">SEED PRICES (fallback if live fetch fails)</div>
-    <div class="form-row-2">
-      <div class="form-row" style="margin-bottom:0"><div class="form-label">Seed Price</div>
-        <input class="form-input" id="t-price" placeholder="0.00" type="number" step="0.01"></div>
-      <div class="form-row" style="margin-bottom:0"><div class="form-label">Prev Close</div>
-        <input class="form-input" id="t-prev" placeholder="0.00" type="number" step="0.01"></div>
+    <div id="t-name-loading" style="display:none;margin-bottom:12px;font-size:11px;color:var(--text-dim);">⏳ Fetching name from Yahoo Finance…</div>
+    <!-- Hidden inputs kept for compatibility -->
+    <input type="hidden" id="t-name" value="">
+    <input type="hidden" id="t-list" value="watchlist">
+    <input type="hidden" id="t-price" value="0">
+    <input type="hidden" id="t-prev" value="0">
+    <div class="form-row">
+      <div class="form-label">Theme *</div>
+      <select class="form-select" id="t-narrative">
+        <option value="">— Select Theme —</option>
+        <option value="AI Infra">🤖 AI Infra</option>
+        <option value="Aerospace Defense">🛡 Aerospace &amp; Defense</option>
+        <option value="Big Tech">⭐ MAG7</option>
+        <option value="Cybersecurity">🔵 Cybersecurity</option>
+        <option value="Cloud SaaS">☁ Cloud SaaS</option>
+        <option value="Fintech">💳 FSI / Fintech</option>
+        <option value="Energy">⚡ Energy</option>
+        <option value="Critical Materials">⛏ Critical Materials</option>
+      </select>
     </div>
     <div class="pin-error-msg" id="ticker-error"></div>
     <div class="modal-actions" id="ticker-modal-actions">
       <button class="btn-secondary" onclick="closeModal('ticker-modal')">Cancel</button>
-      <button class="btn-primary" id="ticker-save-btn" onclick="saveTicker()">Save Ticker</button>
+      <button class="btn-primary" id="ticker-save-btn" onclick="saveTicker()">Add Ticker</button>
     </div>
   </div>
 </div>
@@ -978,11 +995,9 @@ body.light-theme .alert-item.oil-alert-bar {
     <span style="font-size:17px;">⚙</span>
     <div><div class="manager-banner-text">Manager Mode Active</div>
     <div class="manager-banner-sub">Add, edit, remove tickers. Changes saved to localStorage.</div></div>
-    <button class="btn-add-ticker" onclick="openAddTicker('watchlist')">+ Watchlist</button>
-    <button class="btn-add-ticker" onclick="openAddTicker('crypto')">+ Crypto/Cmdty</button>
-    <button class="btn-add-ticker" onclick="setNarrativeFilter('Crypto', document.querySelector('.ntab[data-narrative=Crypto]'))">🪙 View Crypto</button>
+    <button class="btn-add-ticker" onclick="openAddTicker('watchlist')">+ Add Ticker</button>
     <button class="btn-change-pin" onclick="openModal('change-pin-modal')">🔑 Change PIN</button>
-    <button class="btn-lock" onclick="lockManager()">🔒 Lock</button>
+    <button class="btn-lock" onclick="lockManager()">💾 Save &amp; Lock</button>
   </div>
 
   <!-- Single adaptive widget: shows indices when open, futures when closed -->
@@ -1032,7 +1047,8 @@ body.light-theme .alert-item.oil-alert-bar {
           <th onclick="setSortCol('pct',null)" style="cursor:pointer;">% Chg</th>
           <th>Status</th>
           <th>Weekly SMA</th>
-          <th>Tags &amp; Theme</th>
+          <th onclick="setSortCol('narrative',null)" style="cursor:pointer;">Theme</th>
+          <th>Tags</th>
           <th class="mgr-col">Actions</th>
         </tr></thead>
         <tbody id="watchlist-tbody"></tbody>
@@ -1672,7 +1688,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402h'; // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402i'; // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -2088,10 +2104,11 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     const indBadge = ticker.industry
       ? `<span class="industry-badge" title="${ticker.industry}">${ticker.industry}</span>` : '–';
 
-    // Narrative badge
+    // Narrative badge — display MAG7 for Big Tech narrative
     const narr = ticker.narrative || '';
+    const narrDisplay = narr === 'Big Tech' ? 'MAG7' : narr;
     const narrBadge = narr
-      ? `<span class="narrative-badge ${getNarrativeClass(narr)}">${narr}</span>` : '–';
+      ? `<span class="narrative-badge ${getNarrativeClass(narr)}">${narrDisplay}</span>` : '–';
 
     // MA tag dropdown (stored in tags array)
     const maTags = ['Below Weekly MA200','Below Weekly MA100','Below Weekly MA50','Below Weekly MA20','Below Weekly MA10'];
@@ -2123,23 +2140,33 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       <button class="btn-del-row"  onclick="requestDelete('${listName}',${idx})">✕</button>
     </div></td>` : '<td></td>';
 
-    // Status badge
+    // Status badge — pre-market / live / ext hrs / closed
     const mktOpen2 = isMarketOpen();
-    const extHrs2  = isExtendedHours();
     let statusBadge;
     if (mktOpen2) {
       statusBadge = `<span class="status-live"><span class="status-dot-sm"></span>LIVE</span>`;
-    } else if (extHrs2) {
-      statusBadge = `<span class="status-ext"><span class="status-dot-sm"></span>EXT HRS</span>`;
     } else {
-      statusBadge = `<span class="status-closed">CLOSED</span>`;
+      const nowET = new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'});
+      const [eh2,em2] = nowET.split(':').map(Number);
+      const etMins2 = eh2*60+em2;
+      const etDay2  = new Date().toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short'});
+      const isWE2   = etDay2==='Sat'||etDay2==='Sun';
+      if (!isWE2 && etMins2>=240 && etMins2<570) {
+        statusBadge = `<span class="status-pre"><span class="status-dot-sm"></span>PRE-MKT</span>`;
+      } else if (!isWE2 && etMins2>=960 && etMins2<1200) {
+        statusBadge = `<span class="status-ext"><span class="status-dot-sm"></span>EXT HRS</span>`;
+      } else {
+        statusBadge = `<span class="status-closed">CLOSED</span>`;
+      }
     }
 
-    // Combined tags cell: narrative badge + MA tag badge + user tags + prev price
-    const allTagsHtml = `<div class="ticker-tags" style="flex-wrap:wrap;gap:3px;">
-      ${narrBadge}
-      ${maDropdown}
-      ${tags.filter(t=>!t.startsWith('Below Weekly')&&!t.startsWith('SMA:')).map((t,ti) => {
+    // Theme cell — narrative badge only
+    const themeCellHtml = narrBadge;
+
+    // Tags cell — user tags only (no MA dropdown, no narrative badge)
+    const userTags = tags.filter(t=>!t.startsWith('Below Weekly')&&!t.startsWith('SMA:'));
+    const tagsCellHtml = `<div class="ticker-tags" style="flex-wrap:wrap;gap:3px;">
+      ${userTags.map((t,ti) => {
         const globalTi = (ticker.tags||[]).indexOf(t);
         return `<span class="ticker-tag" title="${managerUnlocked?'Click to remove':t}"
           ${managerUnlocked ? `onclick="removeTagInline('${listName}',${idx},${globalTi})"` : ''}>${t}</span>`;
@@ -2157,7 +2184,8 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
       <td>${statusBadge}</td>
       <td>${smaDropdown}</td>
-      <td>${allTagsHtml}</td>
+      <td>${themeCellHtml}</td>
+      <td>${tagsCellHtml}</td>
       ${mgr}
     </tr>`;
   });
@@ -2325,13 +2353,59 @@ function checkAlerts() {
 let editingTicker=null;
 let deleteTarget=null;
 
+// Auto-fetch stock name from Yahoo Finance when symbol is typed
+let _symFetchTimer = null;
+function onSymbolInput(val) {
+  clearTimeout(_symFetchTimer);
+  const preview = document.getElementById('t-name-preview');
+  const loading = document.getElementById('t-name-loading');
+  const nameText = document.getElementById('t-name-text');
+  const nameInput = document.getElementById('t-name');
+  preview.style.display = 'none';
+  loading.style.display = 'none';
+  nameInput.value = '';
+  if (!val || val.length < 1) return;
+  loading.style.display = 'block';
+  _symFetchTimer = setTimeout(async () => {
+    const sym = val.trim().toUpperCase();
+    try {
+      const encoded = encodeURIComponent(sym);
+      const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1d`,{
+        headers:{'Accept':'application/json','User-Agent':'Mozilla/5.0'},cache:'no-store'
+      });
+      const j = await r.json();
+      const meta = j?.chart?.result?.[0]?.meta;
+      const name = meta?.longName || meta?.shortName || meta?.symbol || sym;
+      loading.style.display = 'none';
+      nameText.textContent = name;
+      nameInput.value = name;
+      preview.style.display = 'block';
+      // Also seed the price
+      if (meta?.regularMarketPrice) {
+        document.getElementById('t-price').value = meta.regularMarketPrice;
+        document.getElementById('t-prev').value = meta.chartPreviousClose || meta.regularMarketPrice;
+      }
+    } catch {
+      loading.style.display = 'none';
+      nameText.textContent = sym + ' (name lookup failed)';
+      nameInput.value = sym;
+      preview.style.display = 'block';
+    }
+  }, 700);
+}
+
 function openAddTicker(listName) {
   editingTicker=null;
   document.getElementById('ticker-modal-title').textContent='➕ Add Ticker';
-  document.getElementById('ticker-modal-sub').textContent='Enter symbol and details';
-  ['t-symbol','t-name','t-price','t-prev'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ticker-modal-sub').textContent='Enter the Yahoo Finance symbol — name fetched automatically';
+  document.getElementById('t-symbol').value='';
   document.getElementById('t-symbol').disabled=false;
-  document.getElementById('t-list').value=listName;
+  document.getElementById('t-name').value='';
+  document.getElementById('t-price').value='0';
+  document.getElementById('t-prev').value='0';
+  document.getElementById('t-narrative').value='';
+  document.getElementById('t-name-preview').style.display='none';
+  document.getElementById('t-name-loading').style.display='none';
   document.getElementById('ticker-error').textContent='';
   document.getElementById('ticker-save-btn').textContent='Add Ticker';
   const a=document.getElementById('ticker-modal-actions');
@@ -2344,12 +2418,18 @@ function openEditTicker(listName,idx) {
   editingTicker={list:listName,index:idx};
   const t=LISTS[listName][idx];
   document.getElementById('ticker-modal-title').textContent='✏️ Edit Ticker';
-  document.getElementById('ticker-modal-sub').textContent='Update '+t.sym;
-  document.getElementById('t-symbol').value=t.sym; document.getElementById('t-symbol').disabled=true;
+  document.getElementById('ticker-modal-sub').textContent='Editing: '+t.sym+' — '+t.name;
+  document.getElementById('t-symbol').value=t.sym;
+  document.getElementById('t-symbol').disabled=true;
   document.getElementById('t-name').value=t.name;
-  document.getElementById('t-list').value=listName;
-  document.getElementById('t-price').value=t.price||'';
-  document.getElementById('t-prev').value=t.prev||'';
+  document.getElementById('t-price').value=t.price||'0';
+  document.getElementById('t-prev').value=t.prev||'0';
+  // Show the name in the preview box
+  document.getElementById('t-name-text').textContent=t.name;
+  document.getElementById('t-name-preview').style.display='block';
+  document.getElementById('t-name-loading').style.display='none';
+  // Set theme
+  document.getElementById('t-narrative').value=t.narrative||'';
   document.getElementById('ticker-error').textContent='';
   document.getElementById('ticker-save-btn').textContent='Save Changes';
   const a=document.getElementById('ticker-modal-actions');
@@ -2363,32 +2443,32 @@ function openEditTicker(listName,idx) {
 }
 
 function saveTicker() {
-  const sym=document.getElementById('t-symbol').value.trim().toUpperCase();
-  const name=document.getElementById('t-name').value.trim();
-  const list=document.getElementById('t-list').value;
-  const price=parseFloat(document.getElementById('t-price').value)||0;
-  const prev=parseFloat(document.getElementById('t-prev').value)||0;
-  const e=document.getElementById('ticker-error');
-  if(!sym){e.textContent='Symbol required.';return;}
-  if(!name){e.textContent='Name required.';return;}
-  if(!editingTicker){
-    const all=[...LISTS.watchlist,...LISTS.crypto].map(t=>t.sym);
-    if(all.includes(sym)){e.textContent=sym+' already exists.';return;}
-    const entry={sym,name,price,prev};
-    if(list==='crypto') entry.tag='CRYPTO';
-    LISTS[list].push(entry);
-    SEED[sym]={price,prev,name};
+  const sym  = document.getElementById('t-symbol').value.trim().toUpperCase();
+  const name = document.getElementById('t-name').value.trim() || sym;
+  const narr = document.getElementById('t-narrative').value;
+  const price= parseFloat(document.getElementById('t-price').value)||0;
+  const prev = parseFloat(document.getElementById('t-prev').value)||0;
+  const e    = document.getElementById('ticker-error');
+  if (!sym)  { e.textContent='Symbol required.'; return; }
+  if (!narr) { e.textContent='Please select a Theme.'; return; }
+  if (!editingTicker) {
+    const all = [...LISTS.watchlist,...LISTS.crypto].map(t=>t.sym);
+    if (all.includes(sym)) { e.textContent=sym+' already exists.'; return; }
+    const entry = { sym, name, price, prev, narrative:narr, tags:[] };
+    LISTS.watchlist.push(entry);
+    SEED[sym] = { price, prev, name };
     saveLists(); closeModal('ticker-modal'); renderAll();
+    // Fetch live price immediately
     fetchSymbol(sym).then(d=>{ if(d){liveData[sym]=d;renderAll();} });
-    showToast('success','➕',sym+' added.');
+    showToast('success','➕', sym+' added to '+narr+'.');
   } else {
-    const {list:ol,index:oi}=editingTicker;
-    const tk=LISTS[ol][oi];
-    tk.name=name; if(price) tk.price=price; if(prev) tk.prev=prev;
-    if(list!==ol){ LISTS[ol].splice(oi,1); const ne={sym:tk.sym,name,price:tk.price,prev:tk.prev}; if(list==='crypto') ne.tag=tk.tag||'CRYPTO'; LISTS[list].push(ne); }
-    SEED[tk.sym]={price:tk.price,prev:tk.prev,name};
+    const {list:ol, index:oi} = editingTicker;
+    const tk = LISTS[ol][oi];
+    if (name) tk.name = name;
+    if (narr) tk.narrative = narr;
+    SEED[tk.sym] = { price:tk.price, prev:tk.prev, name:tk.name };
     saveLists(); closeModal('ticker-modal'); renderAll();
-    showToast('success','✏️',tk.sym+' updated.');
+    showToast('success','✏️', tk.sym+' updated.');
   }
 }
 
