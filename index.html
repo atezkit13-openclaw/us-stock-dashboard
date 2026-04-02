@@ -1711,7 +1711,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402k'; // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402m'; // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1741,84 +1741,140 @@ function syncSeed() {
 function getPrice(sym) { return liveData[sym] || SEED[sym]; }
 
 // ═══════════════════════════════════════════════════════════════
-// LIVE FETCH — Yahoo Finance v8 chart API
-// Returns regularMarketPrice (most current: regular/pre/post market)
+// LIVE FETCH — Yahoo Finance with CORS proxy fallback chain
+//
+// Direct Yahoo calls are blocked by CORS from GitHub Pages.
+// Strategy:
+//   1. Direct Yahoo v8/chart (works in same-origin / some browsers)
+//   2. allorigins.win CORS proxy  → wraps Yahoo v7 quote
+//   3. corsproxy.io CORS proxy    → wraps Yahoo v7 quote
+//   4. api.codetabs.com proxy     → wraps Yahoo v8 chart
+//
+// Each returns: close, preMarket, postMarket, prevClose, name
 // ═══════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════
-// LIVE FETCH — Multi-endpoint Yahoo Finance strategy
-// v7/quote  → primary  (best pre/post market data, quote fields)
-// v8/chart  → fallback (chart meta, includePrePost)
-// ═══════════════════════════════════════════════════════════════
+
+// Parse Yahoo v8 chart JSON → structured price object
+function parseChartMeta(meta, sym) {
+  if (!meta) return null;
+  const closePrice = meta.regularMarketPrice;
+  if (!closePrice || closePrice <= 0) return null;
+  const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
+  const prePrice   = meta.preMarketPrice  > 0 ? meta.preMarketPrice  : null;
+  const postPrice  = meta.postMarketPrice > 0 ? meta.postMarketPrice : null;
+  const name       = meta.longName || meta.shortName || SEED[sym]?.name || sym;
+  return {
+    price:     +closePrice.toFixed(4),
+    prev:      +prevClose.toFixed(4),
+    prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
+    postPrice: postPrice ? +postPrice.toFixed(4) : null,
+    name,
+  };
+}
+
+// Parse Yahoo v7 quote JSON → structured price object
+function parseQuoteResult(q, sym) {
+  if (!q) return null;
+  const closePrice = q.regularMarketPrice;
+  if (!closePrice || closePrice <= 0) return null;
+  const prevClose  = q.regularMarketPreviousClose || closePrice;
+  const prePrice   = q.preMarketPrice  > 0 ? q.preMarketPrice  : null;
+  const postPrice  = q.postMarketPrice > 0 ? q.postMarketPrice : null;
+  const name       = q.longName || q.shortName || SEED[sym]?.name || sym;
+  return {
+    price:     +closePrice.toFixed(4),
+    prev:      +prevClose.toFixed(4),
+    prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
+    postPrice: postPrice ? +postPrice.toFixed(4) : null,
+    name,
+  };
+}
+
+async function tryFetch(url, opts={}) {
+  const r = await fetch(url, { cache:'no-store', ...opts });
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
 async function fetchSymbol(sym) {
   const encoded = encodeURIComponent(sym);
+  const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`;
+  const chartUrl2= `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`;
+  const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,postMarketPrice,postMarketChange,longName,shortName`;
+  const quoteUrl2= `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,postMarketPrice,postMarketChange,longName,shortName`;
 
-  // ── Strategy 1: v7 quote endpoint (most complete pre/post data) ──
-  const quoteEndpoints = [
-    `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,preMarketChangePercent,postMarketPrice,postMarketChange,postMarketChangePercent,longName,shortName`,
-    `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,preMarketChangePercent,postMarketPrice,postMarketChange,postMarketChangePercent,longName,shortName`,
+  // CORS proxy wrappers
+  const proxy1 = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
+  const proxy2 = (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`;
+  const proxy3 = (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`;
+
+  // All strategies in priority order
+  const strategies = [
+    // 1. Direct v8 chart (works locally, sometimes on GH Pages)
+    async () => {
+      const j = await tryFetch(chartUrl, { headers:{'Accept':'application/json'} });
+      return parseChartMeta(j?.chart?.result?.[0]?.meta, sym);
+    },
+    async () => {
+      const j = await tryFetch(chartUrl2, { headers:{'Accept':'application/json'} });
+      return parseChartMeta(j?.chart?.result?.[0]?.meta, sym);
+    },
+    // 2. Direct v7 quote (works locally)
+    async () => {
+      const j = await tryFetch(quoteUrl, { headers:{'Accept':'application/json'} });
+      return parseQuoteResult(j?.quoteResponse?.result?.[0], sym);
+    },
+    async () => {
+      const j = await tryFetch(quoteUrl2, { headers:{'Accept':'application/json'} });
+      return parseQuoteResult(j?.quoteResponse?.result?.[0], sym);
+    },
+    // 3. allorigins proxy → v7 quote (bypasses CORS on GH Pages)
+    async () => {
+      const j = await tryFetch(proxy1(quoteUrl));
+      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
+      return parseQuoteResult(parsed?.quoteResponse?.result?.[0], sym);
+    },
+    // 4. allorigins proxy → v8 chart
+    async () => {
+      const j = await tryFetch(proxy1(chartUrl));
+      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
+      return parseChartMeta(parsed?.chart?.result?.[0]?.meta, sym);
+    },
+    // 5. corsproxy.io → v7 quote
+    async () => {
+      const j = await tryFetch(proxy2(quoteUrl));
+      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
+      return parseQuoteResult(parsed?.quoteResponse?.result?.[0], sym);
+    },
+    // 6. corsproxy.io → v8 chart
+    async () => {
+      const j = await tryFetch(proxy2(chartUrl));
+      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
+      return parseChartMeta(parsed?.chart?.result?.[0]?.meta, sym);
+    },
+    // 7. codetabs proxy → v8 chart
+    async () => {
+      const j = await tryFetch(proxy3(chartUrl));
+      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
+      return parseChartMeta(parsed?.chart?.result?.[0]?.meta, sym);
+    },
   ];
-  for (const url of quoteEndpoints) {
-    try {
-      const r = await fetch(url, {
-        headers:{ 'Accept':'application/json', 'User-Agent':'Mozilla/5.0' },
-        cache:'no-store', mode:'cors'
-      });
-      if (!r.ok) continue;
-      const j = await r.json();
-      const q = j?.quoteResponse?.result?.[0];
-      if (!q) continue;
-      const closePrice = q.regularMarketPrice;
-      const prevClose  = q.regularMarketPreviousClose || closePrice;
-      const prePrice   = q.preMarketPrice  || null;
-      const postPrice  = q.postMarketPrice || null;
-      const name       = q.longName || q.shortName || SEED[sym]?.name || sym;
-      if (!closePrice || closePrice <= 0) continue;
-      console.log('[YF v7]', sym, '| close:', closePrice, '| pre:', prePrice, '| post:', postPrice);
-      return {
-        price:     +closePrice.toFixed(4),
-        prev:      +prevClose.toFixed(4),
-        prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
-        postPrice: postPrice ? +postPrice.toFixed(4) : null,
-        name,
-        src: 'v7',
-      };
-    } catch(e) { console.warn('[YF v7 fail]', sym, e.message); continue; }
-  }
 
-  // ── Strategy 2: v8 chart endpoint (fallback) ──
-  const chartEndpoints = [
-    `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`,
-    `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?range=2d&interval=1d&includePrePost=true`,
-  ];
-  for (const url of chartEndpoints) {
+  for (let i = 0; i < strategies.length; i++) {
     try {
-      const r = await fetch(url, {
-        headers:{ 'Accept':'application/json', 'User-Agent':'Mozilla/5.0' },
-        cache:'no-store'
-      });
-      if (!r.ok) continue;
-      const j = await r.json();
-      const meta = j?.chart?.result?.[0]?.meta;
-      if (!meta) continue;
-      const closePrice = meta.regularMarketPrice;
-      const prePrice   = meta.preMarketPrice  || null;
-      const postPrice  = meta.postMarketPrice || null;
-      const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
-      const name       = meta.longName || meta.shortName || SEED[sym]?.name || sym;
-      if (!closePrice || closePrice <= 0) continue;
-      console.log('[YF v8]', sym, '| close:', closePrice, '| pre:', prePrice, '| post:', postPrice);
-      return {
-        price:     +closePrice.toFixed(4),
-        prev:      +prevClose.toFixed(4),
-        prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
-        postPrice: postPrice ? +postPrice.toFixed(4) : null,
-        name,
-        src: 'v8',
-      };
-    } catch(e) { console.warn('[YF v8 fail]', sym, e.message); continue; }
+      const result = await strategies[i]();
+      if (result) {
+        console.log(`[YF s${i+1}]`, sym,
+          '| close:', result.price,
+          '| pre:', result.prePrice,
+          '| post:', result.postPrice,
+          '| src: strategy', i+1);
+        return result;
+      }
+    } catch(e) {
+      console.debug(`[YF s${i+1} fail]`, sym, e.message);
+    }
   }
-
-  console.warn('[YF] All endpoints failed for:', sym, '— using seed');
+  console.warn('[YF] All strategies failed for:', sym);
   return null;
 }
 
@@ -2703,120 +2759,224 @@ function loadNews() {
 // Prices synced Apr 1 2026 from Google Finance / Yahoo Finance / CoinGecko
 // mktVal = shares × price | dailyAbs = shares × (price - prev)
 // ─────────────────────────────────────────────────────────────────
-const PF_GROUPS = [
-  { name:'Cybersecurity', holdings:[
-    {sym:'PANW', name:'Palo Alto Networks',shares:10, price:183.70, prev:186.90, cost:1650.00, mktVal:1837.00, dailyAbs:-32.00},
-    {sym:'CRWD', name:'CrowdStrike',        shares:5,  price:358.60, prev:365.20, cost:3200.00, mktVal:1793.00, dailyAbs:-33.00},
-    {sym:'QLYS', name:'Qualys Inc.',        shares:20, price:87.85,  prev:87.92,  cost:2800.00, mktVal:1757.00, dailyAbs:-1.40},
-    {sym:'ZS',   name:'Zscaler',            shares:15, price:177.40, prev:174.20, cost:2400.00, mktVal:2661.00, dailyAbs:+48.00},
-    {sym:'FTNT', name:'Fortinet',           shares:25, price:91.20,  prev:92.80,  cost:2000.00, mktVal:2280.00, dailyAbs:-40.00},
-  ]},
-  { name:'Big Tech', holdings:[
-    {sym:'NVDA',  name:'NVIDIA',         shares:8,  price:170.85, prev:165.82, cost:760.00,  mktVal:1366.80, dailyAbs:+40.24},
-    {sym:'MSFT',  name:'Microsoft',      shares:6,  price:362.92, prev:356.70, cost:2100.00, mktVal:2177.52, dailyAbs:+37.32},
-    {sym:'AAPL',  name:'Apple',          shares:12, price:247.05, prev:243.80, cost:1980.00, mktVal:2964.60, dailyAbs:+39.00},
-    {sym:'META',  name:'Meta Platforms', shares:4,  price:536.38, prev:559.80, cost:1800.00, mktVal:2145.52, dailyAbs:-93.68},
-    {sym:'GOOGL', name:'Alphabet',       shares:10, price:273.41, prev:268.90, cost:1400.00, mktVal:2734.10, dailyAbs:+45.10},
-  ]},
-  { name:'Fintech / Payments', holdings:[
-    {sym:'MA', name:'Mastercard', shares:5, price:535.80, prev:528.40, cost:2200.00, mktVal:2679.00, dailyAbs:+37.00},
-  ]},
-  { name:'Cloud / SaaS', holdings:[
-    {sym:'NOW',  name:'ServiceNow', shares:3,  price:798.20, prev:780.60, cost:2100.00, mktVal:2394.60, dailyAbs:+52.80},
-    {sym:'AMZN', name:'Amazon',     shares:10, price:201.62, prev:197.90, cost:1600.00, mktVal:2016.20, dailyAbs:+37.20},
-  ]},
-  { name:'Crypto', holdings:[
-    {sym:'BTC-USD', name:'Bitcoin',  shares:0.05, price:67946.00, prev:66520.00, cost:3200.00, mktVal:3397.30, dailyAbs:+71.30},
-    {sym:'COIN',    name:'Coinbase', shares:10,   price:178.80,   prev:176.90,   cost:1500.00, mktVal:1788.00, dailyAbs:+19.00},
-  ]},
-  { name:'Speculative', excluded:true, holdings:[
-    {sym:'PLTR', name:'Palantir', shares:20, price:140.44, prev:137.60, cost:1200.00, mktVal:2808.80, dailyAbs:+56.80},
-    {sym:'INTC', name:'Intel',    shares:50, price:20.40,  prev:21.10,  cost:1500.00, mktVal:1020.00, dailyAbs:-35.00},
-  ]},
+// ═══════════════════════════════════════════════════════════════
+// PORTFOLIO DATA — from brokerage screenshots (Apr 2026)
+// Each holding stores: sym, name, shares, avgCost (per share), totalCost
+// mktVal & P&L are computed live from liveData/SEED prices
+// cash entries: sym='USD'/'USDT' are static
+// ═══════════════════════════════════════════════════════════════
+const PF_ACCOUNTS = [
+  {
+    id: 'crypto',
+    name: '🪙 Crypto',
+    color: '#f59e0b',
+    cash: { sym:'USDT', name:'Tether USD', amount:1484.20 },
+    holdings: [
+      { sym:'BTC-USD', name:'Bitcoin',   shares:0.008031, avgCost:91247.59, totalCost:732.80 },
+      { sym:'ETH-USD', name:'Ethereum',  shares:0.17718,  avgCost:3043.19,  totalCost:539.20 },
+    ]
+  },
+  {
+    id: 'position',
+    name: '📊 Position Trade',
+    color: '#3b82f6',
+    cash: { sym:'USD', name:'US Dollar', amount:3838.59 },
+    holdings: [
+      { sym:'PANW', name:'Palo Alto Networks', shares:15.609, avgCost:153.76, totalCost:2399.98 },
+      { sym:'SPOT', name:'Spotify Technology',  shares:4.5563, avgCost:482.84, totalCost:2199.96 },
+      { sym:'MA',   name:'Mastercard',           shares:4.672,  avgCost:513.69, totalCost:2399.97 },
+    ]
+  },
+  {
+    id: 'etf',
+    name: '📈 指數 ETF',
+    color: '#10b981',
+    cash: { sym:'USD', name:'US Dollar', amount:920.00 },
+    holdings: [
+      { sym:'AVUV', name:'Avantis US Small Cap Value ETF', shares:18.09,  avgCost:110.78, totalCost:2003.97 },
+      { sym:'VOO',  name:'Vanguard S&P 500 ETF',           shares:6.0366, avgCost:620.33, totalCost:3744.66 },
+      { sym:'QQQ',  name:'Invesco Nasdaq 100 ETF',          shares:3.7533, avgCost:612.46, totalCost:2298.74 },
+    ]
+  },
+  {
+    id: 'hedge',
+    name: '🛡 避險 Assets',
+    color: '#8b5cf6',
+    cash: { sym:'USD', name:'US Dollar', amount:325.00 },
+    holdings: [
+      { sym:'GLDM', name:'Gold MiniShares ETF', shares:15.196, avgCost:88.838, totalCost:1349.98 },
+      { sym:'TLT',  name:'iShares 20Y Treasury', shares:5.408, avgCost:88.754, totalCost:479.98 },
+    ]
+  },
 ];
-const PIE_COLORS=['#3b82f6','#06b6d4','#10b981','#f59e0b','#8b5cf6','#ec4899','#ef4444'];
-function fmtUSD(v){return(v>=0?'+$':'-$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtPct(v){return(v>=0?'+':'')+v.toFixed(2)+'%';}
-function clr(v){return v>0?'var(--green)':v<0?'var(--red)':'var(--text-dim)';}
+
+const PIE_COLORS = ['#f59e0b','#3b82f6','#10b981','#8b5cf6','#06b6d4','#ec4899','#ef4444'];
+
+function fmtUSD(v) {
+  const abs = Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (v >= 0 ? '+$' : '-$') + abs;
+}
+function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+function clr(v)    { return v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--text-dim)'; }
+function fmtShares(n) { return n < 1 ? n.toFixed(6) : n % 1 === 0 ? n.toFixed(0) : n.toFixed(4); }
+
+// Get current price for a holding (live > seed > avgCost)
+function getPFPrice(sym, avgCost) {
+  const d = liveData[sym] || SEED[sym];
+  return d && d.price > 0 ? d.price : avgCost;
+}
 
 function renderPortfolioTab() {
-  const root=document.getElementById('pf-root');
-  const ig=PF_GROUPS.filter(g=>!g.excluded);
-  const tMkt=ig.reduce((s,g)=>s+g.holdings.reduce((a,h)=>a+h.mktVal,0),0);
-  const tCost=ig.reduce((s,g)=>s+g.holdings.reduce((a,h)=>a+h.cost,0),0);
-  const tPnL=tMkt-tCost;
-  const tPnLPct=tCost>0?(tPnL/tCost)*100:0;
-  const tDaily=ig.reduce((s,g)=>s+g.holdings.reduce((a,h)=>a+h.dailyAbs,0),0);
-  const tDPct=tMkt>0?(tDaily/tMkt)*100:0;
+  const root = document.getElementById('pf-root');
 
-  const sumHtml=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px;">
-    ${[
-      ['Total Market Value','$'+tMkt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),'var(--text-primary)'],
-      ['Total Cost Basis','$'+tCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),'var(--text-secondary)'],
-      ['Total P&L',fmtUSD(tPnL)+' ('+fmtPct(tPnLPct)+')',clr(tPnL)],
-      ["Today's Change",fmtUSD(tDaily)+' ('+fmtPct(tDPct)+')',clr(tDaily)],
-    ].map(([l,v,c])=>`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
-      <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">${l}</div>
-      <div style="font-size:20px;font-weight:700;color:${c};font-variant-numeric:tabular-nums;">${v}</div>
-    </div>`).join('')}
-  </div>`;
+  // ── Compute totals across all accounts ──────────────────────────
+  let grandMktVal = 0, grandCost = 0, grandDaily = 0;
+  PF_ACCOUNTS.forEach(acc => {
+    const cashAmt = acc.cash?.amount || 0;
+    grandMktVal += cashAmt;
+    grandCost   += cashAmt;
+    acc.holdings.forEach(h => {
+      const price    = getPFPrice(h.sym, h.avgCost);
+      const mktVal   = price * h.shares;
+      const prevData = liveData[h.sym] || SEED[h.sym];
+      const prevPrice= prevData?.prev || h.avgCost;
+      const dailyAbs = (price - prevPrice) * h.shares;
+      grandMktVal += mktVal;
+      grandCost   += h.totalCost;
+      grandDaily  += dailyAbs;
+    });
+  });
+  const grandPnL    = grandMktVal - grandCost;
+  const grandPnLPct = grandCost > 0 ? (grandPnL / grandCost) * 100 : 0;
+  const grandDPct   = grandMktVal > 0 ? (grandDaily / grandMktVal) * 100 : 0;
 
-  const pieSlices=ig.map((g,gi)=>{const m=g.holdings.reduce((a,h)=>a+h.mktVal,0);return{label:g.name,value:m,color:PIE_COLORS[gi]};});
-  const pieLegend=pieSlices.map(s=>`<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:5px;">
-    <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;"></span>
-    <span style="color:var(--text-secondary);">${s.label}</span>
-    <span style="margin-left:auto;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums;">$${s.value.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
-  </div>`).join('');
-
-  const chartHtml=`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:22px;">
-    <canvas id="pie-canvas" width="200" height="200" style="width:200px;height:200px;"></canvas>
-    <div>${pieLegend}</div>
-  </div>`;
-
-  let groupsHtml='';
-  PF_GROUPS.forEach((g,gi)=>{
-    const gMkt=g.holdings.reduce((a,h)=>a+h.mktVal,0);
-    const gCost=g.holdings.reduce((a,h)=>a+h.cost,0);
-    const gPnL=gMkt-gCost;
-    const gPnLPct=gCost>0?(gPnL/gCost)*100:0;
-    const gDaily=g.holdings.reduce((a,h)=>a+h.dailyAbs,0);
-    const gAlloc=tMkt>0?(gMkt/tMkt)*100:0;
-    const rows=g.holdings.map(h=>{
-      const pnl=h.mktVal-h.cost;
-      const pnlPct=h.cost>0?(pnl/h.cost)*100:0;
-      const sStr=h.shares<1?h.shares.toFixed(6):h.shares.toFixed(4);
-      const pStr='$'+h.price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      const yhLink=h.sym!=='USD'&&h.sym!=='USDT'?`<a class="ticker-link" href="https://finance.yahoo.com/quote/${h.sym}/" target="_blank">${h.sym}</a>`:`<span style="font-weight:700;color:var(--text-dim);">${h.sym}</span>`;
-      return `<tr>
-        <td>${yhLink}<div class="ticker-name">${h.name}</div></td>
-        <td class="price-cell" style="color:var(--text-secondary);">${sStr}</td>
-        <td class="price-cell">${pStr}</td>
-        <td class="price-cell">$${h.mktVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-        <td class="price-cell">$${h.cost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-        <td class="change-cell" style="color:${clr(pnl)};">${fmtUSD(pnl)}</td>
-        <td class="change-cell" style="color:${clr(pnlPct)};">${fmtPct(pnlPct)}</td>
-        <td class="change-cell" style="color:${clr(h.dailyAbs)};">${fmtUSD(h.dailyAbs)}</td>
-      </tr>`;
-    }).join('');
-    const excBadge=g.excluded?'<span style="font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(71,85,105,0.2);color:var(--text-dim);border:1px solid var(--border);margin-left:8px;">Excl. from total</span>':'';
-    const dot=`<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${PIE_COLORS[gi]};margin-right:7px;"></span>`;
-    groupsHtml+=`<div style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-        <div class="section-title" style="margin-bottom:0;">${dot}${g.name}${excBadge}</div>
-        <span style="margin-left:auto;font-size:11px;font-weight:600;color:${clr(gPnL)};">${fmtUSD(gPnL)} ${fmtPct(gPnLPct)}</span>
-        <span style="font-size:11px;color:var(--text-dim);">Daily: <span style="color:${clr(gDaily)};">${fmtUSD(gDaily)}</span></span>
-        ${!g.excluded?`<span style="font-size:10px;color:var(--text-dim);">${gAlloc.toFixed(1)}% of portfolio</span>`:''}
+  // ── Summary header cards ─────────────────────────────────────────
+  const summaryCards = [
+    { label:'Total Portfolio Value', val:'$'+grandMktVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}), color:'var(--text-primary)', icon:'💼' },
+    { label:'Total Cost Basis',      val:'$'+grandCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),    color:'var(--text-secondary)', icon:'💰' },
+    { label:'Unrealised P&L',        val:fmtUSD(grandPnL)+' ('+fmtPct(grandPnLPct)+')',  color:clr(grandPnL),   icon: grandPnL>=0?'📈':'📉' },
+    { label:"Today's Change",        val:fmtUSD(grandDaily)+' ('+fmtPct(grandDPct)+')',  color:clr(grandDaily), icon:'⚡' },
+  ].map(c=>`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;">
+      <span style="font-size:24px;">${c.icon}</span>
+      <div>
+        <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;">${c.label}</div>
+        <div style="font-size:18px;font-weight:700;color:${c.color};font-variant-numeric:tabular-nums;">${c.val}</div>
       </div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Symbol</th><th>Shares</th><th>Price</th><th>Mkt Value</th><th>Cost Basis</th><th>P&L $</th><th>P&L %</th><th>Daily</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>
-    </div>`;
+    </div>`).join('');
+
+  // ── Account allocation donut + legend ───────────────────────────
+  const acctSlices = PF_ACCOUNTS.map((acc,i) => {
+    let total = acc.cash?.amount || 0;
+    acc.holdings.forEach(h => { total += getPFPrice(h.sym, h.avgCost) * h.shares; });
+    return { label:acc.name, value:total, color:acc.color || PIE_COLORS[i] };
   });
 
-  root.innerHTML=sumHtml+chartHtml+groupsHtml;
-  setTimeout(()=>{ drawPie('pie-canvas',pieSlices); checkPortfolioTableScroll(); },50);
+  const pieLegend = acctSlices.map((s,i) => {
+    const pct = grandMktVal > 0 ? (s.value/grandMktVal*100).toFixed(1) : '0.0';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;"></span>
+      <span style="color:var(--text-secondary);font-size:12px;flex:1;">${s.label}</span>
+      <span style="font-weight:600;color:var(--text-primary);font-size:12px;font-variant-numeric:tabular-nums;">$${s.value.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
+      <span style="color:var(--text-dim);font-size:11px;min-width:38px;text-align:right;">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  // ── Per-account sections ─────────────────────────────────────────
+  const accountSections = PF_ACCOUNTS.map((acc, ai) => {
+    const cashAmt  = acc.cash?.amount || 0;
+    let acctMktVal = cashAmt, acctCost = cashAmt, acctDaily = 0;
+
+    const rows = acc.holdings.map(h => {
+      const price     = getPFPrice(h.sym, h.avgCost);
+      const mktVal    = price * h.shares;
+      const pnl       = mktVal - h.totalCost;
+      const pnlPct    = h.totalCost > 0 ? (pnl / h.totalCost) * 100 : 0;
+      const prevData  = liveData[h.sym] || SEED[h.sym];
+      const prevPrice = prevData?.prev || h.avgCost;
+      const dailyAbs  = (price - prevPrice) * h.shares;
+      const dailyPct  = prevPrice > 0 ? ((price-prevPrice)/prevPrice)*100 : 0;
+      acctMktVal += mktVal; acctCost += h.totalCost; acctDaily += dailyAbs;
+      const link = `<a class="ticker-link" href="https://finance.yahoo.com/quote/${h.sym}/" target="_blank" style="font-size:14px;font-weight:700;">${h.sym}</a>`;
+      return `<tr>
+        <td>${link}<div class="ticker-name">${h.name}</div></td>
+        <td class="price-cell" style="color:var(--text-secondary);">${fmtShares(h.shares)}</td>
+        <td class="price-cell">$${price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td class="price-cell">$${mktVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td class="price-cell" style="color:var(--text-dim);">$${h.totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="font-size:12px;font-weight:600;color:${clr(dailyAbs)};font-variant-numeric:tabular-nums;">${fmtUSD(dailyAbs)}<br><span style="font-size:10px;">${fmtPct(dailyPct)}</span></td>
+        <td style="font-size:12px;font-weight:700;color:${clr(pnl)};font-variant-numeric:tabular-nums;">${fmtUSD(pnl)}<br><span style="font-size:10px;">${fmtPct(pnlPct)}</span></td>
+      </tr>`;
+    }).join('');
+
+    // Cash row
+    const cashRow = cashAmt > 0 ? `<tr>
+      <td><span style="font-size:14px;font-weight:700;color:var(--text-dim);">${acc.cash.sym}</span><div class="ticker-name">${acc.cash.name}</div></td>
+      <td class="price-cell" style="color:var(--text-secondary);">$${cashAmt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="price-cell">$1.00</td>
+      <td class="price-cell">$${cashAmt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="price-cell" style="color:var(--text-dim);">$${cashAmt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="color:var(--text-dim);">–</td>
+      <td style="color:var(--text-dim);">–</td>
+    </tr>` : '';
+
+    const acctPnL    = acctMktVal - acctCost;
+    const acctPnLPct = acctCost > 0 ? (acctPnL/acctCost)*100 : 0;
+    const acctAlloc  = grandMktVal > 0 ? (acctMktVal/grandMktVal*100).toFixed(1) : '0';
+
+    return `<div style="margin-bottom:28px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <!-- Account header -->
+      <div style="padding:14px 18px;background:rgba(0,0,0,0.15);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${acc.color};flex-shrink:0;display:inline-block;"></span>
+        <span style="font-size:14px;font-weight:700;color:var(--text-primary);">${acc.name}</span>
+        <span style="font-size:11px;color:var(--text-dim);">${acctAlloc}% of portfolio</span>
+        <div style="margin-left:auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div style="text-align:right;">
+            <div style="font-size:9px;color:var(--text-dim);letter-spacing:0.08em;">MKT VALUE</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums;">$${acctMktVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:9px;color:var(--text-dim);letter-spacing:0.08em;">DAILY</div>
+            <div style="font-size:13px;font-weight:600;color:${clr(acctDaily)};font-variant-numeric:tabular-nums;">${fmtUSD(acctDaily)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:9px;color:var(--text-dim);letter-spacing:0.08em;">TOTAL P&L</div>
+            <div style="font-size:13px;font-weight:700;color:${clr(acctPnL)};font-variant-numeric:tabular-nums;">${fmtUSD(acctPnL)} <span style="font-size:10px;">${fmtPct(acctPnLPct)}</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Holdings table -->
+      <div class="table-wrap" style="margin:0;">
+        <table style="border-radius:0;">
+          <thead><tr>
+            <th>Symbol</th><th>Shares</th><th>Price</th><th>Mkt Value</th><th>Cost Basis</th><th>Daily Chg</th><th>Total P&L</th>
+          </tr></thead>
+          <tbody>${rows}${cashRow}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <!-- Summary cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px;">
+      ${summaryCards}
+    </div>
+    <!-- Donut chart + legend -->
+    <div style="display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
+      <canvas id="pie-canvas" width="180" height="180" style="width:180px;height:180px;"></canvas>
+      <div>${pieLegend}</div>
+    </div>
+    <!-- Per-account sections -->
+    ${accountSections}
+  `;
+
+  setTimeout(() => {
+    drawPie('pie-canvas', acctSlices);
+    checkPortfolioTableScroll();
+  }, 50);
 }
+
 
 function drawPie(cid,slices){
   const c=document.getElementById(cid); if(!c) return;
