@@ -1867,17 +1867,6 @@ async function tryFetch(url, opts={}) {
 }
 
 
-          '| src: strategy', i+1);
-        return result;
-      }
-    } catch(e) {
-      console.debug(`[YF s${i+1} fail]`, sym, e.message);
-    }
-  }
-  console.warn('[YF] All strategies failed for:', sym);
-  return null;
-}
-
 // ─── Sync rate-limit: once per hour ───────────────────────────
 const SYNC_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 let lastSyncTime = 0;
