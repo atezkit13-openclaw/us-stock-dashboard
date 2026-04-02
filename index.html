@@ -473,6 +473,16 @@ body.light-theme .manager-banner-text { color:#92400e; }
 }
 
 
+
+/* ── PRE-MARKET PRICE CELL ── */
+.pre-price-val { font-variant-numeric:tabular-nums; }
+.pre-price-val.up   { color:var(--green); }
+.pre-price-val.down { color:var(--red); }
+.pre-price-val.neutral { color:var(--text-primary); }
+.pre-price-chg { font-variant-numeric:tabular-nums; opacity:0.85; }
+.pre-price-chg.up   { color:var(--green); }
+.pre-price-chg.down { color:var(--red); }
+
 /* ── WEEKLY SMA TAG ── */
 .sma-select { border-color:rgba(6,182,212,0.4) !important; }
 .sma-tag-badge {
@@ -1043,7 +1053,8 @@ body.light-theme .alert-item.oil-alert-bar {
       <table id="watchlist-table">
         <thead><tr>
           <th onclick="setSortCol('sym',null)" style="cursor:pointer;">Symbol</th>
-          <th onclick="setSortCol('price',null)" style="cursor:pointer;">Price</th>
+          <th onclick="setSortCol('price',null)" style="cursor:pointer;">Last Close</th>
+          <th>Pre-Market</th>
           <th onclick="setSortCol('pct',null)" style="cursor:pointer;">% Chg</th>
           <th>Status</th>
           <th>Weekly SMA</th>
@@ -1688,7 +1699,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402i'; // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402j'; // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1722,8 +1733,7 @@ function getPrice(sym) { return liveData[sym] || SEED[sym]; }
 // Returns regularMarketPrice (most current: regular/pre/post market)
 // ═══════════════════════════════════════════════════════════════
 async function fetchSymbol(sym) {
-  // Yahoo Finance v8 chart API — returns regularMarketPrice + pre/post market data
-  // Use query1 as primary (more permissive CORS), query2 as fallback
+  // Yahoo Finance v8 chart API — separate close, pre-market, post-market prices
   const encoded = encodeURIComponent(sym);
   const urls = [
     `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`,
@@ -1739,15 +1749,22 @@ async function fetchSymbol(sym) {
       const j = await r.json();
       const meta = j?.chart?.result?.[0]?.meta;
       if (!meta) continue;
-      // Priority: postMarket > preMarket > regularMarket (most current)
-      const price = meta.postMarketPrice || meta.preMarketPrice || meta.regularMarketPrice;
-      const prev  = meta.chartPreviousClose || meta.regularMarketPreviousClose || price;
-      if (!price || price <= 0) continue;
-      const name = SEED[sym]?.name || sym;
-      return { price:+price.toFixed(4), prev:+prev.toFixed(4), name };
+      const closePrice = meta.regularMarketPrice;   // official last close / live
+      const prePrice   = meta.preMarketPrice || null;  // pre-market (may be null)
+      const postPrice  = meta.postMarketPrice || null; // after-hours (may be null)
+      const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
+      const name       = meta.longName || meta.shortName || SEED[sym]?.name || sym;
+      if (!closePrice || closePrice <= 0) continue;
+      return {
+        price:      +closePrice.toFixed(4),  // regularMarketPrice = last official close
+        prev:       +prevClose.toFixed(4),   // prior day close (for % change baseline)
+        prePrice:   prePrice  ? +prePrice.toFixed(4)  : null,
+        postPrice:  postPrice ? +postPrice.toFixed(4) : null,
+        name,
+      };
     } catch { continue; }
   }
-  return null; // both URLs failed — caller uses SEED fallback
+  return null;
 }
 
 async function fetchAllPrices() {
@@ -2063,7 +2080,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     else if (sortCol === 'pct')  {
       va = da.prev ? (da.price-da.prev)/da.prev*100 : 0;
       vb = db.prev ? (db.price-db.prev)/db.prev*100 : 0;
-    }
+    }  // sort by close→prev pct
     else if (sortCol === 'industry')  { va = a.industry||''; vb = b.industry||''; }
     else if (sortCol === 'narrative') { va = a.narrative||''; vb = b.narrative||''; }
     else { va = a.sym; vb = b.sym; }
@@ -2075,7 +2092,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-dim);font-size:12px;">No tickers in this narrative. Add some via Manager Mode.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-dim);font-size:12px;">No tickers in this narrative. Add some via Manager Mode.</td></tr>`;
     return;
   }
 
@@ -2084,12 +2101,21 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     const sym = ticker.sym;
     const d   = getPrice(sym) || { price:ticker.price||0, prev:ticker.prev||0, name:ticker.name };
 
-    // Price: use liveData if available (most current), else seed
-    const lv     = liveData[sym];
-    const curPrice = (lv && lv.price > 0) ? lv.price : d.price;
-    const prevClose = d.prev; // always last close from seed/fetch prev
-    const { abs, pct } = calcChange(curPrice, prevClose);
+    // Prices: separate close price vs pre/post market price
+    const lv        = liveData[sym];
+    const closePrice  = (lv && lv.price > 0) ? lv.price : d.price;     // last official close
+    const prevClose   = (lv && lv.prev > 0)  ? lv.prev  : d.prev;      // prior day close
+    // Pre/after-hours price from fetch result; null if not available
+    const extPrice = lv
+      ? (lv.prePrice || lv.postPrice || null)
+      : null;
+    // % Chg = delta of last close vs prior close (not pre-market)
+    const { abs, pct } = calcChange(closePrice, prevClose);
     const cl = dir(pct);
+    // Pre-market % vs last close (for pre-market column display)
+    const preAbs = extPrice !== null ? extPrice - closePrice : null;
+    const prePct = extPrice !== null && closePrice > 0 ? (preAbs / closePrice) * 100 : null;
+    const preCl  = preAbs !== null ? dir(preAbs) : 'neutral';
 
     // Tags HTML
     const tags = ticker.tags || [];
@@ -2172,15 +2198,24 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
           ${managerUnlocked ? `onclick="removeTagInline('${listName}',${idx},${globalTi})"` : ''}>${t}</span>`;
       }).join('')}
       ${managerUnlocked ? `<span class="ticker-tag-add" onclick="openTagEditor('${listName}',${idx})">+ tag</span>` : ''}
-    </div>
-    <div style="font-size:9px;color:var(--text-dim);margin-top:3px;">prev $${fmtP(prevClose,sym)}</div>`;
+    </div>`;
 
     tbody.innerHTML += `<tr>
       <td>
         <a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
         <div class="ticker-name">${ticker.name}</div>
       </td>
-      <td class="price-cell">$${fmtP(curPrice, sym)}</td>
+      <td class="price-cell">
+        <div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;">$${fmtP(closePrice,sym)}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">prev $${fmtP(prevClose,sym)}</div>
+      </td>
+      <td class="price-cell">
+        ${extPrice !== null
+          ? `<div class="pre-price-val ${preCl}" style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;">$${fmtP(extPrice,sym)}</div>
+             <div class="pre-price-chg ${preCl}" style="font-size:10px;font-weight:600;">${preAbs>=0?'+':''}${preAbs.toFixed(2)} (${prePct>=0?'+':''}${prePct.toFixed(2)}%)</div>`
+          : '<span style="color:var(--text-dim);font-size:11px;">–</span>'
+        }
+      </td>
       <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
       <td>${statusBadge}</td>
       <td>${smaDropdown}</td>
