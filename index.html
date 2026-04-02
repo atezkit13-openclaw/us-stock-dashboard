@@ -1712,7 +1712,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402s'; // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402t'; // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1832,29 +1832,42 @@ function parseV8Chart(data, sym) {
   }
 }
 
+// CORS confirmed working from github.io:
+//   corsproxy.io → query1/query2 Yahoo v8 chart ✅
+//   direct fetch  → BLOCKED by CORS ❌
+//   allorigins    → BLOCKED ❌
+//   thingproxy    → BLOCKED ❌
 async function fetchSymbol(sym) {
-  const enc  = encodeURIComponent(sym);
-  const urls = [
-    `https://query1.finance.yahoo.com/v8/finance/chart/${enc}?interval=1m&range=1d&includePrePost=true`,
-    `https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1m&range=1d&includePrePost=true`,
+  const enc     = encodeURIComponent(sym);
+  const yahooQ1 = `https://query1.finance.yahoo.com/v8/finance/chart/${enc}?interval=1m&range=1d&includePrePost=true`;
+  const yahooQ2 = `https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1m&range=1d&includePrePost=true`;
+
+  // corsproxy.io is the only proxy confirmed working from github.io
+  const CP = 'https://corsproxy.io/?';
+  const attempts = [
+    CP + encodeURIComponent(yahooQ1),   // corsproxy → query1 (primary)
+    CP + encodeURIComponent(yahooQ2),   // corsproxy → query2 (fallback)
+    yahooQ1,                            // direct (works locally/Mac)
+    yahooQ2,                            // direct fallback
   ];
-  for (const url of urls) {
+
+  for (const url of attempts) {
     try {
-      const r = await fetch(url, { headers: YF_HEADERS, cache: 'no-store' });
-      if (!r.ok) continue;
-      const j      = await r.json();
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) { console.debug('[YF] HTTP', r.status, sym); continue; }
+      const j = await r.json();
       const result = parseV8Chart(j, sym);
       if (result) {
-        console.log('[YF]', sym,
+        console.log('[YF ✓]', sym,
           '| close:', result.price,
           '| pre:', result.prePrice,
-          '| post:', result.postPrice,
-          '| lastCandle:', result.lastCandle);
+          '| lastCandle:', result.lastCandle,
+          '| via:', url.startsWith(CP) ? 'corsproxy' : 'direct');
         return result;
       }
-    } catch(e) { console.debug('[YF fail]', sym, url.includes('query2')?'q2':'q1', e.message); }
+    } catch(e) { console.debug('[YF fail]', sym, e.message); }
   }
-  console.warn('[YF] Failed:', sym);
+  console.warn('[YF ✗] All failed:', sym);
   return null;
 }
 
@@ -1867,13 +1880,12 @@ async function tryFetch(url, opts={}) {
 function parseChartMeta(meta, sym)  { return null; } // replaced by parseV8Chart
 function parseQuoteResult(q, sym)   { return null; } // v7 is 401, removed
 
-// Batch fetch — calls fetchSymbol concurrently (parallel, fast)
-const PROXY_ALLORIGINS = null; // not needed anymore
+// Parallel fetch helpers
+const PROXY_ALLORIGINS = null;
 const PROXY_CORSPROXY  = null;
 const PROXY_NONE       = null;
 
 async function batchFetchQuote(syms, _proxy) {
-  // Execute all fetches in parallel
   const results = await Promise.allSettled(syms.map(s => fetchSymbol(s)));
   const map = {};
   results.forEach((r,i) => { if (r.status==='fulfilled' && r.value) map[syms[i]] = r.value; });
