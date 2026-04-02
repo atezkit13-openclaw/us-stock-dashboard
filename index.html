@@ -1712,7 +1712,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402n'; // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402q'; // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1742,45 +1742,36 @@ function syncSeed() {
 function getPrice(sym) { return liveData[sym] || SEED[sym]; }
 
 // ═══════════════════════════════════════════════════════════════
-// LIVE FETCH — Yahoo Finance with CORS proxy fallback chain
+// LIVE FETCH — Batch Yahoo Finance v7/quote via CORS proxies
 //
-// Direct Yahoo calls are blocked by CORS from GitHub Pages.
-// Strategy:
-//   1. Direct Yahoo v8/chart (works in same-origin / some browsers)
-//   2. allorigins.win CORS proxy  → wraps Yahoo v7 quote
-//   3. corsproxy.io CORS proxy    → wraps Yahoo v7 quote
-//   4. api.codetabs.com proxy     → wraps Yahoo v8 chart
+// KEY INSIGHT: v7/quote reliably returns preMarketPrice + postMarketPrice.
+// v8/chart meta does NOT reliably return these fields.
 //
-// Each returns: close, preMarket, postMarket, prevClose, name
+// BATCH STRATEGY: fetch 10 symbols per request → much faster
+//   Direct Yahoo → blocked by CORS on GH Pages
+//   allorigins.win → free CORS proxy, works reliably
+//   corsproxy.io   → fallback
+//
+// fetchAllPrices() now calls batchFetchSymbols() instead of
+// individual fetchSymbol() calls.
 // ═══════════════════════════════════════════════════════════════
 
-// Parse Yahoo v8 chart JSON → structured price object
-function parseChartMeta(meta, sym) {
-  if (!meta) return null;
-  const closePrice = meta.regularMarketPrice;
-  if (!closePrice || closePrice <= 0) return null;
-  const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
-  const prePrice   = meta.preMarketPrice  > 0 ? meta.preMarketPrice  : null;
-  const postPrice  = meta.postMarketPrice > 0 ? meta.postMarketPrice : null;
-  const name       = meta.longName || meta.shortName || SEED[sym]?.name || sym;
-  return {
-    price:     +closePrice.toFixed(4),
-    prev:      +prevClose.toFixed(4),
-    prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
-    postPrice: postPrice ? +postPrice.toFixed(4) : null,
-    name,
-  };
-}
+const YF_FIELDS = [
+  'regularMarketPrice','regularMarketPreviousClose',
+  'preMarketPrice','preMarketChange','preMarketChangePercent',
+  'postMarketPrice','postMarketChange','postMarketChangePercent',
+  'longName','shortName'
+].join(',');
 
-// Parse Yahoo v7 quote JSON → structured price object
+// Parse a single v7 quote result object
 function parseQuoteResult(q, sym) {
   if (!q) return null;
   const closePrice = q.regularMarketPrice;
   if (!closePrice || closePrice <= 0) return null;
-  const prevClose  = q.regularMarketPreviousClose || closePrice;
-  const prePrice   = q.preMarketPrice  > 0 ? q.preMarketPrice  : null;
-  const postPrice  = q.postMarketPrice > 0 ? q.postMarketPrice : null;
-  const name       = q.longName || q.shortName || SEED[sym]?.name || sym;
+  const prevClose = q.regularMarketPreviousClose || closePrice;
+  const prePrice  = (q.preMarketPrice  && q.preMarketPrice  > 0) ? q.preMarketPrice  : null;
+  const postPrice = (q.postMarketPrice && q.postMarketPrice > 0) ? q.postMarketPrice : null;
+  const name = q.longName || q.shortName || SEED[sym]?.name || sym;
   return {
     price:     +closePrice.toFixed(4),
     prev:      +prevClose.toFixed(4),
@@ -1790,84 +1781,92 @@ function parseQuoteResult(q, sym) {
   };
 }
 
+// Parse a single v8 chart meta object (fallback, no pre/post)
+function parseChartMeta(meta, sym) {
+  if (!meta) return null;
+  const closePrice = meta.regularMarketPrice;
+  if (!closePrice || closePrice <= 0) return null;
+  const prevClose = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
+  const name = meta.longName || meta.shortName || SEED[sym]?.name || sym;
+  // v8 chart preMarketPrice is unreliable — only use if explicitly present
+  const prePrice  = (meta.preMarketPrice  && meta.preMarketPrice  > 0) ? meta.preMarketPrice  : null;
+  const postPrice = (meta.postMarketPrice && meta.postMarketPrice > 0) ? meta.postMarketPrice : null;
+  return {
+    price:     +closePrice.toFixed(4),
+    prev:      +prevClose.toFixed(4),
+    prePrice, postPrice, name,
+  };
+}
+
+// Batch fetch up to 10 symbols via Yahoo v7/quote through a proxy
+async function batchFetchQuote(syms, proxyFn) {
+  const encoded = syms.map(s => encodeURIComponent(s)).join(',');
+  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=${YF_FIELDS}&crumb=`;
+  const proxiedUrl = proxyFn ? proxyFn(url) : url;
+  const r = await fetch(proxiedUrl, { cache:'no-store', headers:{'Accept':'application/json'} });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const raw = typeof j === 'string' ? JSON.parse(j) : j;
+  const results = raw?.quoteResponse?.result || [];
+  const map = {};
+  results.forEach(q => {
+    const parsed = parseQuoteResult(q, q.symbol);
+    if (parsed) map[q.symbol] = parsed;
+  });
+  return map;
+}
+
+// Single symbol fallback via v8 chart
+async function fetchSingleChart(sym, proxyFn) {
+  const encoded = encodeURIComponent(sym);
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`;
+  const proxiedUrl = proxyFn ? proxyFn(url) : url;
+  const r = await fetch(proxiedUrl, { cache:'no-store', headers:{'Accept':'application/json'} });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const raw = typeof j === 'string' ? JSON.parse(j) : j;
+  return parseChartMeta(raw?.chart?.result?.[0]?.meta, sym);
+}
+
+const PROXY_ALLORIGINS = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
+const PROXY_CORSPROXY  = (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`;
+const PROXY_NONE = null; // direct (works locally, blocked on GH Pages)
+
+// Fetch a single symbol — try v7 batch first (size-1 batch), then v8 chart
+async function fetchSymbol(sym) {
+  const proxies = [PROXY_NONE, PROXY_ALLORIGINS, PROXY_CORSPROXY];
+  // Try v7 quote (has preMarketPrice) via each proxy
+  for (const proxy of proxies) {
+    try {
+      const map = await batchFetchQuote([sym], proxy);
+      if (map[sym]) {
+        console.log('[YF v7]', sym, '| close:', map[sym].price, '| pre:', map[sym].prePrice, '| proxy:', proxy?'proxy':'direct');
+        return map[sym];
+      }
+    } catch(e) { console.debug('[YF v7 fail]', sym, proxy?'proxy':'direct', e.message); }
+  }
+  // Fallback: v8 chart (no pre/post usually)
+  for (const proxy of proxies) {
+    try {
+      const result = await fetchSingleChart(sym, proxy);
+      if (result) {
+        console.log('[YF v8]', sym, '| close:', result.price, '| pre:', result.prePrice, '| proxy:', proxy?'proxy':'direct');
+        return result;
+      }
+    } catch(e) { console.debug('[YF v8 fail]', sym, e.message); }
+  }
+  console.warn('[YF] All failed for:', sym);
+  return null;
+}
+
+// ── DUMMY for legacy compat ──
 async function tryFetch(url, opts={}) {
   const r = await fetch(url, { cache:'no-store', ...opts });
   if (!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
 
-async function fetchSymbol(sym) {
-  const encoded = encodeURIComponent(sym);
-  const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`;
-  const chartUrl2= `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?range=1d&interval=1m&includePrePost=true`;
-  const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,postMarketPrice,postMarketChange,longName,shortName`;
-  const quoteUrl2= `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encoded}&fields=regularMarketPrice,regularMarketPreviousClose,preMarketPrice,preMarketChange,postMarketPrice,postMarketChange,longName,shortName`;
 
-  // CORS proxy wrappers
-  const proxy1 = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
-  const proxy2 = (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`;
-  const proxy3 = (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`;
-
-  // All strategies in priority order
-  const strategies = [
-    // 1. Direct v8 chart (works locally, sometimes on GH Pages)
-    async () => {
-      const j = await tryFetch(chartUrl, { headers:{'Accept':'application/json'} });
-      return parseChartMeta(j?.chart?.result?.[0]?.meta, sym);
-    },
-    async () => {
-      const j = await tryFetch(chartUrl2, { headers:{'Accept':'application/json'} });
-      return parseChartMeta(j?.chart?.result?.[0]?.meta, sym);
-    },
-    // 2. Direct v7 quote (works locally)
-    async () => {
-      const j = await tryFetch(quoteUrl, { headers:{'Accept':'application/json'} });
-      return parseQuoteResult(j?.quoteResponse?.result?.[0], sym);
-    },
-    async () => {
-      const j = await tryFetch(quoteUrl2, { headers:{'Accept':'application/json'} });
-      return parseQuoteResult(j?.quoteResponse?.result?.[0], sym);
-    },
-    // 3. allorigins proxy → v7 quote (bypasses CORS on GH Pages)
-    async () => {
-      const j = await tryFetch(proxy1(quoteUrl));
-      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
-      return parseQuoteResult(parsed?.quoteResponse?.result?.[0], sym);
-    },
-    // 4. allorigins proxy → v8 chart
-    async () => {
-      const j = await tryFetch(proxy1(chartUrl));
-      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
-      return parseChartMeta(parsed?.chart?.result?.[0]?.meta, sym);
-    },
-    // 5. corsproxy.io → v7 quote
-    async () => {
-      const j = await tryFetch(proxy2(quoteUrl));
-      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
-      return parseQuoteResult(parsed?.quoteResponse?.result?.[0], sym);
-    },
-    // 6. corsproxy.io → v8 chart
-    async () => {
-      const j = await tryFetch(proxy2(chartUrl));
-      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
-      return parseChartMeta(parsed?.chart?.result?.[0]?.meta, sym);
-    },
-    // 7. codetabs proxy → v8 chart
-    async () => {
-      const j = await tryFetch(proxy3(chartUrl));
-      const parsed = typeof j === 'string' ? JSON.parse(j) : j;
-      return parseChartMeta(parsed?.chart?.result?.[0]?.meta, sym);
-    },
-  ];
-
-  for (let i = 0; i < strategies.length; i++) {
-    try {
-      const result = await strategies[i]();
-      if (result) {
-        console.log(`[YF s${i+1}]`, sym,
-          '| close:', result.price,
-          '| pre:', result.prePrice,
-          '| post:', result.postPrice,
           '| src: strategy', i+1);
         return result;
       }
@@ -1879,31 +1878,117 @@ async function fetchSymbol(sym) {
   return null;
 }
 
+// ─── Sync rate-limit: once per hour ───────────────────────────
+const SYNC_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+let lastSyncTime = 0;
+
+function getSyncCooldownLeft() {
+  return Math.max(0, SYNC_COOLDOWN_MS - (Date.now() - lastSyncTime));
+}
+
+function fmtCooldown(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+function updateSyncBtn() {
+  const btn = document.getElementById('sync-btn');
+  if (!btn) return;
+  const left = getSyncCooldownLeft();
+  if (left > 0) {
+    btn.textContent = `⟳ ${fmtCooldown(left)}`;
+    btn.disabled = true;
+    btn.title = `Next sync available in ${fmtCooldown(left)}`;
+    btn.style.opacity = '0.45';
+    btn.style.cursor = 'not-allowed';
+    btn.style.borderColor = 'rgba(16,185,129,0.15)';
+  } else {
+    btn.textContent = '⟳ Sync';
+    btn.disabled = false;
+    btn.title = 'Fetch latest prices from Yahoo Finance';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.style.borderColor = '';
+  }
+}
+
+// Tick the countdown every second
+setInterval(updateSyncBtn, 1000);
+
 async function syncNow() {
+  const left = getSyncCooldownLeft();
+  if (left > 0) {
+    showToast('info', '⏳', `Rate limited — next sync in ${fmtCooldown(left)}`);
+    return;
+  }
   const btn = document.getElementById('sync-btn');
   btn.textContent = '⟳ Syncing…';
   btn.disabled = true;
   btn.style.opacity = '0.6';
-  try { await fetchAllPrices(); } catch(e) { console.error(e); }
-  btn.textContent = '⟳ Sync';
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  showToast('success','📡','Prices synced from Yahoo Finance.');
+  try {
+    await fetchAllPrices();
+    lastSyncTime = Date.now();
+    localStorage.setItem('last_sync_time', lastSyncTime);
+    showToast('success', '📡', 'Prices synced. Next manual sync in 1h.');
+  } catch(e) {
+    console.error(e);
+    showToast('error', '❌', 'Sync failed. Check console.');
+  }
+  updateSyncBtn();
 }
 
+// Restore last sync time across page reloads
+(function restoreLastSync() {
+  const stored = localStorage.getItem('last_sync_time');
+  if (stored) lastSyncTime = parseInt(stored, 10) || 0;
+  updateSyncBtn();
+})();
+
 async function fetchAllPrices() {
-  // Auto-sync triggered
   syncSeed();
   const extraSyms = ['^DXY','CL=F','YM=F'];
-  // Ensure YM=F (Dow futures) always in seed
   if (!SEED['YM=F']) SEED['YM=F'] = { price:46835, prev:46333, name:'Dow Jones Futures' };
-  const syms = [...new Set([
+  const allSyms = [...new Set([
     ...Object.keys(SEED_DEFAULT), ...extraSyms,
     ...LISTS.watchlist.map(t=>t.sym),
     ...LISTS.crypto.map(t=>t.sym),
   ])];
-  const results = await Promise.allSettled(syms.map(s=>fetchSymbol(s)));
-  results.forEach((r,i)=>{ if(r.status==='fulfilled'&&r.value) liveData[syms[i]]=r.value; });
+
+  // ── Phase 1: Batch fetch watchlist via v7/quote (10 at a time) ──
+  // v7/quote returns preMarketPrice reliably
+  const BATCH = 10;
+  const proxies = [PROXY_NONE, PROXY_ALLORIGINS, PROXY_CORSPROXY];
+  const fetched = {};
+
+  // Batch the full symbol list
+  for (let i = 0; i < allSyms.length; i += BATCH) {
+    const batch = allSyms.slice(i, i+BATCH);
+    let success = false;
+    for (const proxy of proxies) {
+      try {
+        const map = await batchFetchQuote(batch, proxy);
+        Object.assign(fetched, map);
+        const got = Object.keys(map).length;
+        console.log(`[Batch ${Math.floor(i/BATCH)+1}] proxy:${proxy?'yes':'direct'} got ${got}/${batch.length}`);
+        if (got > 0) { success = true; break; }
+      } catch(e) {
+        console.debug(`[Batch fail] proxy:${proxy?'yes':'direct'}`, e.message);
+      }
+    }
+    if (!success) {
+      // Per-symbol fallback for this batch
+      await Promise.allSettled(batch.map(async s => {
+        const r = await fetchSymbol(s);
+        if (r) fetched[s] = r;
+      }));
+    }
+  }
+
+  // Merge into liveData
+  Object.assign(liveData, fetched);
+  const syms = allSyms; // keep for compat below
   renderAll();
   const ts = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false})+' HKT';
   document.getElementById('last-updated').textContent = ts;
@@ -2876,22 +2961,92 @@ function renderPortfolioTab() {
       </div>
     </div>`).join('');
 
-  // ── Account allocation donut + legend ───────────────────────────
-  const acctSlices = PF_ACCOUNTS.map((acc,i) => {
-    let total = acc.cash?.amount || 0;
-    acc.holdings.forEach(h => { total += getPFPrice(h.sym, h.avgCost) * h.shares; });
-    return { label:acc.name, value:total, color:acc.color || PIE_COLORS[i] };
+  // ══════════════════════════════════════════════════════════════
+  // TWO-RING DONUT DATA
+  // Inner ring: asset type groups (Cash, Stock, Index ETF, Defensive, Crypto)
+  // Outer ring: individual holdings + cash positions
+  // ══════════════════════════════════════════════════════════════
+
+  // ── Build flat list of all positions ──
+  const allPositions = [];
+  // Cash positions (combined across accounts)
+  let totalCash = 0;
+  PF_ACCOUNTS.forEach(acc => {
+    const ca = acc.cash?.amount || 0;
+    if (ca > 0) {
+      allPositions.push({ label: acc.cash.sym, value: ca, type: 'Cash' });
+      totalCash += ca;
+    }
+  });
+  // Holdings
+  PF_ACCOUNTS.forEach(acc => {
+    acc.holdings.forEach(h => {
+      const price  = getPFPrice(h.sym, h.avgCost);
+      const mktVal = price * h.shares;
+      // Determine asset type for inner ring grouping
+      let assetType;
+      if      (['BTC-USD','ETH-USD'].includes(h.sym))            assetType = 'Crypto';
+      else if (['GLDM','TLT'].includes(h.sym))                   assetType = 'Defensive';
+      else if (['AVUV','VOO','QQQ'].includes(h.sym))             assetType = 'Index ETF';
+      else if (['PANW','SPOT','MA'].includes(h.sym))             assetType = 'Stock';
+      else                                                        assetType = 'Other';
+      allPositions.push({ label: h.sym, name: h.name, value: mktVal, type: assetType });
+    });
   });
 
-  const pieLegend = acctSlices.map((s,i) => {
-    const pct = grandMktVal > 0 ? (s.value/grandMktVal*100).toFixed(1) : '0.0';
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;"></span>
-      <span style="color:var(--text-secondary);font-size:12px;flex:1;">${s.label}</span>
-      <span style="font-weight:600;color:var(--text-primary);font-size:12px;font-variant-numeric:tabular-nums;">$${s.value.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
-      <span style="color:var(--text-dim);font-size:11px;min-width:38px;text-align:right;">${pct}%</span>
-    </div>`;
-  }).join('');
+  // ── Inner ring: asset type groups ──
+  const typeColors = {
+    'Cash':      '#9ca3af',
+    'Stock':     '#ec4899',
+    'Index ETF': '#3b82f6',
+    'Defensive': '#22c55e',
+    'Crypto':    '#f59e0b',
+    'Other':     '#6b7280',
+  };
+  const typeOrder = ['Cash','Stock','Index ETF','Defensive','Crypto'];
+  const innerSlices = typeOrder.map(type => {
+    const total = allPositions.filter(p=>p.type===type).reduce((s,p)=>s+p.value,0);
+    return { label: type, value: total, color: typeColors[type] };
+  }).filter(s => s.value > 0);
+
+  // ── Outer ring: individual holdings, coloured by type ──
+  // Sort outer to match inner ring order
+  const outerOrder = ['Cash','Stock','Index ETF','Defensive','Crypto'];
+  const outerSlices = [];
+  outerOrder.forEach(type => {
+    const positions = allPositions.filter(p => p.type === type);
+    // Slightly vary shade per position within a type
+    const baseCol = typeColors[type];
+    positions.forEach((p, pi) => {
+      // Generate distinct shades within group
+      outerSlices.push({ label: p.label, value: p.value, color: lightenSlice(baseCol, pi, positions.length), type });
+    });
+  });
+
+  // ── Legend ──
+  const pieLegend = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;">
+      ${innerSlices.map(s => {
+        const pct = grandMktVal > 0 ? (s.value/grandMktVal*100).toFixed(1) : '0.0';
+        return `<div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:${s.color};flex-shrink:0;"></span>
+          <span style="font-size:11px;color:var(--text-secondary);flex:1;">${s.label}</span>
+          <span style="font-size:11px;font-weight:600;color:var(--text-primary);">${pct}%</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:3px;">
+      ${outerSlices.map(s => {
+        const pct = grandMktVal > 0 ? (s.value/grandMktVal*100).toFixed(1) : '0.0';
+        return `<div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0;"></span>
+          <span style="font-size:10px;color:var(--text-dim);flex:1;">${s.label}</span>
+          <span style="font-size:10px;font-weight:600;color:var(--text-secondary);">${pct}%</span>
+          <span style="font-size:10px;color:var(--text-dim);">$${Math.round(s.value).toLocaleString()}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
 
   // ── Per-account sections ─────────────────────────────────────────
   const accountSections = PF_ACCOUNTS.map((acc, ai) => {
@@ -2973,39 +3128,134 @@ function renderPortfolioTab() {
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px;">
       ${summaryCards}
     </div>
-    <!-- Donut chart + legend -->
-    <div style="display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
-      <canvas id="pie-canvas" width="180" height="180" style="width:180px;height:180px;"></canvas>
-      <div>${pieLegend}</div>
+    <!-- Two-ring donut chart + legend -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:14px;">ALLOCATION BREAKDOWN</div>
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start;">
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+          <canvas id="pie-canvas" width="280" height="280" style="width:280px;height:280px;max-width:100%;"></canvas>
+        </div>
+        <div style="padding-top:8px;">${pieLegend}</div>
+      </div>
     </div>
     <!-- Per-account sections -->
     ${accountSections}
   `;
 
   setTimeout(() => {
-    drawPie('pie-canvas', acctSlices);
+    drawTwoRingDonut('pie-canvas', innerSlices, outerSlices, grandMktVal);
     checkPortfolioTableScroll();
   }, 50);
 }
 
 
-function drawPie(cid,slices){
-  const c=document.getElementById(cid); if(!c) return;
-  const ctx=c.getContext('2d');
-  const W=c.offsetWidth||200; c.width=W; c.height=W;
-  const cx=W/2,cy=W/2,or=W*0.42,ir=W*0.22;
-  const tot=slices.reduce((s,sl)=>s+sl.value,0);
-  let ang=-Math.PI/2;
-  slices.forEach(sl=>{
-    const sw=(sl.value/tot)*Math.PI*2;
-    ctx.beginPath(); ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,or,ang,ang+sw); ctx.closePath();
-    ctx.fillStyle=sl.color; ctx.fill();
-    ctx.beginPath(); ctx.arc(cx,cy,ir,0,Math.PI*2);
-    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim()||'#111827';
+// Shade helper — generates slightly lighter/darker shades for outer ring positions
+function lightenSlice(hex, idx, total) {
+  // Parse hex
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  // Spread: from slightly darker to slightly lighter within the group
+  const spread = 60;
+  const step   = total > 1 ? spread / (total - 1) : 0;
+  const offset = Math.round(-spread/2 + idx * step);
+  const clamp  = v => Math.max(0, Math.min(255, v));
+  const rr = clamp(r + offset), gg = clamp(g + offset), bb = clamp(b + offset);
+  return '#' + [rr,gg,bb].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function drawTwoRingDonut(cid, innerSlices, outerSlices, total) {
+  const c = document.getElementById(cid); if (!c) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W   = c.offsetWidth || 280;
+  c.width   = W * dpr; c.height = W * dpr;
+  c.style.width = W + 'px'; c.style.height = W + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const cx = W/2, cy = W/2;
+  const outerR = W * 0.46;  // outer ring outer edge
+  const midR   = W * 0.30;  // outer ring inner edge = inner ring outer edge
+  const innerR = W * 0.16;  // inner ring inner edge (hole)
+  const gap    = 0.012;     // radians gap between slices
+  const bgCol  = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#111827';
+
+  // Draw a ring segment
+  function drawSegment(ctx, cx, cy, r1, r2, startAng, endAng, color) {
+    const s = startAng + gap/2, e = endAng - gap/2;
+    if (e <= s) return;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r2, s, e);
+    ctx.arc(cx, cy, r1, e, s, true);
+    ctx.closePath();
+    ctx.fillStyle = color;
     ctx.fill();
-    ang+=sw;
+  }
+
+  // Draw label on a slice
+  function drawLabel(ctx, cx, cy, r1, r2, startAng, endAng, label, pct) {
+    const midAng = (startAng + endAng) / 2;
+    const midR2  = (r1 + r2) / 2;
+    const sw     = endAng - startAng;
+    // Only draw label if slice is large enough
+    if (sw < 0.18) return;
+    const tx = cx + Math.cos(midAng) * midR2;
+    const ty = cy + Math.sin(midAng) * midR2;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 3;
+    if (sw >= 0.38) {
+      ctx.font = `bold ${Math.max(9, Math.min(13, sw * 14))}px Inter,system-ui,sans-serif`;
+      ctx.fillText(label, tx, ty - 6);
+      ctx.font = `${Math.max(8, Math.min(11, sw * 12))}px Inter,system-ui,sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillText(pct, tx, ty + 7);
+    } else {
+      ctx.font = `bold ${Math.max(8, Math.min(11, sw * 13))}px Inter,system-ui,sans-serif`;
+      ctx.fillText(label, tx, ty);
+    }
+    ctx.restore();
+  }
+
+  const totInner = innerSlices.reduce((s,sl)=>s+sl.value, 0);
+  const totOuter = outerSlices.reduce((s,sl)=>s+sl.value, 0);
+
+  // ── Draw outer ring (individual holdings) ──
+  let ang = -Math.PI / 2;
+  outerSlices.forEach(sl => {
+    const sw = (sl.value / totOuter) * Math.PI * 2;
+    drawSegment(ctx, cx, cy, midR, outerR, ang, ang+sw, sl.color);
+    const pct = total > 0 ? (sl.value/total*100).toFixed(1)+'%' : '';
+    drawLabel(ctx, cx, cy, midR, outerR, ang, ang+sw, sl.label, pct);
+    ang += sw;
   });
+
+  // ── Draw inner ring (asset type groups) ──
+  ang = -Math.PI / 2;
+  innerSlices.forEach(sl => {
+    const sw = (sl.value / totInner) * Math.PI * 2;
+    drawSegment(ctx, cx, cy, innerR, midR, ang, ang+sw, sl.color);
+    const pct = total > 0 ? (sl.value/total*100).toFixed(1)+'%' : '';
+    drawLabel(ctx, cx, cy, innerR, midR, ang, ang+sw, sl.label, pct);
+    ang += sw;
+  });
+
+  // ── Centre hole fill + total ──
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR, 0, Math.PI*2);
+  ctx.fillStyle = bgCol;
+  ctx.fill();
+
+  // Centre text
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || '#94a3b8';
+  ctx.font = `500 10px Inter,system-ui,sans-serif`;
+  ctx.fillText('TOTAL', cx, cy - 10);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#e2e8f0';
+  ctx.font = `bold ${W > 200 ? 13 : 11}px Inter,system-ui,sans-serif`;
+  ctx.fillText('$' + Math.round(total).toLocaleString(), cx, cy + 6);
 }
 
 
