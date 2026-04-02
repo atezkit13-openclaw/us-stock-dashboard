@@ -780,7 +780,103 @@ body.light-theme .alert-item.oil-alert-bar {
   font-size:11px; margin-left:4px; opacity:0.7;
 }
 #tab-btn-portfolio.unlocked .lock-tab-icon { display:none; }
+
+/* ── RENEWAL TAB ─────────────────────────────────────────────── */
+.renewal-lock-gate {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:80px 20px; text-align:center;
+}
+.renewal-upload-zone {
+  border:2px dashed var(--border); border-radius:12px; padding:32px 40px;
+  text-align:center; cursor:pointer; transition:all 0.2s;
+  background:var(--bg-card); margin:20px 0; max-width:500px; width:100%;
+}
+.renewal-upload-zone:hover, .renewal-upload-zone.drag-over {
+  border-color:var(--accent-blue); background:rgba(59,130,246,0.05);
+}
+.renewal-upload-zone input[type=file] { display:none; }
+.renewal-stats-row {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px; margin-bottom:20px;
+}
+.renewal-stat-card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; text-align:center;
+}
+.renewal-stat-card .stat-val {
+  font-size:28px; font-weight:800; font-variant-numeric:tabular-nums;
+}
+.renewal-stat-card .stat-lbl {
+  font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-dim);
+  text-transform:uppercase; margin-top:4px;
+}
+.renewal-table-wrap { overflow-x:auto; }
+.renewal-table {
+  width:100%; border-collapse:collapse; font-size:12px;
+}
+.renewal-table th {
+  background:var(--bg-secondary); padding:10px 12px; text-align:left;
+  font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--text-dim); white-space:nowrap; position:sticky; top:0; z-index:2;
+  border-bottom:1px solid var(--border);
+}
+.renewal-table td {
+  padding:10px 12px; border-bottom:1px solid var(--border);
+  vertical-align:top; color:var(--text-secondary);
+}
+.renewal-table tr:hover td { background:var(--bg-card-hover); }
+.renewal-table td:first-child { font-weight:700; color:var(--text-primary); min-width:160px; }
+.urg-badge {
+  display:inline-block; padding:2px 8px; border-radius:4px; font-size:9px;
+  font-weight:700; letter-spacing:0.08em; white-space:nowrap;
+}
+.urg-urgent   { background:#dc354522; color:#f87171; border:1px solid #dc354544; }
+.urg-month    { background:#fd7e1422; color:#fb923c; border:1px solid #fd7e1444; }
+.urg-upcoming { background:#e5a80022; color:#fbbf24; border:1px solid #e5a80044; }
+.urg-sched    { background:#19875422; color:#4ade80; border:1px solid #19875444; }
+.cat-badge {
+  display:inline-block; padding:2px 8px; border-radius:4px; font-size:9px;
+  font-weight:700; margin-left:4px;
+}
+.cat-forecast { background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); }
+.cat-upside   { background:rgba(139,92,246,0.15);  color:#a78bfa; border:1px solid rgba(139,92,246,0.3); }
+.cat-closewon { background:rgba(16,185,129,0.15);  color:#34d399; border:1px solid rgba(16,185,129,0.3); }
+.sfdc-btn {
+  display:inline-flex; align-items:center; gap:3px;
+  padding:3px 8px; border-radius:4px; font-size:10px; font-weight:600;
+  text-decoration:none; margin:2px 2px 2px 0; white-space:nowrap;
+  background:rgba(59,130,246,0.1); color:var(--accent-blue);
+  border:1px solid rgba(59,130,246,0.25); transition:all 0.15s;
+}
+.sfdc-btn:hover { background:rgba(59,130,246,0.2); }
+.sfdc-btn.disabled { background:none; color:var(--text-dim); border-color:var(--border); cursor:default; pointer-events:none; }
+.renewal-modules { font-size:10px; color:var(--text-dim); line-height:1.7; max-width:260px; }
+.renewal-history { font-size:10px; color:var(--text-dim); line-height:1.7; max-width:200px; }
+.renewal-asv { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+.renewal-asv-sub { font-size:9px; color:var(--text-dim); margin-top:2px; }
+.renewal-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+.renewal-filter-btn {
+  padding:4px 12px; border-radius:6px; font-size:11px; font-weight:600;
+  border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary);
+  cursor:pointer; transition:all 0.15s;
+}
+.renewal-filter-btn.active {
+  background:rgba(59,130,246,0.15); border-color:var(--accent-blue); color:var(--accent-blue);
+}
+.renewal-excl-notice {
+  background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25);
+  border-radius:8px; padding:10px 16px; margin-bottom:16px;
+  font-size:11px; color:#f87171;
+}
+#renewal-search {
+  background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px;
+  padding:5px 12px; font-size:12px; color:var(--text-primary); font-family:inherit;
+  width:200px;
+}
+#renewal-search:focus { border-color:var(--accent-blue); outline:none; }
+.q1-overdue { background:rgba(239,68,68,0.05); }
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1001,6 +1097,7 @@ body.light-theme .alert-item.oil-alert-bar {
   <button class="tab-nav-btn active" onclick="switchTab('market')" id="tab-btn-market">📊 Market</button>
   <button class="tab-nav-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio">💼 My Portfolio<span class="lock-tab-icon">🔒</span></button>
   <button class="tab-nav-btn" onclick="switchTab('news')" id="tab-btn-news">📰 News &amp; Intelligence</button>
+  <button class="tab-nav-btn" onclick="switchTab('renewal')" id="tab-btn-renewal" style="display:none;">🔄 Renewal<span class="lock-tab-icon">🔒</span></button>
 </nav>
 
 <div class="container" style="padding-top:20px;">
@@ -1306,6 +1403,7 @@ function scheduleNextAutoRefresh() {
 let portfolioUnlocked = false;
 
 function switchTab(name) {
+  if (name === 'renewal' && !managerUnlocked) { showToast('info','🔒','Manager Mode required.'); return; }
   // Intercept portfolio tab — require PIN if not yet unlocked
   if (name === 'portfolio' && !portfolioUnlocked) {
     openPortfolioPIN();
@@ -1466,7 +1564,7 @@ function activateManager() {
   document.getElementById('tab-btn-portfolio').classList.add('unlocked');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   renderAll();
-  updateNewsReloadBtn(); updateSyncBtn();
+  updateNewsReloadBtn(); updateSyncBtn(); updateRenewalTab();
   showToast('success','🔓','Manager Mode activated.');
 }
 function lockManager() {
@@ -1478,7 +1576,7 @@ function lockManager() {
   renderAll();
   // Also lock portfolio when manager locks
   lockPortfolio();
-  updateNewsReloadBtn(); updateSyncBtn();
+  updateNewsReloadBtn(); updateSyncBtn(); updateRenewalTab();
   showToast('info','🔒','Manager Mode & Portfolio locked.');
 }
 
@@ -1714,7 +1812,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402v'; // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402w'; // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -3370,7 +3468,357 @@ renderAll();
       await fetchAllPrices();
     } catch(e) { console.warn('[Init] Price fetch failed:', e); }
   }, 2000);
+
+// ═══════════════════════════════════════════════════════════════
+// RENEWAL TAB — Qualys Subscription Renewal Dashboard
+// ═══════════════════════════════════════════════════════════════
+let renewalData = [];       // parsed rows from Excel
+let renewalFilter = 'all';  // current filter
+
+// Show/hide renewal tab button based on manager state
+function updateRenewalTab() {
+  const btn = document.getElementById('tab-btn-renewal');
+  if (!btn) return;
+  if (managerUnlocked) {
+    btn.style.display = '';
+    document.getElementById('renewal-lock-gate').style.display = 'none';
+    document.getElementById('renewal-root').style.display = 'block';
+  } else {
+    btn.style.display = 'none';
+    document.getElementById('renewal-lock-gate').style.display = 'flex';
+    document.getElementById('renewal-root').style.display = 'none';
+    // If currently on renewal tab, switch to market
+    if (document.getElementById('tab-renewal')?.classList.contains('active')) {
+      doSwitchTab('market');
+    }
+  }
+}
+
+function setRenewalFilter(f, btn) {
+  renewalFilter = f;
+  document.querySelectorAll('.renewal-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRenewalTable();
+}
+
+function resetRenewalData() {
+  renewalData = [];
+  document.getElementById('renewal-upload-section').style.display = '';
+  document.getElementById('renewal-data-section').style.display = 'none';
+  document.getElementById('renewal-file-input').value = '';
+}
+
+// Drag-and-drop
+function handleRenewalDrop(event) {
+  event.preventDefault();
+  document.getElementById('renewal-drop-zone').classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (file) handleRenewalFile(file);
+}
+
+// Read Excel file via SheetJS (XLSX library)
+function handleRenewalFile(file) {
+  if (!file) return;
+  const status = document.getElementById('renewal-upload-status');
+  status.textContent = '⏳ Reading ' + file.name + '…';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type:'array', cellDates:true, cellStyles:true });
+      const ws = workbook.Sheets['2026 Renewal'];
+      if (!ws) {
+        status.textContent = '❌ Sheet "2026 Renewal" not found. Check the file.';
+        return;
+      }
+      parseRenewalSheet(ws, workbook, file.name);
+    } catch(err) {
+      status.textContent = '❌ Error: ' + err.message;
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseRenewalSheet(ws, wb, filename) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const threeMonths = new Date(today);
+  threeMonths.setMonth(threeMonths.getMonth() + 3);
+
+  // SheetJS: convert to array of arrays with raw values
+  const raw = XLSX.utils.sheet_to_json(ws, { header:1, raw:false, dateNF:'yyyy-mm-dd', defval:'' });
+  if (raw.length < 2) { document.getElementById('renewal-upload-status').textContent = '❌ No data rows found.'; return; }
+
+  const headers = raw[0];
+  const rows = [];
+  let excludedCount = 0;
+
+  // Column index helper
+  const col = (letter) => {
+    let n = 0;
+    for (const c of letter.toUpperCase()) n = n * 26 + c.charCodeAt(0) - 64;
+    return n - 1;
+  };
+
+  // Extract hyperlinks from SheetJS workbook
+  // SheetJS stores hyperlinks in cell.l.Target
+  function getHyperlink(ws, colLetter, rowNum) {
+    const addr = colLetter + rowNum;
+    const cell = ws[addr];
+    return cell?.l?.Target || null;
+  }
+
+  for (let ri = 1; ri < raw.length; ri++) {
+    const r = raw[ri];
+    const customerName = (r[col('B')] || '').toString().trim();
+    if (!customerName) continue;
+
+    const outlook = (r[col('A')] || '').toString().trim();
+    const isCloseLost = outlook.toLowerCase().includes('close lost') || outlook.toLowerCase() === 'closed lost';
+    if (isCloseLost) { excludedCount++; continue; }
+
+    // Parse renewal date — advance to current/next year
+    let renewalDateRaw = r[col('H')] || '';
+    let renewalDate = null;
+    if (renewalDateRaw) {
+      try {
+        let d = new Date(renewalDateRaw);
+        if (!isNaN(d)) {
+          // Advance year until >= today year
+          while (d.getFullYear() < today.getFullYear()) d.setFullYear(d.getFullYear() + 1);
+          // If the date has passed this year, advance to next year
+          if (d < today && d.getFullYear() === today.getFullYear()) d.setFullYear(d.getFullYear() + 1);
+          renewalDate = d;
+        }
+      } catch(e) {}
+    }
+
+    const quarter = (r[col('C')] || '').toString().trim();
+    const isQ1 = quarter === 'Q1';
+    const isQ2 = quarter === 'Q2';
+    const isCloseWon = outlook.toLowerCase().includes('close won') || outlook.toLowerCase() === 'closed won';
+
+    // Filter: Q2 entries + Q1 entries not Close Won/Lost
+    // Exclude Close Lost (already done above)
+    const inQ2Window = isQ2 ||
+      (renewalDate && renewalDate >= today && renewalDate <= threeMonths);
+    const isQ1Pending = isQ1 && !isCloseWon;
+    if (!inQ2Window && !isQ1Pending) continue;
+
+    // Extract SFDC hyperlinks (SheetJS)
+    const excelRow = ri + 1; // 1-indexed in Excel
+    const sfdcOpp   = getHyperlink(ws, 'V', excelRow);
+    const sfdcAcct  = getHyperlink(ws, 'W', excelRow);
+    const sfdcQuote = getHyperlink(ws, 'X', excelRow);
+    const qNumber   = (r[col('X')] || '').toString().trim(); // Q-number label from col X
+
+    // Sales history — last 2 entries from col I
+    const historyRaw = (r[col('I')] || '').toString().trim();
+    const historyLines = historyRaw.split('\n').map(l=>l.trim()).filter(Boolean);
+    const historyLast2 = historyLines.slice(-2);
+
+    rows.push({
+      customer: customerName,
+      renewalDate,
+      renewalDateStr: renewalDate ? renewalDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : renewalDateRaw,
+      quarter,
+      outlook,
+      isCloseWon,
+      isQ1Pending,
+      quotaASV:    (r[col('J')] || '').toString().trim(),
+      closedASV:   (r[col('K')] || '').toString().trim(),
+      modules:     (r[col('N')] || '').toString().trim(),
+      historyLast2,
+      sfdcOpp, sfdcAcct, sfdcQuote, qNumber,
+    });
+  }
+
+  // Sort by renewal date ascending
+  rows.sort((a,b) => {
+    if (!a.renewalDate) return 1;
+    if (!b.renewalDate) return -1;
+    return a.renewalDate - b.renewalDate;
+  });
+
+  renewalData = rows;
+
+  // Stats
+  const daysUntil = d => d ? Math.ceil((d - today) / 86400000) : 999;
+  const urgent   = rows.filter(r => daysUntil(r.renewalDate) <= 7).length;
+  const thisMonth= rows.filter(r => { const d=daysUntil(r.renewalDate); return d>7&&d<=30; }).length;
+  const upcoming = rows.filter(r => { const d=daysUntil(r.renewalDate); return d>30&&d<=90; }).length;
+
+  // Render stats
+  document.getElementById('renewal-stats-row').innerHTML = [
+    ['Total Active', rows.length, 'var(--text-primary)'],
+    ['Urgent (≤7d)', urgent, urgent>0?'var(--red)':'var(--text-dim)'],
+    ['This Month', thisMonth, thisMonth>0?'var(--amber)':'var(--text-dim)'],
+    ['Upcoming 3M', upcoming, 'var(--green)'],
+    ['Q1 Overdue', rows.filter(r=>r.isQ1Pending).length, 'var(--accent-cyan)'],
+  ].map(([l,v,c]) => `<div class="renewal-stat-card">
+    <div class="stat-val" style="color:${c};">${v}</div>
+    <div class="stat-lbl">${l}</div>
+  </div>`).join('');
+
+  document.getElementById('renewal-excl-notice').innerHTML =
+    `⛔ ${excludedCount} record${excludedCount!==1?'s':''} excluded (Close Lost) · ${rows.filter(r=>r.isCloseWon).length} Close Won shown for reference`;
+
+  document.getElementById('renewal-as-of').textContent =
+    'As of ' + today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' + filename;
+
+  document.getElementById('renewal-upload-section').style.display = 'none';
+  document.getElementById('renewal-data-section').style.display = '';
+  renderRenewalTable();
+}
+
+function urgBadge(renewalDate) {
+  if (!renewalDate) return '<span class="urg-badge urg-sched">TBD</span>';
+  const days = Math.ceil((renewalDate - new Date().setHours(0,0,0,0)) / 86400000);
+  if (days <= 0)  return '<span class="urg-badge urg-urgent">OVERDUE</span>';
+  if (days <= 7)  return '<span class="urg-badge urg-urgent">URGENT</span>';
+  if (days <= 30) return '<span class="urg-badge urg-month">THIS MONTH</span>';
+  if (days <= 90) return '<span class="urg-badge urg-upcoming">UPCOMING</span>';
+  return '<span class="urg-badge urg-sched">SCHEDULED</span>';
+}
+
+function catBadge(outlook) {
+  const o = (outlook||'').toLowerCase();
+  if (o.includes('forecast'))   return '<span class="cat-badge cat-forecast">Forecast</span>';
+  if (o.includes('upside'))     return '<span class="cat-badge cat-upside">Upside</span>';
+  if (o.includes('close won') || o.includes('closed won'))
+                                return '<span class="cat-badge cat-closewon">Close Won</span>';
+  return `<span class="cat-badge" style="background:rgba(100,116,139,0.15);color:var(--text-dim);border:1px solid var(--border);">${outlook||'–'}</span>`;
+}
+
+function sfdcLinks(row) {
+  const btn = (label, icon, url) => url
+    ? `<a class="sfdc-btn" href="${url}" target="_blank" rel="noopener">${icon} ${label}</a>`
+    : `<span class="sfdc-btn disabled">${icon} ${label}</span>`;
+  const qLabel = row.qNumber || 'Quote';
+  return btn('Opportunity','📊', row.sfdcOpp)
+       + btn('Account','🏢', row.sfdcAcct)
+       + btn(qLabel,'📄', row.sfdcQuote);
+}
+
+function renderRenewalTable() {
+  const tbody = document.getElementById('renewal-tbody');
+  if (!tbody) return;
+  const search = (document.getElementById('renewal-search')?.value||'').toLowerCase();
+  const f = renewalFilter;
+
+  const filtered = renewalData.filter(row => {
+    const o = (row.outlook||'').toLowerCase();
+    if (f === 'Q1')        return row.isQ1Pending;
+    if (f === 'Q2')        return row.quarter === 'Q2' && !row.isQ1Pending;
+    if (f === 'Forecast')  return o.includes('forecast');
+    if (f === 'Upside')    return o.includes('upside');
+    if (f === 'Close Won') return row.isCloseWon;
+    return true; // 'all'
+  }).filter(row =>
+    !search || row.customer.toLowerCase().includes(search)
+  );
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-dim);">No records match the current filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(row => {
+    const rowClass = row.isQ1Pending ? ' class="q1-overdue"' : '';
+    const modLines = row.modules.split('\n').filter(Boolean)
+      .map(m => `<div>• ${m.trim()}</div>`).join('');
+    const hist = row.historyLast2.map(l => `<div style="border-left:2px solid var(--border);padding-left:6px;margin-bottom:4px;">${l}</div>`).join('');
+    const quotaFmt = row.quotaASV ? `<div class="renewal-asv">$${parseFloat(row.quotaASV.replace(/[^0-9.]/g,'')||0).toLocaleString()}</div><div class="renewal-asv-sub">Quota ASV</div>` : '–';
+    const closedFmt= row.closedASV && row.closedASV !== '0' && row.isCloseWon
+      ? `<div class="renewal-asv" style="color:var(--green);">$${parseFloat(row.closedASV.replace(/[^0-9.]/g,'')||0).toLocaleString()}</div><div class="renewal-asv-sub">Closed ASV</div>` : '–';
+
+    return `<tr${rowClass}>
+      <td><div style="font-weight:700;color:var(--text-primary);">${row.customer}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">${row.quarter||''}</div></td>
+      <td><div style="font-weight:600;color:var(--text-primary);">${row.renewalDateStr}</div>
+          ${urgBadge(row.renewalDate)}</td>
+      <td>${catBadge(row.outlook)}</td>
+      <td>${quotaFmt}</td>
+      <td>${closedFmt}</td>
+      <td><div class="renewal-modules">${modLines || '<span style="color:var(--text-dim);">–</span>'}</div></td>
+      <td><div class="renewal-history">${hist || '<span style="color:var(--text-dim);">–</span>'}</div></td>
+      <td>${sfdcLinks(row)}</td>
+    </tr>`;
+  }).join('');
+}
+
 })();
 </script>
 </body>
-</html>
+</html
+<!-- ═══ RENEWAL TAB ═══ -->
+<div class="tab-pane" id="tab-renewal">
+  <div class="container" style="padding-top:20px;">
+    <!-- Lock gate -->
+    <div class="renewal-lock-gate" id="renewal-lock-gate">
+      <div style="font-size:48px;margin-bottom:16px;">🔐</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Renewal Dashboard — Manager Only</div>
+      <div style="font-size:13px;color:var(--text-dim);">Unlock Manager Mode to access Qualys renewal data.</div>
+    </div>
+    <!-- Content (shown when manager unlocked) -->
+    <div id="renewal-root" style="display:none;">
+      <!-- Upload zone (shown before file loaded) -->
+      <div id="renewal-upload-section">
+        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔄 Qualys Renewal Dashboard</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Upload your renewal database Excel file to populate the table.</div>
+        <div class="renewal-upload-zone" id="renewal-drop-zone" onclick="document.getElementById('renewal-file-input').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleRenewalDrop(event)">
+          <div style="font-size:36px;margin-bottom:8px;">📂</div>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Drop Excel file here or click to browse</div>
+          <div style="font-size:11px;color:var(--text-dim);">New_Customer Renewal DB_ClaudeCowork.xlsx · sheet: 2026 Renewal</div>
+          <input type="file" id="renewal-file-input" accept=".xlsx" onchange="handleRenewalFile(this.files[0])">
+        </div>
+        <div id="renewal-upload-status" style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:8px;"></div>
+      </div>
+      <!-- Data section (shown after file parsed) -->
+      <div id="renewal-data-section" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">🔄 Qualys Renewal Dashboard</div>
+          <span id="renewal-as-of" style="font-size:11px;color:var(--text-dim);"></span>
+          <button onclick="resetRenewalData()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;">↩ Change File</button>
+        </div>
+        <!-- Stats row -->
+        <div class="renewal-stats-row" id="renewal-stats-row"></div>
+        <!-- Exclusion notice -->
+        <div class="renewal-excl-notice" id="renewal-excl-notice"></div>
+        <!-- Filter bar -->
+        <div class="renewal-filter-bar">
+          <span style="font-size:10px;color:var(--text-dim);font-weight:600;">FILTER:</span>
+          <button class="renewal-filter-btn active" onclick="setRenewalFilter('all',this)">All</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q1',this)">Q1 Overdue</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q2',this)">Q2 Upcoming</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Forecast',this)">Forecast</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Upside',this)">Upside</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Close Won',this)">Close Won</button>
+          <input id="renewal-search" placeholder="🔍 Search customer…" oninput="renderRenewalTable()">
+        </div>
+        <!-- Table -->
+        <div class="renewal-table-wrap">
+          <table class="renewal-table">
+            <thead><tr>
+              <th>Customer</th>
+              <th>Renewal Date</th>
+              <th>Status</th>
+              <th>Quota ASV</th>
+              <th>Closed ASV</th>
+              <th>Modules</th>
+              <th>Sales History</th>
+              <th>SFDC Links</th>
+            </tr></thead>
+            <tbody id="renewal-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+>
