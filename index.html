@@ -1532,7 +1532,7 @@ const SEED_DEFAULT = {
   '^VIX':  { price:24.43,    prev:25.22,    name:'VIX Volatility' },   // TV: 24.43 -3.21%
   '^DJI':  { price:46582.00, prev:46333.00, name:'Dow Jones 30' },     // TV YM1! 46835→ est close
   // Futures — TradingView live (your screenshot)
-  'ES=F':  { price:6617.50,  prev:6571.00,  name:'S&P 500 Futures' },  // TV: ES1! 6617.50 +0.71%
+  'ES=F':  { price:6541.50,  prev:6617.50,  name:'S&P 500 Futures' },  // TV: ES1! 6617.50 +0.71%
   'NQ=F':  { price:24191.00, prev:23918.00, name:'Nasdaq 100 Futures' },// TV: NQ1! 24191 +1.15%
   'RTY=F': { price:2538.70,  prev:2512.00,  name:'Russell 2000 Futures' },// TV: RTY1! 2538.7 +1.05%
   'GC=F':  { price:4810.00,  prev:4714.00,  name:'Gold Futures' },     // TV: GC2! 4810 +2.05%
@@ -1712,7 +1712,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402r'; // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402s'; // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1773,55 +1773,56 @@ function parseV8Chart(data, sym) {
     const prevClose  = meta.chartPreviousClose || meta.regularMarketPreviousClose || closePrice;
     if (!closePrice || closePrice <= 0) return null;
 
-    // Get trading period windows
+    // Trading period windows (Unix seconds)
     const ctp      = meta.currentTradingPeriod || {};
     const preStart = ctp.pre?.start  || 0;
-    const preEnd   = ctp.pre?.end    || 0;
+    const preEnd   = ctp.pre?.end    || 0;   // = regStart (same timestamp)
     const regStart = ctp.regular?.start || 0;
     const regEnd   = ctp.regular?.end   || 0;
     const nowTs    = Date.now() / 1000;
 
-    // Helper: get last non-null close in a timestamp range
+    // Last non-null close within [start, end] inclusive
     function lastClose(start, end) {
-      let last = null;
       for (let i = timestamps.length - 1; i >= 0; i--) {
         const t = timestamps[i];
-        if (t >= start && t < end && closes[i] != null) {
-          last = closes[i];
-          break;
-        }
+        if (t >= start && t <= end && closes[i] != null) return closes[i];
       }
-      return last;
+      return null;
     }
 
-    // Determine pre-market price (last candle in pre window)
-    let prePrice  = null;
-    let postPrice = null;
-
-    if (preStart && preEnd && nowTs >= preStart && nowTs < regStart) {
-      // Currently in pre-market → last pre candle is the live pre-market price
-      prePrice = lastClose(preStart, preEnd);
-    } else if (nowTs >= regEnd) {
-      // After regular close → last post-market candle
-      postPrice = lastClose(regEnd, regEnd + 4 * 3600);
-    } else if (nowTs >= regStart && nowTs < regEnd) {
-      // Market open → regularMarketPrice IS the live price; check for any pre data too
-      prePrice = lastClose(preStart, regStart); // pre-market close (for reference)
-    }
-
-    // Also try: last candle overall (most current price available)
+    // Most recent candle overall (fallback)
     let lastCandlePrice = null;
     for (let i = timestamps.length - 1; i >= 0; i--) {
       if (closes[i] != null) { lastCandlePrice = closes[i]; break; }
     }
 
+    let prePrice  = null;
+    let postPrice = null;
+
+    if (preStart && regStart && nowTs >= preStart && nowTs < regStart) {
+      // PRE-MARKET: get last candle in pre window, fallback to overall last candle
+      prePrice = lastClose(preStart, regStart) || lastCandlePrice;
+    } else if (regEnd && nowTs >= regEnd) {
+      // AFTER-HOURS: last candle after regular close
+      postPrice = lastClose(regEnd, regEnd + 4 * 3600) || lastCandlePrice;
+    } else if (regStart && regEnd && nowTs >= regStart && nowTs < regEnd) {
+      // MARKET OPEN: show any pre-market reference price
+      prePrice = lastClose(preStart, regStart);
+    }
+
     const name = meta.longName || meta.shortName || SEED[sym]?.name || sym;
 
+    console.log('[parseV8Chart]', sym,
+      'nowTs:', Math.round(nowTs), 'preStart:', preStart, 'regStart:', regStart,
+      '| inPre:', preStart && regStart && nowTs>=preStart && nowTs<regStart,
+      '| preCandles:', timestamps.filter((t,i) => t>=preStart && t<=regStart && closes[i]!=null).length,
+      '| prePrice:', prePrice, '| lastCandle:', lastCandlePrice);
+
     return {
-      price:     +closePrice.toFixed(4),         // last official close (meta)
-      prev:      +prevClose.toFixed(4),           // prior day close
-      prePrice:  prePrice  ? +prePrice.toFixed(4)  : null,
-      postPrice: postPrice ? +postPrice.toFixed(4) : null,
+      price:      +closePrice.toFixed(4),
+      prev:       +prevClose.toFixed(4),
+      prePrice:   prePrice   ? +prePrice.toFixed(4)   : null,
+      postPrice:  postPrice  ? +postPrice.toFixed(4)  : null,
       lastCandle: lastCandlePrice ? +lastCandlePrice.toFixed(4) : null,
       name,
     };
@@ -1896,18 +1897,31 @@ function fmtCooldown(ms) {
 function updateSyncBtn() {
   const btn = document.getElementById('sync-btn');
   if (!btn) return;
+  // Manager can always sync — show unlocked state
+  if (managerUnlocked) {
+    btn.textContent = '⟳ Sync';
+    btn.disabled = false;
+    btn.title = 'Manager Mode: sync anytime';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.style.borderColor = 'rgba(245,158,11,0.5)'; // amber = manager colour
+    btn.style.color = 'var(--amber)';
+    return;
+  }
+  // Non-manager: enforce 1-hour cooldown
+  btn.style.color = '';
   const left = getSyncCooldownLeft();
   if (left > 0) {
     btn.textContent = `⟳ ${fmtCooldown(left)}`;
     btn.disabled = true;
-    btn.title = `Next sync available in ${fmtCooldown(left)}`;
+    btn.title = `Rate limited — next sync in ${fmtCooldown(left)}`;
     btn.style.opacity = '0.45';
     btn.style.cursor = 'not-allowed';
     btn.style.borderColor = 'rgba(16,185,129,0.15)';
   } else {
     btn.textContent = '⟳ Sync';
     btn.disabled = false;
-    btn.title = 'Fetch latest prices from Yahoo Finance';
+    btn.title = 'Fetch latest prices (limit: once per hour)';
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
     btn.style.borderColor = '';
@@ -1918,24 +1932,35 @@ function updateSyncBtn() {
 setInterval(updateSyncBtn, 1000);
 
 async function syncNow() {
-  const left = getSyncCooldownLeft();
-  if (left > 0) {
-    showToast('info', '⏳', `Rate limited — next sync in ${fmtCooldown(left)}`);
-    return;
+  // Manager bypasses rate limit entirely
+  if (!managerUnlocked) {
+    const left = getSyncCooldownLeft();
+    if (left > 0) {
+      showToast('info', '⏳', `Rate limited — next sync in ${fmtCooldown(left)}`);
+      return;
+    }
   }
   const btn = document.getElementById('sync-btn');
+  const origText = btn.textContent;
   btn.textContent = '⟳ Syncing…';
   btn.disabled = true;
   btn.style.opacity = '0.6';
   try {
     await fetchAllPrices();
-    lastSyncTime = Date.now();
-    localStorage.setItem('last_sync_time', lastSyncTime);
-    showToast('success', '📡', 'Prices synced. Next manual sync in 1h.');
+    // Only update rate-limit timestamp for non-managers
+    if (!managerUnlocked) {
+      lastSyncTime = Date.now();
+      localStorage.setItem('last_sync_time', lastSyncTime);
+      showToast('success', '📡', 'Synced. Next sync available in 1h.');
+    } else {
+      showToast('success', '📡', 'Manager sync complete.');
+    }
   } catch(e) {
     console.error(e);
-    showToast('error', '❌', 'Sync failed. Check console.');
+    showToast('error', '❌', 'Sync failed — check console.');
   }
+  btn.disabled = false;
+  btn.style.opacity = '1';
   updateSyncBtn();
 }
 
@@ -1963,6 +1988,7 @@ async function fetchAllPrices() {
   Object.assign(liveData, fetched);
   const syms = allSyms;
   console.log('[fetchAllPrices] done:', Object.keys(fetched).length, '/', allSyms.length, 'symbols');
+  updateSyncBtn();
   renderAll();
   const ts = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false})+' HKT';
   document.getElementById('last-updated').textContent = ts;
