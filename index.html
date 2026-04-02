@@ -289,6 +289,7 @@ body.light-theme .manager-banner-text { color:#92400e; }
 .market-time-badge.open    { background:rgba(16,185,129,0.15); color:var(--green);  border:1px solid rgba(16,185,129,0.35); }
 .market-time-badge.closed  { background:rgba(139,92,246,0.15); color:var(--purple); border:1px solid rgba(139,92,246,0.35); }
 .market-time-badge.ext     { background:rgba(245,158,11,0.15); color:var(--amber);  border:1px solid rgba(245,158,11,0.35); }
+.market-time-badge.pre     { background:rgba(6,182,212,0.15);  color:var(--accent-cyan); border:1px solid rgba(6,182,212,0.35); }
 
 /* Status cell pill */
 .status-live   { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:700;
@@ -1541,7 +1542,7 @@ const SEED_DEFAULT = {
   'CL=F':   { price:98.79,   prev:101.33, name:'WTI Crude (UKOIL)' },
   'YM=F':   { price:46835.00,prev:46582.00,name:'Dow Futures' },
   // Crypto — CoinGecko Apr 1 2026
-  '^DXY':   { price:104.15,   prev:104.58,   name:'US Dollar Index' },
+  '^DXY':   { price:99.43,    prev:99.86,    name:'US Dollar Index' },   // TV: 99.43 (-0.43%)
   'CL=F':   { price:98.79,    prev:101.37,   name:'WTI Crude Oil' },
   'BTC-USD':{ price:67946.00, prev:66520.00, name:'Bitcoin USD' },
   'ETH-USD':{ price:2103.49,  prev:2168.00,  name:'Ethereum USD' },
@@ -1711,7 +1712,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402m'; // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402n'; // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -1952,16 +1953,24 @@ function isMarketOpen() {
   return !isWE && etMins>=570 && etMins<960;
 }
 
-function isExtendedHours() {
-  const now = new Date();
-  const etT = now.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'});
+// Returns ET market state object: { open, preMarket, afterHours, closed, etMins }
+function getMarketState() {
+  const now  = new Date();
+  const etT  = now.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'});
   const [eh,em] = etT.split(':').map(Number);
-  const etMins = eh*60+em;
-  const etDay  = now.toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short'});
-  const isWE   = etDay==='Sat'||etDay==='Sun';
-  if (isWE) return false;
-  return (etMins>=240 && etMins<570) || (etMins>=960 && etMins<1200);
+  const etMins  = eh*60+em;
+  const etDay   = now.toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short'});
+  const isWE    = etDay==='Sat'||etDay==='Sun';
+  const open       = !isWE && etMins>=570  && etMins<960;
+  const preMarket  = !isWE && etMins>=240  && etMins<570;
+  const afterHours = !isWE && etMins>=960  && etMins<1200;
+  return { open, preMarket, afterHours, closed:!open&&!preMarket&&!afterHours, etMins, isWE };
 }
+
+function isMarketOpen()     { return getMarketState().open; }
+function isPreMarket()      { return getMarketState().preMarket; }
+function isAfterHours()     { return getMarketState().afterHours; }
+function isExtendedHours()  { const s=getMarketState(); return s.preMarket||s.afterHours; }
 
 function renderTopWidget() {
   const el      = document.getElementById('top-widget-cards');
@@ -1970,50 +1979,64 @@ function renderTopWidget() {
   if (!el) return;
   el.innerHTML = '';
 
-  const marketOpen = isMarketOpen();
-  const extHours   = isExtendedHours();
+  const ms = getMarketState(); // { open, preMarket, afterHours, closed }
 
+  // ── Choose symbol set and badge ──────────────────────────────
   let syms, label, badgeClass, typeLabel;
-  if (marketOpen) {
+  if (ms.open) {
     syms       = INDEX_OPEN;
     label      = '📈 Live Indices';
     badgeClass = 'open';
     typeLabel  = '✅ MARKET OPEN';
-    typeLabel  = '✅ NYSE/NASDAQ OPEN';
-  } else if (extHours) {
+  } else if (ms.preMarket) {
     syms       = INDEX_CLOSED;
-    label      = '⚡ Index Futures — Extended Hours';
+    label      = '⚡ Index Futures — Pre-Market';
     badgeClass = 'ext';
-    typeLabel  = '🌙 EXTENDED HOURS';
+    typeLabel  = '🌅 PRE-MARKET';
+  } else if (ms.afterHours) {
+    syms       = INDEX_CLOSED;
+    label      = '⚡ Index Futures — After Hours';
+    badgeClass = 'ext';
+    typeLabel  = '🌙 AFTER-HOURS';
   } else {
     syms       = INDEX_CLOSED;
-    label      = '⚡ Index Futures — Pre/Post Market';
+    label      = '⚡ Index Futures — Market Closed';
     badgeClass = 'closed';
     typeLabel  = '🔴 MARKET CLOSED';
   }
 
   if (titleEl) titleEl.textContent = label;
   if (badgeEl) {
-    badgeEl.textContent  = typeLabel;
-    badgeEl.className    = 'market-time-badge ' + badgeClass;
+    badgeEl.textContent = typeLabel;
+    badgeEl.className   = 'market-time-badge ' + badgeClass;
   }
 
+  // ── Render cards ─────────────────────────────────────────────
   syms.forEach(sym => {
     const d = getPrice(sym); if (!d) return;
     const {abs, pct} = calcChange(d.price, d.prev);
-    const cl  = dir(pct);
-    const isVix = sym === '^VIX';
-    const va  = isVix && d.price > 25 ? ' vix-alert' : '';
-    const isFut = sym.endsWith('=F') || sym === 'YM=F';
-    const srcBadgeClass = isFut ? 'futures' : 'live';
-    const srcLabel = marketOpen ? 'LIVE' : (isFut ? 'FUT' : 'LIVE');
-    const link = `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
+    const cl     = dir(pct);
+    const isVix  = sym === '^VIX';
+    const isFut  = sym.endsWith('=F');
+    const va     = isVix && d.price > 25 ? ' vix-alert' : '';
+    const link   = `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
+    const dispSym = SYM_LABEL[sym] || sym.replace('^','').replace('=F','');
 
-    // Display symbol nicely
-    const dispSym = (typeof SYM_LABEL !== 'undefined' && SYM_LABEL[sym]) || sym.replace('^','').replace('=F','');
+    // Source badge: LIVE only when market actually open; FUT for futures; INDEX for spot indices off-hours
+    let srcLabel, srcCls;
+    if (ms.open) {
+      srcLabel = isFut ? 'FUT' : 'LIVE';
+      srcCls   = isFut ? 'futures' : 'live';
+    } else if (ms.preMarket || ms.afterHours) {
+      srcLabel = isFut ? 'FUT' : 'INDEX';
+      srcCls   = isFut ? 'futures' : 'live';
+    } else {
+      srcLabel = isFut ? 'FUT' : 'CLOSE';
+      srcCls   = isFut ? 'futures' : 'live';
+    }
 
     el.innerHTML += `<a class="index-card ${cl}${va}" href="${link}" target="_blank">
-      <span class="card-source ${srcBadgeClass}">${srcLabel}</span>
+      <span class="card-source ${srcCls}">${srcLabel}</span>
       <div class="card-symbol">${dispSym}</div>
       <div class="card-name">${d.name}</div>
       <div class="card-price">${fmtCardPrice(sym, d.price)}</div>
@@ -2289,25 +2312,13 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       <button class="btn-del-row"  onclick="requestDelete('${listName}',${idx})">✕</button>
     </div></td>` : '<td></td>';
 
-    // Status badge — pre-market / live / ext hrs / closed
-    const mktOpen2 = isMarketOpen();
+    // Status badge — uses unified getMarketState()
+    const _ms = getMarketState();
     let statusBadge;
-    if (mktOpen2) {
-      statusBadge = `<span class="status-live"><span class="status-dot-sm"></span>LIVE</span>`;
-    } else {
-      const nowET = new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'});
-      const [eh2,em2] = nowET.split(':').map(Number);
-      const etMins2 = eh2*60+em2;
-      const etDay2  = new Date().toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short'});
-      const isWE2   = etDay2==='Sat'||etDay2==='Sun';
-      if (!isWE2 && etMins2>=240 && etMins2<570) {
-        statusBadge = `<span class="status-pre"><span class="status-dot-sm"></span>PRE-MKT</span>`;
-      } else if (!isWE2 && etMins2>=960 && etMins2<1200) {
-        statusBadge = `<span class="status-ext"><span class="status-dot-sm"></span>EXT HRS</span>`;
-      } else {
-        statusBadge = `<span class="status-closed">CLOSED</span>`;
-      }
-    }
+    if (_ms.open)       statusBadge = `<span class="status-live"><span class="status-dot-sm"></span>LIVE</span>`;
+    else if (_ms.preMarket)  statusBadge = `<span class="status-pre"><span class="status-dot-sm"></span>PRE-MKT</span>`;
+    else if (_ms.afterHours) statusBadge = `<span class="status-ext"><span class="status-dot-sm"></span>EXT HRS</span>`;
+    else                statusBadge = `<span class="status-closed">CLOSED</span>`;
 
     // Theme cell — narrative badge only
     const themeCellHtml = narrBadge;
