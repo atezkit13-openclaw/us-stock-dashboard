@@ -1067,8 +1067,8 @@ body.light-theme .alert-item.oil-alert-bar {
         <thead><tr>
           <th onclick="setSortCol('sym',null)" style="cursor:pointer;">Symbol</th>
           <th onclick="setSortCol('price',null)" style="cursor:pointer;">Last Close</th>
+          <th onclick="setSortCol('pct',null)" style="cursor:pointer;">Daily % Chg</th>
           <th>Pre-Market</th>
-          <th onclick="setSortCol('pct',null)" style="cursor:pointer;">% Chg</th>
           <th>Status</th>
           <th>Weekly SMA</th>
           <th onclick="setSortCol('narrative',null)" style="cursor:pointer;">Theme</th>
@@ -1712,7 +1712,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402t'; // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402u'; // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -2442,6 +2442,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
         <div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;">$${fmtP(closePrice,sym)}</div>
         <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">prev $${fmtP(prevClose,sym)}</div>
       </td>
+      <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
       <td class="price-cell">
         ${extPrice !== null
           ? `<div class="pre-price-val ${preCl}" style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;">$${fmtP(extPrice,sym)}</div>
@@ -2449,7 +2450,6 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
           : '<span style="color:var(--text-dim);font-size:11px;">–</span>'
         }
       </td>
-      <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
       <td>${statusBadge}</td>
       <td>${smaDropdown}</td>
       <td>${themeCellHtml}</td>
