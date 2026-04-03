@@ -875,8 +875,31 @@ body.light-theme .alert-item.oil-alert-bar {
 }
 #renewal-search:focus { border-color:var(--accent-blue); outline:none; }
 .q1-overdue { background:rgba(239,68,68,0.05); }
+
+/* ── FIREBASE SYNC STATUS ──────────────────────────────────── */
+.fb-status {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:10px; font-weight:600; padding:3px 9px;
+  border-radius:5px; letter-spacing:0.05em; white-space:nowrap;
+  transition: all 0.3s;
+}
+.fb-status.syncing  { background:rgba(59,130,246,0.12);  color:var(--accent-blue); border:1px solid rgba(59,130,246,0.3); }
+.fb-status.synced   { background:rgba(16,185,129,0.12);  color:var(--green);        border:1px solid rgba(16,185,129,0.3); }
+.fb-status.offline  { background:rgba(245,158,11,0.12);  color:var(--amber);        border:1px solid rgba(245,158,11,0.3); }
+.fb-status.error    { background:rgba(239,68,68,0.10);   color:var(--red);          border:1px solid rgba(239,68,68,0.3); }
+.fb-dot {
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+}
+.fb-status.syncing .fb-dot  { background:var(--accent-blue); animation:pulse 1s infinite; }
+.fb-status.synced  .fb-dot  { background:var(--green); }
+.fb-status.offline .fb-dot  { background:var(--amber); }
+.fb-status.error   .fb-dot  { background:var(--red); }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Firebase SDK (modular compat build) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -1056,6 +1079,7 @@ body.light-theme .alert-item.oil-alert-bar {
       <div class="header-actions">
         <div class="last-updated">Fetched: <span id="last-updated">–</span></div>
         <button class="btn-sync-now" id="sync-btn" onclick="syncNow()" title="Fetch latest prices from Yahoo Finance">⟳ Sync</button>
+        <span class="fb-status offline" id="fb-status"><span class="fb-dot"></span><span id="fb-status-text">Firebase</span></span>
         <span class="auto-refresh-badge inactive" id="auto-badge" title="Auto-refresh schedule">⏰ Auto</span>
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
@@ -1258,7 +1282,7 @@ function applyTheme(light, manual) {
 
 function toggleTheme() {
   const isLight = document.body.classList.contains('light-theme');
-  applyTheme(!isLight, true);
+  applyTheme(!isLight, true); fbSaveSettings();
 }
 
 function autoTheme() {
@@ -1812,7 +1836,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402w'; // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260402x'; // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -3461,6 +3485,7 @@ renderAll();
   }
   scheduleNextAutoRefresh();
   scheduleNewsRefresh(); // auto news at 09:00 HKT daily
+  initFirebase();           // Firebase real-time sync
   // Eagerly fetch live prices on first load (non-blocking, 2s delay for page render)
   setTimeout(async () => {
     try {
@@ -3747,6 +3772,197 @@ function renderRenewalTable() {
     </tr>`;
   }).join('');
 }
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE SYNC — Real-time cross-device sync via Firestore
+// Project: us-market-intelligence
+// ═══════════════════════════════════════════════════════════════
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCl5psj_AniIxw-HbRSnI4nXWEtDWri-5Y",
+  authDomain:        "us-market-intelligence.firebaseapp.com",
+  projectId:         "us-market-intelligence",
+  storageBucket:     "us-market-intelligence.firebasestorage.app",
+  messagingSenderId: "942477132929",
+  appId:             "1:942477132929:web:98462ae2f2131f1b953980"
+};
+
+// ── Firestore document paths ──────────────────────────────────
+// /dashboard/lists      → watchlist + crypto ticker data
+// /dashboard/settings   → manager PIN hash, theme
+// /dashboard/sync_meta  → last sync timestamps
+// /dashboard/portfolio  → portfolio account data (optional)
+
+let _db  = null;   // Firestore instance
+let _uid = null;   // anonymous auth UID
+let _fbUnsubLists = null;  // real-time listener unsub fn
+
+// ── Status indicator ─────────────────────────────────────────
+function fbSetStatus(state, text) {
+  const el = document.getElementById('fb-status');
+  const tx = document.getElementById('fb-status-text');
+  if (!el || !tx) return;
+  el.className = 'fb-status ' + state;
+  tx.textContent = text;
+}
+
+// ── Initialise Firebase (called once on page load) ───────────
+async function initFirebase() {
+  try {
+    fbSetStatus('syncing', 'Connecting…');
+    firebase.initializeApp(firebaseConfig);
+    _db = firebase.firestore();
+
+    // Enable offline persistence (changes queue when offline)
+    await _db.enablePersistence({ synchronizeTabs: true }).catch(e => {
+      if (e.code === 'failed-precondition') console.warn('[FB] Multiple tabs — persistence disabled');
+      else if (e.code === 'unimplemented')  console.warn('[FB] Browser does not support persistence');
+    });
+
+    // Sign in anonymously (silent — no UI)
+    const auth = firebase.auth();
+    await auth.signInAnonymously();
+    _uid = auth.currentUser.uid;
+    console.log('[FB] Signed in anonymously. UID:', _uid);
+
+    // Load initial data from Firestore
+    await fbLoadAll();
+
+    // Start real-time listener for cross-device sync
+    fbStartListener();
+
+    fbSetStatus('synced', '☁ Synced');
+    console.log('[FB] Firebase initialised successfully.');
+  } catch(e) {
+    console.error('[FB] Init failed:', e);
+    fbSetStatus('error', '☁ Offline');
+  }
+}
+
+// ── Load all data from Firestore → merge into app state ──────
+async function fbLoadAll() {
+  if (!_db) return;
+  try {
+    const [listsSnap, settingsSnap] = await Promise.all([
+      _db.doc('dashboard/lists').get(),
+      _db.doc('dashboard/settings').get(),
+    ]);
+
+    // Merge watchlist/crypto from Firestore (Firestore wins over localStorage)
+    if (listsSnap.exists) {
+      const data = listsSnap.data();
+      if (data.watchlist && Array.isArray(data.watchlist) && data.watchlist.length > 0) {
+        LISTS.watchlist = data.watchlist;
+        console.log('[FB] Loaded watchlist:', data.watchlist.length, 'tickers');
+      }
+      if (data.crypto && Array.isArray(data.crypto) && data.crypto.length > 0) {
+        LISTS.crypto = data.crypto;
+      }
+      // Persist to localStorage too
+      saveLists();
+    }
+
+    // Merge settings (PIN, theme)
+    if (settingsSnap.exists) {
+      const s = settingsSnap.data();
+      if (s.mgr_pin) localStorage.setItem('mgr_pin', s.mgr_pin);
+      if (s.theme_manual) localStorage.setItem('theme_manual', s.theme_manual);
+      console.log('[FB] Settings loaded.');
+    }
+
+    renderAll();
+    fbSetStatus('synced', '☁ Synced');
+  } catch(e) {
+    console.warn('[FB] Load failed:', e.message);
+    fbSetStatus('offline', '☁ Cached');
+  }
+}
+
+// ── Real-time listener — auto-update when another device changes data ──
+function fbStartListener() {
+  if (!_db) return;
+  // Unsubscribe any existing listener first
+  if (_fbUnsubLists) _fbUnsubLists();
+
+  _fbUnsubLists = _db.doc('dashboard/lists').onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data();
+    // Only apply if data came from a different device (metadata.hasPendingWrites = false)
+    if (snap.metadata.hasPendingWrites) return; // our own write — skip
+    let changed = false;
+    if (data.watchlist && JSON.stringify(data.watchlist) !== JSON.stringify(LISTS.watchlist)) {
+      LISTS.watchlist = data.watchlist;
+      changed = true;
+    }
+    if (data.crypto && JSON.stringify(data.crypto) !== JSON.stringify(LISTS.crypto)) {
+      LISTS.crypto = data.crypto;
+      changed = true;
+    }
+    if (changed) {
+      saveLists();
+      renderAll();
+      showToast('info', '☁', 'Watchlist synced from another device.');
+      fbSetStatus('synced', '☁ Synced');
+      console.log('[FB] Real-time update applied from Firestore.');
+    }
+  }, e => {
+    console.warn('[FB] Listener error:', e.message);
+    fbSetStatus('offline', '☁ Offline');
+  });
+}
+
+// ── Write lists to Firestore (called after every LISTS change) ──
+let _fbWriteTimer = null;
+async function fbSaveLists() {
+  if (!_db) return;
+  // Debounce writes by 800ms to batch rapid changes
+  clearTimeout(_fbWriteTimer);
+  _fbWriteTimer = setTimeout(async () => {
+    try {
+      fbSetStatus('syncing', '☁ Saving…');
+      await _db.doc('dashboard/lists').set({
+        watchlist:   LISTS.watchlist,
+        crypto:      LISTS.crypto,
+        updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy:   _uid || 'unknown',
+      });
+      fbSetStatus('synced', '☁ Synced');
+      console.log('[FB] Lists saved to Firestore.');
+    } catch(e) {
+      console.warn('[FB] Save failed:', e.message);
+      fbSetStatus('offline', '☁ Cached');
+    }
+  }, 800);
+}
+
+// ── Write settings to Firestore (PIN changes, theme) ─────────
+async function fbSaveSettings() {
+  if (!_db) return;
+  try {
+    await _db.doc('dashboard/settings').set({
+      mgr_pin:      localStorage.getItem('mgr_pin') || '',
+      theme_manual: localStorage.getItem('theme_manual') || '',
+      updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    console.log('[FB] Settings saved.');
+  } catch(e) {
+    console.warn('[FB] Settings save failed:', e.message);
+  }
+}
+
+// ── Patch saveLists() to also write to Firestore ─────────────
+// We wrap the existing saveLists() function
+const _origSaveLists = saveLists;
+saveLists = function() {
+  _origSaveLists();   // localStorage as before
+  fbSaveLists();      // Firestore async
+};
+
+// ── Firestore sync status in UI ──────────────────────────────
+window.addEventListener('online',  () => { fbSetStatus('syncing','☁ Reconnecting…'); fbLoadAll(); });
+window.addEventListener('offline', () => fbSetStatus('offline','☁ Offline'));
 
 })();
 </script>
