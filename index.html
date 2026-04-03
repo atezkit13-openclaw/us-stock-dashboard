@@ -1290,15 +1290,87 @@ body.light-theme .alert-item.oil-alert-bar {
 
 </div><!-- /tab-market -->
 
+<!-- ═══ RENEWAL TAB ═══ -->
+<div class="tab-pane" id="tab-renewal">
+  <div class="container" style="padding-top:20px;">
+    <!-- Lock gate -->
+    <div class="renewal-lock-gate" id="renewal-lock-gate">
+      <div style="font-size:64px;opacity:0.4;">🔒</div>
+    </div>
+    <!-- Content (shown when manager unlocked) -->
+    <div id="renewal-root" style="display:none;">
+      <!-- Upload zone (shown before file loaded) -->
+      <div id="renewal-upload-section">
+        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔄 Renewal Dashboard</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Upload your renewal database Excel file to populate the table.</div>
+        <div class="renewal-upload-zone" id="renewal-drop-zone" onclick="document.getElementById('renewal-file-input').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleRenewalDrop(event)">
+          <div style="font-size:36px;margin-bottom:8px;">📂</div>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Drop Excel file here or click to browse</div>
+          <div style="font-size:11px;color:var(--text-dim);">New_Customer Renewal DB_ClaudeCowork.xlsx · sheet: 2026 Renewal</div>
+          <input type="file" id="renewal-file-input" accept=".xlsx" onchange="handleRenewalFile(this.files[0])">
+        </div>
+        <div style="margin-top:12px;text-align:center;">
+          <span style="font-size:11px;color:var(--text-dim);">or use the pre-loaded database:</span>
+          <button onclick="loadEmbeddedRenewalData()"
+            style="margin-left:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
+              color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">
+            📊 Load Apr 2026 DB
+          </button>
+        </div>
+        <div id="renewal-upload-status" style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:8px;"></div>
+      </div>
+      <!-- Data section (shown after file parsed) -->
+      <div id="renewal-data-section" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">🔄 Renewal Dashboard</div>
+          <span id="renewal-as-of" style="font-size:11px;color:var(--text-dim);"></span>
+          <button onclick="resetRenewalData()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;">↩ Change File</button>
+        </div>
+        <!-- Stats row -->
+        <div class="renewal-stats-row" id="renewal-stats-row"></div>
+        <!-- Exclusion notice -->
+        <div class="renewal-excl-notice" id="renewal-excl-notice"></div>
+        <!-- Filter bar -->
+        <div class="renewal-filter-bar">
+          <span style="font-size:10px;color:var(--text-dim);font-weight:600;">FILTER:</span>
+          <button class="renewal-filter-btn active" onclick="setRenewalFilter('all',this)">All</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q1',this)">Q1 Overdue</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q2',this)">Q2 Upcoming</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Forecast',this)">Forecast</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Upside',this)">Upside</button>
+          <button class="renewal-filter-btn" onclick="setRenewalFilter('Close Won',this)">Close Won</button>
+          <input id="renewal-search" placeholder="🔍 Search customer…" oninput="renderRenewalTable()">
+        </div>
+        <!-- Table -->
+        <div class="renewal-table-wrap">
+          <table class="renewal-table">
+            <thead><tr>
+              <th>Customer</th>
+              <th>Renewal Date</th>
+              <th>Status</th>
+              <th>Quota ASV</th>
+              <th>Closed ASV</th>
+              <th>Modules</th>
+              <th>Sales History</th>
+              <th>SFDC Links</th>
+            </tr></thead>
+            <tbody id="renewal-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ PORTFOLIO TAB ═══ -->
 <div class="tab-pane" id="tab-portfolio">
   <!-- Lock gate — shown when portfolio is locked -->
-  <div class="pf-lock-gate" id="pf-lock-gate">
-    <div class="pf-lock-icon">🔐</div>
-    <div class="pf-lock-title">Portfolio — Private View</div>
-    <div class="pf-lock-sub">This section contains private portfolio data.<br>Enter your Manager PIN to unlock.</div>
-    <button class="pf-lock-btn" onclick="openPortfolioPIN()">🔑 Unlock Portfolio</button>
-    <div class="pf-lock-hint">PIN-PROTECTED · DATA STORED LOCALLY</div>
+    <div class="pf-lock-gate" id="pf-lock-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;">
+    <div style="font-size:64px;opacity:0.4;">🔒</div>
+  </div>
   </div>
   <!-- Actual content — hidden until unlocked -->
   <div id="pf-root" style="padding:20px 0; display:none;"></div>
@@ -1776,16 +1848,7 @@ function scheduleNextAutoRefresh() {
 let portfolioUnlocked = false;
 
 function switchTab(name) {
-  // Renewal tab — requires PIN (same as portfolio, no sec Q)
-  if (name === 'renewal' && !managerUnlocked) {
-    openRenewalPIN();
-    return;
-  }
-  // Portfolio tab — requires PIN (no sec Q)
-  if (name === 'portfolio' && !portfolioUnlocked) {
-    openPortfolioPIN();
-    return;
-  }
+  // Always allow navigation — lock gates are shown inside the tab panes
   doSwitchTab(name);
 }
 
@@ -1794,7 +1857,7 @@ function doSwitchTab(name) {
   document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('tab-btn-' + name).classList.add('active');
-  if (name === 'portfolio') showPortfolioContent();
+  if (name === 'portfolio' && portfolioUnlocked) showPortfolioContent();
   if (name === 'news') loadNews();
 }
 
@@ -1839,21 +1902,6 @@ function openPINModal() {
   document.getElementById('pin-modal-icon').textContent = '🔐';
   document.getElementById('pin-modal-title').textContent = 'Manager Mode';
   document.getElementById('pin-modal-sub').textContent = 'Enter your 4-digit PIN to continue';
-  document.getElementById('pin-error').textContent = '';
-  document.getElementById('pin-attempts').textContent = '';
-  updatePinDots();
-  if (pinLockUntil > Date.now()) {
-    document.getElementById('pin-error').textContent = `Locked. Try in ${Math.ceil((pinLockUntil-Date.now())/1000)}s.`;
-  }
-  openModal('pin-modal');
-}
-
-function openRenewalPIN() {
-  pinMode = 'renewal';
-  pinBuffer = '';
-  document.getElementById('pin-modal-icon').textContent = '🔒';
-  document.getElementById('pin-modal-title').textContent = 'Renewal — Private';
-  document.getElementById('pin-modal-sub').textContent = 'Enter PIN to view renewal records';
   document.getElementById('pin-error').textContent = '';
   document.getElementById('pin-attempts').textContent = '';
   updatePinDots();
@@ -1912,13 +1960,6 @@ function checkPIN() {
       document.getElementById('tab-btn-portfolio').classList.add('unlocked');
       showToast('success', '💼', 'Portfolio unlocked.');
       doSwitchTab('portfolio');
-    } else if (pinMode === 'renewal') {
-      // PIN only — no security question for tab access
-      managerUnlocked = true;  // grant just enough to show renewal
-      updateRenewalTab();
-      updateNewsReloadBtn(); updateSyncBtn();
-      showToast('success', '🔒', 'Renewal records unlocked.');
-      doSwitchTab('renewal');
     } else {
       // Manager button — PIN → security question → full manager mode
       document.getElementById('sec-answer').value = '';
@@ -1947,11 +1988,14 @@ function checkSecurityAnswer() {
   const ans = (document.getElementById('sec-answer').value||'').trim().toLowerCase();
   if (ans === 'deb') {
     closeModal('security-modal');
-    // Full manager mode — grants access to everything
+    // Full manager mode — unlocks everything
     activateManager();
     portfolioUnlocked = true;
     document.getElementById('tab-btn-portfolio').classList.add('unlocked');
-    showToast('success', '🔓', 'Manager Mode activated. Full access granted.');
+    // Show portfolio content if currently on portfolio tab
+    const activeTab = document.querySelector('.tab-pane.active');
+    if (activeTab && activeTab.id === 'tab-portfolio') showPortfolioContent();
+    showToast('success', '🔓', 'Manager Mode — full access granted.');
   } else {
     document.getElementById('sec-error').textContent = 'Incorrect answer. Try again.';
     document.getElementById('sec-answer').value = '';
@@ -2240,7 +2284,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260403j'; // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260403k'; // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -3983,16 +4027,15 @@ let renewalFilter = 'all';  // current filter
 
 // Show/hide renewal tab button based on manager state
 function updateRenewalTab() {
-  const btn = document.getElementById('tab-btn-renewal');
-  if (!btn) return;
+  const gate = document.getElementById('renewal-lock-gate');
+  const root = document.getElementById('renewal-root');
+  if (!gate || !root) return;
   if (managerUnlocked) {
-    btn.style.color = '';
-    document.getElementById('renewal-lock-gate').style.display = 'none';
-    document.getElementById('renewal-root').style.display = 'block';
+    gate.style.display = 'none';
+    root.style.display = 'block';
   } else {
-    btn.style.color = '';
-    document.getElementById('renewal-lock-gate').style.display = 'flex';
-    document.getElementById('renewal-root').style.display = 'none';
+    gate.style.display = 'flex';
+    root.style.display = 'none';
     if (document.getElementById('tab-renewal')?.classList.contains('active')) {
       doSwitchTab('market');
     }
@@ -4335,81 +4378,7 @@ initFirebase();
 </script>
 </body>
 </html
-<!-- ═══ RENEWAL TAB ═══ -->
-<div class="tab-pane" id="tab-renewal">
-  <div class="container" style="padding-top:20px;">
-    <!-- Lock gate -->
-    <div class="renewal-lock-gate" id="renewal-lock-gate">
-      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Renewal — PIN Required</div>
-      <div style="font-size:13px;color:var(--text-dim);">Enter your PIN to access subscription renewal records.</div>
-    </div>
-    <!-- Content (shown when manager unlocked) -->
-    <div id="renewal-root" style="display:none;">
-      <!-- Upload zone (shown before file loaded) -->
-      <div id="renewal-upload-section">
-        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔄 Renewal Dashboard</div>
-        <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Upload your renewal database Excel file to populate the table.</div>
-        <div class="renewal-upload-zone" id="renewal-drop-zone" onclick="document.getElementById('renewal-file-input').click()"
-             ondragover="event.preventDefault();this.classList.add('drag-over')"
-             ondragleave="this.classList.remove('drag-over')"
-             ondrop="handleRenewalDrop(event)">
-          <div style="font-size:36px;margin-bottom:8px;">📂</div>
-          <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Drop Excel file here or click to browse</div>
-          <div style="font-size:11px;color:var(--text-dim);">New_Customer Renewal DB_ClaudeCowork.xlsx · sheet: 2026 Renewal</div>
-          <input type="file" id="renewal-file-input" accept=".xlsx" onchange="handleRenewalFile(this.files[0])">
-        </div>
-        <div style="margin-top:12px;text-align:center;">
-          <span style="font-size:11px;color:var(--text-dim);">or use the pre-loaded database:</span>
-          <button onclick="loadEmbeddedRenewalData()"
-            style="margin-left:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
-              color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">
-            📊 Load Apr 2026 DB
-          </button>
-        </div>
-        <div id="renewal-upload-status" style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:8px;"></div>
-      </div>
-      <!-- Data section (shown after file parsed) -->
-      <div id="renewal-data-section" style="display:none;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">🔄 Renewal Dashboard</div>
-          <span id="renewal-as-of" style="font-size:11px;color:var(--text-dim);"></span>
-          <button onclick="resetRenewalData()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;">↩ Change File</button>
-        </div>
-        <!-- Stats row -->
-        <div class="renewal-stats-row" id="renewal-stats-row"></div>
-        <!-- Exclusion notice -->
-        <div class="renewal-excl-notice" id="renewal-excl-notice"></div>
-        <!-- Filter bar -->
-        <div class="renewal-filter-bar">
-          <span style="font-size:10px;color:var(--text-dim);font-weight:600;">FILTER:</span>
-          <button class="renewal-filter-btn active" onclick="setRenewalFilter('all',this)">All</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q1',this)">Q1 Overdue</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q2',this)">Q2 Upcoming</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Forecast',this)">Forecast</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Upside',this)">Upside</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Close Won',this)">Close Won</button>
-          <input id="renewal-search" placeholder="🔍 Search customer…" oninput="renderRenewalTable()">
-        </div>
-        <!-- Table -->
-        <div class="renewal-table-wrap">
-          <table class="renewal-table">
-            <thead><tr>
-              <th>Customer</th>
-              <th>Renewal Date</th>
-              <th>Status</th>
-              <th>Quota ASV</th>
-              <th>Closed ASV</th>
-              <th>Modules</th>
-              <th>Sales History</th>
-              <th>SFDC Links</th>
-            </tr></thead>
-            <tbody id="renewal-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
->
+</script>
+</body>
+</html
