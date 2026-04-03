@@ -1776,11 +1776,15 @@ function scheduleNextAutoRefresh() {
 let portfolioUnlocked = false;
 
 function switchTab(name) {
-  if (name === 'renewal' && !managerUnlocked) { showToast('info','🔒','Manager Mode required.'); return; }
-  // Intercept portfolio tab — require PIN if not yet unlocked
+  // Renewal tab — requires PIN (same as portfolio, no sec Q)
+  if (name === 'renewal' && !managerUnlocked) {
+    openRenewalPIN();
+    return;
+  }
+  // Portfolio tab — requires PIN (no sec Q)
   if (name === 'portfolio' && !portfolioUnlocked) {
     openPortfolioPIN();
-    return; // Don't switch yet — will switch after successful PIN
+    return;
   }
   doSwitchTab(name);
 }
@@ -1826,7 +1830,7 @@ function setStoredPIN(p) { localStorage.setItem('mgr_pin', p); }
 
 function onManagerBtnClick() { managerUnlocked ? lockManager() : openPINModal(); }
 
-// pinMode: 'manager' | 'portfolio'
+// pinMode: 'manager' | 'portfolio' | 'renewal'
 let pinMode = 'manager';
 
 function openPINModal() {
@@ -1835,6 +1839,21 @@ function openPINModal() {
   document.getElementById('pin-modal-icon').textContent = '🔐';
   document.getElementById('pin-modal-title').textContent = 'Manager Mode';
   document.getElementById('pin-modal-sub').textContent = 'Enter your 4-digit PIN to continue';
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-attempts').textContent = '';
+  updatePinDots();
+  if (pinLockUntil > Date.now()) {
+    document.getElementById('pin-error').textContent = `Locked. Try in ${Math.ceil((pinLockUntil-Date.now())/1000)}s.`;
+  }
+  openModal('pin-modal');
+}
+
+function openRenewalPIN() {
+  pinMode = 'renewal';
+  pinBuffer = '';
+  document.getElementById('pin-modal-icon').textContent = '🔒';
+  document.getElementById('pin-modal-title').textContent = 'Renewal — Private';
+  document.getElementById('pin-modal-sub').textContent = 'Enter PIN to view renewal records';
   document.getElementById('pin-error').textContent = '';
   document.getElementById('pin-attempts').textContent = '';
   updatePinDots();
@@ -1888,13 +1907,20 @@ function checkPIN() {
     pinAttempts=0; pinBuffer=''; updatePinDots();
     closeModal('pin-modal');
     if (pinMode === 'portfolio') {
-      // Portfolio only — no security question needed
+      // PIN only — no security question for tab access
       portfolioUnlocked = true;
       document.getElementById('tab-btn-portfolio').classList.add('unlocked');
       showToast('success', '💼', 'Portfolio unlocked.');
       doSwitchTab('portfolio');
+    } else if (pinMode === 'renewal') {
+      // PIN only — no security question for tab access
+      managerUnlocked = true;  // grant just enough to show renewal
+      updateRenewalTab();
+      updateNewsReloadBtn(); updateSyncBtn();
+      showToast('success', '🔒', 'Renewal records unlocked.');
+      doSwitchTab('renewal');
     } else {
-      // Manager mode — show security question first
+      // Manager button — PIN → security question → full manager mode
       document.getElementById('sec-answer').value = '';
       document.getElementById('sec-error').textContent = '';
       openModal('security-modal');
@@ -1921,9 +1947,11 @@ function checkSecurityAnswer() {
   const ans = (document.getElementById('sec-answer').value||'').trim().toLowerCase();
   if (ans === 'deb') {
     closeModal('security-modal');
+    // Full manager mode — grants access to everything
     activateManager();
     portfolioUnlocked = true;
     document.getElementById('tab-btn-portfolio').classList.add('unlocked');
+    showToast('success', '🔓', 'Manager Mode activated. Full access granted.');
   } else {
     document.getElementById('sec-error').textContent = 'Incorrect answer. Try again.';
     document.getElementById('sec-answer').value = '';
@@ -1960,6 +1988,12 @@ async function lockManager() {
   const saved = await fbSaveAll();
   // Then: lock the UI
   managerUnlocked=false;
+  // Re-lock renewal gate
+  document.getElementById('renewal-lock-gate').style.display = 'flex';
+  document.getElementById('renewal-root').style.display = 'none';
+  if (document.getElementById('tab-renewal').classList.contains('active')) {
+    doSwitchTab('market');
+  }
   document.getElementById('manager-btn').classList.remove('active');
   document.getElementById('manager-btn').textContent='⚙ Manager';
   document.getElementById('manager-banner').classList.remove('visible');
@@ -2206,7 +2240,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260403i'; // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260403j'; // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -4306,15 +4340,15 @@ initFirebase();
   <div class="container" style="padding-top:20px;">
     <!-- Lock gate -->
     <div class="renewal-lock-gate" id="renewal-lock-gate">
-      <div style="font-size:48px;margin-bottom:16px;">🔐</div>
-      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Renewal Dashboard — Manager Only</div>
-      <div style="font-size:13px;color:var(--text-dim);">Unlock Manager Mode to access Qualys renewal data.</div>
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Renewal — PIN Required</div>
+      <div style="font-size:13px;color:var(--text-dim);">Enter your PIN to access subscription renewal records.</div>
     </div>
     <!-- Content (shown when manager unlocked) -->
     <div id="renewal-root" style="display:none;">
       <!-- Upload zone (shown before file loaded) -->
       <div id="renewal-upload-section">
-        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔄 Qualys Renewal Dashboard</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔄 Renewal Dashboard</div>
         <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Upload your renewal database Excel file to populate the table.</div>
         <div class="renewal-upload-zone" id="renewal-drop-zone" onclick="document.getElementById('renewal-file-input').click()"
              ondragover="event.preventDefault();this.classList.add('drag-over')"
@@ -4338,7 +4372,7 @@ initFirebase();
       <!-- Data section (shown after file parsed) -->
       <div id="renewal-data-section" style="display:none;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">🔄 Qualys Renewal Dashboard</div>
+          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">🔄 Renewal Dashboard</div>
           <span id="renewal-as-of" style="font-size:11px;color:var(--text-dim);"></span>
           <button onclick="resetRenewalData()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;">↩ Change File</button>
         </div>
