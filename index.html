@@ -1277,6 +1277,244 @@ body.light-theme .alert-item.oil-alert-bar {
 </div><!-- /container -->
 
 <script>
+
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE SYNC — Real-time cross-device sync via Firestore
+// Project: us-market-intelligence
+// ═══════════════════════════════════════════════════════════════
+
+const firebaseConfig = {
+  // ⚠ Add atezkit13-openclaw.github.io to Firebase Console → Authentication → Authorised domains
+  apiKey:            "AIzaSyCl5psj_AniIxw-HbRSnI4nXWEtDWri-5Y",
+  authDomain:        "us-market-intelligence.firebaseapp.com",
+  projectId:         "us-market-intelligence",
+  storageBucket:     "us-market-intelligence.firebasestorage.app",
+  messagingSenderId: "942477132929",
+  appId:             "1:942477132929:web:98462ae2f2131f1b953980"
+};
+
+// ── Firestore document paths ──────────────────────────────────
+// /dashboard/lists      → watchlist + crypto ticker data
+// /dashboard/settings   → manager PIN hash, theme
+// /dashboard/sync_meta  → last sync timestamps
+// /dashboard/portfolio  → portfolio account data (optional)
+
+let _db  = null;   // Firestore instance
+let _uid = null;   // anonymous auth UID
+let _fbUnsubLists = null;  // real-time listener unsub fn
+
+// ── Status indicator ─────────────────────────────────────────
+function fbSetStatus(state, text) {
+  const el = document.getElementById('fb-status');
+  const tx = document.getElementById('fb-status-text');
+  if (!el || !tx) return;
+  el.className = 'fb-status ' + state;
+  tx.textContent = text;
+}
+
+// ── Initialise Firebase (called once on page load) ───────────
+async function initFirebase() {
+  fbSetStatus('syncing', '☁ Connecting…');
+
+  // ── Step 1: Init Firebase app ────────────────────────────────
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    _db = firebase.firestore();
+  } catch(e) {
+    console.error('[FB] App init failed:', e.code, e.message, e);
+    fbSetStatus('error', '☁ ' + (e.code || e.message || 'Init Error'));
+    return;
+  }
+
+  // ── Step 2: Offline persistence (non-fatal if it fails) ──────
+  try {
+    await _db.enablePersistence({ synchronizeTabs: true });
+    console.log('[FB] Offline persistence enabled.');
+  } catch(e) {
+    // This is expected in some browsers/multi-tab — app still works
+    if (e.code === 'failed-precondition') {
+      console.warn('[FB] Persistence: multiple tabs open — using memory only.');
+    } else if (e.code === 'unimplemented') {
+      console.warn('[FB] Persistence: not supported in this browser.');
+    } else {
+      console.warn('[FB] Persistence skipped:', e.message);
+    }
+    // DO NOT return — app fully works without persistence
+  }
+
+  // ── Step 3: Anonymous sign-in ────────────────────────────────
+  try {
+    const auth = firebase.auth();
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+    _uid = auth.currentUser?.uid || 'unknown';
+    console.log('[FB] Auth OK. UID:', _uid);
+  } catch(e) {
+    console.error('[FB] Auth failed:', e.code, e.message);
+    if (e.code === 'auth/operation-not-allowed') {
+      // Anonymous auth not enabled in Firebase Console
+      fbSetStatus('error', '☁ Enable Anonymous Auth');
+      console.error('[FB] FIX: Go to Firebase Console → Authentication → Sign-in method → Enable Anonymous');
+    } else if (e.code === 'auth/unauthorized-domain') {
+      fbSetStatus('error', '☁ Domain not authorised');
+      console.error('[FB] FIX: Go to Firebase Console → Authentication → Settings → Authorised domains → Add this domain');
+    } else {
+      fbSetStatus('error', '☁ Auth: ' + (e.code || e.message));
+    }
+    // Auth failure is non-fatal — app works fine without sync, retry in 30s
+    console.warn('[FB] Retrying auth in 30 seconds…');
+    setTimeout(initFirebase, 30000);
+    return;
+  }
+
+  // ── Step 4: Load data + start listener ───────────────────────
+  try {
+    await fbLoadAll();
+    fbStartListener();
+    fbSetStatus('synced', '☁ Synced');
+    console.log('[FB] Firebase ready ✓');
+  } catch(e) {
+    console.error('[FB] Load failed:', e.message);
+    fbSetStatus('error', '☁ Load Error');
+    // Still start listener in case connection recovers
+    try { fbStartListener(); } catch(_) {}
+  }
+}
+
+// ── Load all data from Firestore → merge into app state ──────
+async function fbLoadAll() {
+  if (!_db) return;
+  try {
+    const [listsSnap, settingsSnap] = await Promise.all([
+      _db.doc('dashboard/lists').get(),
+      _db.doc('dashboard/settings').get(),
+    ]);
+
+    // Merge watchlist/crypto from Firestore (Firestore wins over localStorage)
+    if (listsSnap.exists) {
+      const data = listsSnap.data();
+      if (data.watchlist && Array.isArray(data.watchlist) && data.watchlist.length > 0) {
+        LISTS.watchlist = data.watchlist;
+        console.log('[FB] Loaded watchlist:', data.watchlist.length, 'tickers');
+      }
+      if (data.crypto && Array.isArray(data.crypto) && data.crypto.length > 0) {
+        LISTS.crypto = data.crypto;
+      }
+      // Persist to localStorage too
+      saveLists();
+    }
+
+    // Merge settings (PIN, theme)
+    if (settingsSnap.exists) {
+      const s = settingsSnap.data();
+      if (s.mgr_pin) localStorage.setItem('mgr_pin', s.mgr_pin);
+      if (s.theme_manual) localStorage.setItem('theme_manual', s.theme_manual);
+      console.log('[FB] Settings loaded.');
+    }
+
+    renderAll();
+    fbSetStatus('synced', '☁ Synced');
+  } catch(e) {
+    console.warn('[FB] Load failed:', e.message);
+    // If we have local data, show cached — not "offline"
+    const hasLocal = localStorage.getItem('dashboard_lists');
+    fbSetStatus('offline', hasLocal ? '☁ Cached' : '☁ Offline');
+  }
+}
+
+// ── Real-time listener — auto-update when another device changes data ──
+function fbStartListener() {
+  if (!_db) return;
+  // Unsubscribe any existing listener first
+  if (_fbUnsubLists) _fbUnsubLists();
+
+  _fbUnsubLists = _db.doc('dashboard/lists').onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data();
+    // Only apply if data came from a different device (metadata.hasPendingWrites = false)
+    if (snap.metadata.hasPendingWrites) return; // our own write — skip
+    let changed = false;
+    if (data.watchlist && JSON.stringify(data.watchlist) !== JSON.stringify(LISTS.watchlist)) {
+      LISTS.watchlist = data.watchlist;
+      changed = true;
+    }
+    if (data.crypto && JSON.stringify(data.crypto) !== JSON.stringify(LISTS.crypto)) {
+      LISTS.crypto = data.crypto;
+      changed = true;
+    }
+    if (changed) {
+      saveLists();
+      renderAll();
+      showToast('info', '☁', 'Watchlist synced from another device.');
+      fbSetStatus('synced', '☁ Synced');
+      console.log('[FB] Real-time update applied from Firestore.');
+    }
+  }, e => {
+    console.warn('[FB] Listener error:', e.message);
+    fbSetStatus('offline', '☁ Offline');
+    // Auto-retry listener after 10 seconds
+    setTimeout(() => {
+      if (_db && _uid) {
+        console.log('[FB] Retrying listener…');
+        fbStartListener();
+      }
+    }, 10000);
+  });
+}
+
+// ── Write lists to Firestore (called after every LISTS change) ──
+let _fbWriteTimer = null;
+async function fbSaveLists() {
+  if (!_db) return;
+  // Debounce writes by 800ms to batch rapid changes
+  clearTimeout(_fbWriteTimer);
+  _fbWriteTimer = setTimeout(async () => {
+    try {
+      fbSetStatus('syncing', '☁ Saving…');
+      await _db.doc('dashboard/lists').set({
+        watchlist:   LISTS.watchlist,
+        crypto:      LISTS.crypto,
+        updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy:   _uid || 'unknown',
+      });
+      fbSetStatus('synced', '☁ Synced');
+      console.log('[FB] Lists saved to Firestore.');
+    } catch(e) {
+      console.warn('[FB] Save failed:', e.message);
+      fbSetStatus('offline', '☁ Cached');
+    }
+  }, 800);
+}
+
+// ── Write settings to Firestore (PIN changes, theme) ─────────
+async function fbSaveSettings() {
+  if (!_db) return;
+  try {
+    await _db.doc('dashboard/settings').set({
+      mgr_pin:      localStorage.getItem('mgr_pin') || '',
+      theme_manual: localStorage.getItem('theme_manual') || '',
+      updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    console.log('[FB] Settings saved.');
+  } catch(e) {
+    console.warn('[FB] Settings save failed:', e.message);
+  }
+}
+
+// ── Patch saveLists() to also write to Firestore ─────────────
+// We wrap the existing saveLists() function
+const _origSaveLists = saveLists;
+saveLists = function() {
+  _origSaveLists();   // localStorage as before
+  fbSaveLists();      // Firestore async
+};
+
+// ── Firestore sync status in UI ──────────────────────────────
+window.addEventListener('online',  () => { fbSetStatus('syncing','☁ Reconnecting…'); fbLoadAll(); });
+window.addEventListener('offline', () => fbSetStatus('offline','☁ Offline'));
+
+
 // ═══════════════════════════════════════════════════════════════
 // THEME — Auto light/dark based on HKT sunrise/sunset
 // Sunrise HK ≈ 06:15, Sunset ≈ 18:45 (approximate annual average)
@@ -1853,7 +2091,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260403b'; // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260403d'; // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -3502,7 +3740,6 @@ renderAll();
   }
   scheduleNextAutoRefresh();
   scheduleNewsRefresh(); // auto news at 09:00 HKT daily
-  initFirebase();           // Firebase real-time sync
   // Eagerly fetch live prices on first load (non-blocking, 2s delay for page render)
   setTimeout(async () => {
     try {
@@ -3792,235 +4029,13 @@ function renderRenewalTable() {
 
 
 
-// ═══════════════════════════════════════════════════════════════
-// FIREBASE SYNC — Real-time cross-device sync via Firestore
-// Project: us-market-intelligence
-// ═══════════════════════════════════════════════════════════════
 
-const firebaseConfig = {
-  // ⚠ Add atezkit13-openclaw.github.io to Firebase Console → Authentication → Authorised domains
-  apiKey:            "AIzaSyCl5psj_AniIxw-HbRSnI4nXWEtDWri-5Y",
-  authDomain:        "us-market-intelligence.firebaseapp.com",
-  projectId:         "us-market-intelligence",
-  storageBucket:     "us-market-intelligence.firebasestorage.app",
-  messagingSenderId: "942477132929",
-  appId:             "1:942477132929:web:98462ae2f2131f1b953980"
-};
-
-// ── Firestore document paths ──────────────────────────────────
-// /dashboard/lists      → watchlist + crypto ticker data
-// /dashboard/settings   → manager PIN hash, theme
-// /dashboard/sync_meta  → last sync timestamps
-// /dashboard/portfolio  → portfolio account data (optional)
-
-let _db  = null;   // Firestore instance
-let _uid = null;   // anonymous auth UID
-let _fbUnsubLists = null;  // real-time listener unsub fn
-
-// ── Status indicator ─────────────────────────────────────────
-function fbSetStatus(state, text) {
-  const el = document.getElementById('fb-status');
-  const tx = document.getElementById('fb-status-text');
-  if (!el || !tx) return;
-  el.className = 'fb-status ' + state;
-  tx.textContent = text;
-}
-
-// ── Initialise Firebase (called once on page load) ───────────
-async function initFirebase() {
-  fbSetStatus('syncing', '☁ Connecting…');
-
-  // ── Step 1: Init Firebase app ────────────────────────────────
-  try {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    _db = firebase.firestore();
-  } catch(e) {
-    console.error('[FB] App init failed:', e.code, e.message, e);
-    fbSetStatus('error', '☁ ' + (e.code || e.message || 'Init Error'));
-    return;
-  }
-
-  // ── Step 2: Offline persistence (non-fatal if it fails) ──────
-  try {
-    await _db.enablePersistence({ synchronizeTabs: true });
-    console.log('[FB] Offline persistence enabled.');
-  } catch(e) {
-    // This is expected in some browsers/multi-tab — app still works
-    if (e.code === 'failed-precondition') {
-      console.warn('[FB] Persistence: multiple tabs open — using memory only.');
-    } else if (e.code === 'unimplemented') {
-      console.warn('[FB] Persistence: not supported in this browser.');
-    } else {
-      console.warn('[FB] Persistence skipped:', e.message);
-    }
-    // DO NOT return — app fully works without persistence
-  }
-
-  // ── Step 3: Anonymous sign-in ────────────────────────────────
-  try {
-    const auth = firebase.auth();
-    // If already signed in (page refresh), reuse the session
-    if (!auth.currentUser) {
-      await auth.signInAnonymously();
-    }
-    _uid = auth.currentUser?.uid || 'unknown';
-    console.log('[FB] Auth OK. UID:', _uid);
-  } catch(e) {
-    console.error('[FB] Auth failed:', e.code, e.message);
-    // Auth failure is fatal for Firestore writes — show warning but keep app running
-    fbSetStatus('error', '☁ Auth Error');
-    // Retry after 5 seconds
-    setTimeout(initFirebase, 5000);
-    return;
-  }
-
-  // ── Step 4: Load data + start listener ───────────────────────
-  try {
-    await fbLoadAll();
-    fbStartListener();
-    fbSetStatus('synced', '☁ Synced');
-    console.log('[FB] Firebase ready ✓');
-  } catch(e) {
-    console.error('[FB] Load failed:', e.message);
-    fbSetStatus('error', '☁ Load Error');
-    // Still start listener in case connection recovers
-    try { fbStartListener(); } catch(_) {}
-  }
-}
-
-// ── Load all data from Firestore → merge into app state ──────
-async function fbLoadAll() {
-  if (!_db) return;
-  try {
-    const [listsSnap, settingsSnap] = await Promise.all([
-      _db.doc('dashboard/lists').get(),
-      _db.doc('dashboard/settings').get(),
-    ]);
-
-    // Merge watchlist/crypto from Firestore (Firestore wins over localStorage)
-    if (listsSnap.exists) {
-      const data = listsSnap.data();
-      if (data.watchlist && Array.isArray(data.watchlist) && data.watchlist.length > 0) {
-        LISTS.watchlist = data.watchlist;
-        console.log('[FB] Loaded watchlist:', data.watchlist.length, 'tickers');
-      }
-      if (data.crypto && Array.isArray(data.crypto) && data.crypto.length > 0) {
-        LISTS.crypto = data.crypto;
-      }
-      // Persist to localStorage too
-      saveLists();
-    }
-
-    // Merge settings (PIN, theme)
-    if (settingsSnap.exists) {
-      const s = settingsSnap.data();
-      if (s.mgr_pin) localStorage.setItem('mgr_pin', s.mgr_pin);
-      if (s.theme_manual) localStorage.setItem('theme_manual', s.theme_manual);
-      console.log('[FB] Settings loaded.');
-    }
-
-    renderAll();
-    fbSetStatus('synced', '☁ Synced');
-  } catch(e) {
-    console.warn('[FB] Load failed:', e.message);
-    // If we have local data, show cached — not "offline"
-    const hasLocal = localStorage.getItem('dashboard_lists');
-    fbSetStatus('offline', hasLocal ? '☁ Cached' : '☁ Offline');
-  }
-}
-
-// ── Real-time listener — auto-update when another device changes data ──
-function fbStartListener() {
-  if (!_db) return;
-  // Unsubscribe any existing listener first
-  if (_fbUnsubLists) _fbUnsubLists();
-
-  _fbUnsubLists = _db.doc('dashboard/lists').onSnapshot(snap => {
-    if (!snap.exists) return;
-    const data = snap.data();
-    // Only apply if data came from a different device (metadata.hasPendingWrites = false)
-    if (snap.metadata.hasPendingWrites) return; // our own write — skip
-    let changed = false;
-    if (data.watchlist && JSON.stringify(data.watchlist) !== JSON.stringify(LISTS.watchlist)) {
-      LISTS.watchlist = data.watchlist;
-      changed = true;
-    }
-    if (data.crypto && JSON.stringify(data.crypto) !== JSON.stringify(LISTS.crypto)) {
-      LISTS.crypto = data.crypto;
-      changed = true;
-    }
-    if (changed) {
-      saveLists();
-      renderAll();
-      showToast('info', '☁', 'Watchlist synced from another device.');
-      fbSetStatus('synced', '☁ Synced');
-      console.log('[FB] Real-time update applied from Firestore.');
-    }
-  }, e => {
-    console.warn('[FB] Listener error:', e.message);
-    fbSetStatus('offline', '☁ Offline');
-    // Auto-retry listener after 10 seconds
-    setTimeout(() => {
-      if (_db && _uid) {
-        console.log('[FB] Retrying listener…');
-        fbStartListener();
-      }
-    }, 10000);
-  });
-}
-
-// ── Write lists to Firestore (called after every LISTS change) ──
-let _fbWriteTimer = null;
-async function fbSaveLists() {
-  if (!_db) return;
-  // Debounce writes by 800ms to batch rapid changes
-  clearTimeout(_fbWriteTimer);
-  _fbWriteTimer = setTimeout(async () => {
-    try {
-      fbSetStatus('syncing', '☁ Saving…');
-      await _db.doc('dashboard/lists').set({
-        watchlist:   LISTS.watchlist,
-        crypto:      LISTS.crypto,
-        updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
-        updatedBy:   _uid || 'unknown',
-      });
-      fbSetStatus('synced', '☁ Synced');
-      console.log('[FB] Lists saved to Firestore.');
-    } catch(e) {
-      console.warn('[FB] Save failed:', e.message);
-      fbSetStatus('offline', '☁ Cached');
-    }
-  }, 800);
-}
-
-// ── Write settings to Firestore (PIN changes, theme) ─────────
-async function fbSaveSettings() {
-  if (!_db) return;
-  try {
-    await _db.doc('dashboard/settings').set({
-      mgr_pin:      localStorage.getItem('mgr_pin') || '',
-      theme_manual: localStorage.getItem('theme_manual') || '',
-      updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    console.log('[FB] Settings saved.');
-  } catch(e) {
-    console.warn('[FB] Settings save failed:', e.message);
-  }
-}
-
-// ── Patch saveLists() to also write to Firestore ─────────────
-// We wrap the existing saveLists() function
-const _origSaveLists = saveLists;
-saveLists = function() {
-  _origSaveLists();   // localStorage as before
-  fbSaveLists();      // Firestore async
-};
-
-// ── Firestore sync status in UI ──────────────────────────────
-window.addEventListener('online',  () => { fbSetStatus('syncing','☁ Reconnecting…'); fbLoadAll(); });
-window.addEventListener('offline', () => fbSetStatus('offline','☁ Offline'));
 
 })();
+
+// Start Firebase after all app code is defined
+initFirebase();
+
 </script>
 </body>
 </html
