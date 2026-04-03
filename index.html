@@ -1836,7 +1836,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260402x'; // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260403a'; // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -3781,6 +3781,7 @@ function renderRenewalTable() {
 // ═══════════════════════════════════════════════════════════════
 
 const firebaseConfig = {
+  // ⚠ Add atezkit13-openclaw.github.io to Firebase Console → Authentication → Authorised domains
   apiKey:            "AIzaSyCl5psj_AniIxw-HbRSnI4nXWEtDWri-5Y",
   authDomain:        "us-market-intelligence.firebaseapp.com",
   projectId:         "us-market-intelligence",
@@ -3810,34 +3811,63 @@ function fbSetStatus(state, text) {
 
 // ── Initialise Firebase (called once on page load) ───────────
 async function initFirebase() {
+  fbSetStatus('syncing', '☁ Connecting…');
+
+  // ── Step 1: Init Firebase app ────────────────────────────────
   try {
-    fbSetStatus('syncing', 'Connecting…');
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     _db = firebase.firestore();
-
-    // Enable offline persistence (changes queue when offline)
-    await _db.enablePersistence({ synchronizeTabs: true }).catch(e => {
-      if (e.code === 'failed-precondition') console.warn('[FB] Multiple tabs — persistence disabled');
-      else if (e.code === 'unimplemented')  console.warn('[FB] Browser does not support persistence');
-    });
-
-    // Sign in anonymously (silent — no UI)
-    const auth = firebase.auth();
-    await auth.signInAnonymously();
-    _uid = auth.currentUser.uid;
-    console.log('[FB] Signed in anonymously. UID:', _uid);
-
-    // Load initial data from Firestore
-    await fbLoadAll();
-
-    // Start real-time listener for cross-device sync
-    fbStartListener();
-
-    fbSetStatus('synced', '☁ Synced');
-    console.log('[FB] Firebase initialised successfully.');
   } catch(e) {
-    console.error('[FB] Init failed:', e);
-    fbSetStatus('error', '☁ Offline');
+    console.error('[FB] App init failed:', e);
+    fbSetStatus('error', '☁ Init Error');
+    return;
+  }
+
+  // ── Step 2: Offline persistence (non-fatal if it fails) ──────
+  try {
+    await _db.enablePersistence({ synchronizeTabs: true });
+    console.log('[FB] Offline persistence enabled.');
+  } catch(e) {
+    // This is expected in some browsers/multi-tab — app still works
+    if (e.code === 'failed-precondition') {
+      console.warn('[FB] Persistence: multiple tabs open — using memory only.');
+    } else if (e.code === 'unimplemented') {
+      console.warn('[FB] Persistence: not supported in this browser.');
+    } else {
+      console.warn('[FB] Persistence skipped:', e.message);
+    }
+    // DO NOT return — app fully works without persistence
+  }
+
+  // ── Step 3: Anonymous sign-in ────────────────────────────────
+  try {
+    const auth = firebase.auth();
+    // If already signed in (page refresh), reuse the session
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+    _uid = auth.currentUser?.uid || 'unknown';
+    console.log('[FB] Auth OK. UID:', _uid);
+  } catch(e) {
+    console.error('[FB] Auth failed:', e.code, e.message);
+    // Auth failure is fatal for Firestore writes — show warning but keep app running
+    fbSetStatus('error', '☁ Auth Error');
+    // Retry after 5 seconds
+    setTimeout(initFirebase, 5000);
+    return;
+  }
+
+  // ── Step 4: Load data + start listener ───────────────────────
+  try {
+    await fbLoadAll();
+    fbStartListener();
+    fbSetStatus('synced', '☁ Synced');
+    console.log('[FB] Firebase ready ✓');
+  } catch(e) {
+    console.error('[FB] Load failed:', e.message);
+    fbSetStatus('error', '☁ Load Error');
+    // Still start listener in case connection recovers
+    try { fbStartListener(); } catch(_) {}
   }
 }
 
@@ -3876,7 +3906,9 @@ async function fbLoadAll() {
     fbSetStatus('synced', '☁ Synced');
   } catch(e) {
     console.warn('[FB] Load failed:', e.message);
-    fbSetStatus('offline', '☁ Cached');
+    // If we have local data, show cached — not "offline"
+    const hasLocal = localStorage.getItem('dashboard_lists');
+    fbSetStatus('offline', hasLocal ? '☁ Cached' : '☁ Offline');
   }
 }
 
@@ -3910,6 +3942,13 @@ function fbStartListener() {
   }, e => {
     console.warn('[FB] Listener error:', e.message);
     fbSetStatus('offline', '☁ Offline');
+    // Auto-retry listener after 10 seconds
+    setTimeout(() => {
+      if (_db && _uid) {
+        console.log('[FB] Retrying listener…');
+        fbStartListener();
+      }
+    }, 10000);
   });
 }
 
