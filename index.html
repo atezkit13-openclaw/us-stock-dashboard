@@ -2206,8 +2206,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const TICKER_SUBCATS = {"SOXX": "Semiconductors", "NVDA": "Semiconductors", "TSM": "Semiconductors", "MU": "Semiconductors", "AMD": "Semiconductors", "INTC": "Semiconductors", "ARM": "Semiconductors", "MCHP": "Semiconductors", "SMTC": "Semiconductors", "AVGO": "Silicon Photonics & Optical", "APH": "Silicon Photonics & Optical", "MRVL": "Silicon Photonics & Optical", "CIEN": "Silicon Photonics & Optical", "COHR": "Silicon Photonics & Optical", "LITE": "Silicon Photonics & Optical", "GFS": "Silicon Photonics & Optical", "POET": "Silicon Photonics & Optical", "KTOS": "Droid", "ONDS": "Droid", "RCAT": "Droid", "PLTR": "Intelligence", "NOC": "Intelligence", "LHX": "Intelligence", "CACI": "Intelligence", "PL": "Intelligence", "BBAI": "Intelligence", "BWXT": "Energy", "LEU": "Energy", "GE": "Engine / Fighter Parts", "RTX": "Engine / Fighter Parts", "BA": "Engine / Fighter Parts", "LMT": "Engine / Fighter Parts", "ASTS": "Engine / Fighter Parts", "LUNR": "Engine / Fighter Parts", "RDW": "Engine / Fighter Parts", "XLE": "Energy ETF", "IREN": "Power Leasing", "CIFR": "Power Leasing", "HUT": "Power Leasing", "APLD": "Power Leasing", "GEV": "Power Equipment", "NEE": "Power Equipment", "VRT": "Cooling", "CEG": "Nuclear", "VST": "Nuclear", "OKLO": "Nuclear", "BE": "Off-Grid", "POWL": "Off-Grid", "EOSE": "Off-Grid", "FLNC": "Off-Grid", "FSLR": "Solar", "NXT": "Solar", "SEDG": "Solar", "XOM": "Oil", "CVX": "Oil", "COP": "Oil", "SEI": "Oil", "GLDM": "Gold/Silver/Copper/Rare Earth", "AG": "Gold/Silver/Copper/Rare Earth", "SLV": "Gold/Silver/Copper/Rare Earth", "COPX": "Gold/Silver/Copper/Rare Earth", "CPER": "Gold/Silver/Copper/Rare Earth", "PPLT": "Gold/Silver/Copper/Rare Earth", "NEM": "Mining", "WPM": "Mining", "SOLS": "Mining", "HBM": "Mining", "BMNR": "Mining", "PPTA": "Mining", "TMQ": "Mining", "CCJ": "Uranium", "UEC": "Uranium", "UUUU": "Uranium", "URNJ": "Uranium", "MP": "Rare Earth", "CRML": "Rare Earth", "METC": "Rare Earth", "NB": "Rare Earth", "REMX": "Rare Earth", "ATI": "Special Metals", "CRS": "Special Metals", "RKLB": "Space Logistics/Satellite", "SATS": "Space Logistics/Satellite", "ETN": "Conduit/Wiring", "PH": "Conduit/Wiring"};
-const DATA_VERSION = '20260403h'; // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260403i'; // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -2902,34 +2901,14 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
 
   // Build final render list: ETFs first, divider, then stocks
   const hasEtfAndStock = etfTickers.length > 0 && nonEtfTickers.length > 0;
-  // Group non-ETFs by sub-category
-  function getSubcat(t) { return TICKER_SUBCATS[t.sym] || ''; }
-  const subcatGroups = [];
-  if (nonEtfTickers.length > 0) {
-    let lastSub = null;
-    nonEtfTickers.forEach(t => {
-      const s = getSubcat(t);
-      if (s && s !== lastSub) { subcatGroups.push('SUBCAT:' + s); lastSub = s; }
-      subcatGroups.push(t);
-    });
-  }
-
   const renderList = hasEtfAndStock
-    ? [...etfTickers, 'DIVIDER', ...subcatGroups]
-    : [...etfTickers, ...subcatGroups];
+    ? [...etfTickers, 'DIVIDER', ...nonEtfTickers]
+    : [...etfTickers, ...nonEtfTickers];
 
   renderList.forEach(ticker => {
     // Section divider ETF/stock
     if (ticker === 'DIVIDER') {
       tbody.innerHTML += `<tr><td colspan="9" style="padding:0;border-bottom:2px solid rgba(59,130,246,0.18);"></td></tr>`;
-      return;
-    }
-    // Sub-category header
-    if (typeof ticker === 'string' && ticker.startsWith('SUBCAT:')) {
-      const label = ticker.slice(7);
-      tbody.innerHTML += `<tr><td colspan="9" style="padding:5px 12px 4px;background:rgba(255,255,255,0.02);border-top:1px solid var(--border);">
-        <span style="font-size:9px;font-weight:700;letter-spacing:0.12em;color:var(--text-dim);text-transform:uppercase;">${label}</span>
-      </td></tr>`;
       return;
     }
     const idx = ticker._idx;
