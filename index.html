@@ -1155,7 +1155,7 @@ body.light-theme .alert-item.oil-alert-bar {
   <div class="manager-banner" id="manager-banner">
     <span style="font-size:17px;">⚙</span>
     <div><div class="manager-banner-text">Manager Mode Active</div>
-    <div class="manager-banner-sub">Add, edit, remove tickers. Changes saved to localStorage.</div></div>
+    <div class="manager-banner-sub">Add, edit, remove tickers. Changes saved locally. Click Save &amp; Lock to sync to Firebase.</div></div>
     <button class="btn-add-ticker" onclick="openAddTicker('watchlist')">+ Add Ticker</button>
     <button class="btn-change-pin" onclick="openModal('change-pin-modal')">🔑 Change PIN</button>
     <button class="btn-lock" onclick="lockManager()">💾 Save &amp; Lock</button>
@@ -1193,10 +1193,10 @@ body.light-theme .alert-item.oil-alert-bar {
     <!-- Sort bar -->
     <div class="sort-bar" id="sort-bar">
       <span style="font-size:10px;color:var(--text-dim);font-weight:600;">SORT:</span>
-      <button class="sort-btn active" data-col="sym" onclick="setSortCol('sym',this)">Symbol ↕</button>
+      <button class="sort-btn" data-col="sym" onclick="setSortCol('sym',this)">Symbol ↕</button>
       <button class="sort-btn" data-col="price" onclick="setSortCol('price',this)">Price ↕</button>
-      <button class="sort-btn" data-col="pct" onclick="setSortCol('pct',this)">% Chg ↕</button>
-      <button class="sort-btn" data-col="narrative" onclick="setSortCol('narrative',this)">Theme ↕</button>
+      <button class="sort-btn active desc" data-col="pct" onclick="setSortCol('pct',this)">Daily % Chg ↕</button>
+      <button class="sort-btn" data-col="ext" onclick="setSortCol('ext',this)">Pre/Post % ↕</button>
     </div>
 
     <div class="scroll-hint">← swipe to see all columns →</div>
@@ -1206,7 +1206,7 @@ body.light-theme .alert-item.oil-alert-bar {
           <th onclick="setSortCol('sym',null)" style="cursor:pointer;">Symbol</th>
           <th onclick="setSortCol('price',null)" style="cursor:pointer;">Last Close</th>
           <th onclick="setSortCol('pct',null)" style="cursor:pointer;">Daily % Chg</th>
-          <th>Pre-Market</th>
+          <th onclick="setSortCol('ext',null)" style="cursor:pointer;white-space:nowrap;">Pre/Post Mkt % Chg</th>
           <th>Status</th>
           <th>Weekly SMA</th>
           <th onclick="setSortCol('narrative',null)" style="cursor:pointer;">Theme</th>
@@ -1304,10 +1304,28 @@ let _uid = null;   // anonymous auth UID
 let _fbUnsubLists = null;  // real-time listener unsub fn
 
 // ── Status indicator ─────────────────────────────────────────
+let _fbSyncedTimer = null;
+let _fbCurrentState = '';
 function fbSetStatus(state, text) {
   const el = document.getElementById('fb-status');
   const tx = document.getElementById('fb-status-text');
   if (!el || !tx) return;
+  // Avoid flashing: if already synced and new state is also synced, skip
+  if (state === 'synced' && _fbCurrentState === 'synced') return;
+  // If going synced, show for minimum 3s before allowing another state change
+  if (state === 'synced') {
+    clearTimeout(_fbSyncedTimer);
+    _fbCurrentState = 'synced';
+    el.className = 'fb-status synced';
+    tx.textContent = text;
+    return;
+  }
+  // For syncing/saving: only show if not already synced (avoid save flicker)
+  if (state === 'syncing' && _fbCurrentState === 'synced') {
+    // Silently debounce — don't flash "Saving…" for every keystroke
+    return;
+  }
+  _fbCurrentState = state;
   el.className = 'fb-status ' + state;
   tx.textContent = text;
 }
@@ -1429,27 +1447,35 @@ function fbStartListener() {
   // Unsubscribe any existing listener first
   if (_fbUnsubLists) _fbUnsubLists();
 
-  _fbUnsubLists = _db.doc('dashboard/lists').onSnapshot(snap => {
+  // Track last known Firestore state to avoid echo
+  let _lastFbWatchlist = JSON.stringify(LISTS.watchlist);
+  let _lastFbCrypto    = JSON.stringify(LISTS.crypto);
+
+  _fbUnsubLists = _db.doc('dashboard/lists').onSnapshot({ includeMetadataChanges: false }, snap => {
     if (!snap.exists) return;
+    if (snap.metadata.hasPendingWrites) return; // our own write still in flight — skip
+    if (snap.metadata.fromCache) return;         // local cache hit — skip
     const data = snap.data();
-    // Only apply if data came from a different device (metadata.hasPendingWrites = false)
-    if (snap.metadata.hasPendingWrites) return; // our own write — skip
-    let changed = false;
-    if (data.watchlist && JSON.stringify(data.watchlist) !== JSON.stringify(LISTS.watchlist)) {
-      LISTS.watchlist = data.watchlist;
-      changed = true;
+    const newWL = JSON.stringify(data.watchlist || []);
+    const newCR = JSON.stringify(data.crypto    || []);
+    // Only apply if data is genuinely different from what we last wrote
+    const wlChanged = newWL !== _lastFbWatchlist && newWL !== JSON.stringify(LISTS.watchlist);
+    const crChanged = newCR !== _lastFbCrypto    && newCR !== JSON.stringify(LISTS.crypto);
+    if (!wlChanged && !crChanged) return; // no real change
+    if (wlChanged && data.watchlist?.length) {
+      LISTS.watchlist  = data.watchlist;
+      _lastFbWatchlist = newWL;
     }
-    if (data.crypto && JSON.stringify(data.crypto) !== JSON.stringify(LISTS.crypto)) {
-      LISTS.crypto = data.crypto;
-      changed = true;
+    if (crChanged && data.crypto?.length) {
+      LISTS.crypto  = data.crypto;
+      _lastFbCrypto = newCR;
     }
-    if (changed) {
-      saveLists();
-      renderAll();
-      showToast('info', '☁', 'Watchlist synced from another device.');
-      fbSetStatus('synced', '☁ Synced');
-      console.log('[FB] Real-time update applied from Firestore.');
-    }
+    // Only update localStorage directly — no Firestore write (read-only listener)
+    localStorage.setItem('dashboard_lists', JSON.stringify(LISTS));
+    renderAll();
+    showToast('info', '☁', 'Synced from another device.');
+    fbSetStatus('synced', '☁ Synced');
+    console.log('[FB] Remote update applied.');
   }, e => {
     console.warn('[FB] Listener error:', e.message);
     fbSetStatus('offline', '☁ Offline');
@@ -1463,54 +1489,43 @@ function fbStartListener() {
   });
 }
 
-// ── Write lists to Firestore (called after every LISTS change) ──
-let _fbWriteTimer = null;
-async function fbSaveLists() {
-  if (!_db) return;
-  // Debounce writes by 800ms to batch rapid changes
-  clearTimeout(_fbWriteTimer);
-  _fbWriteTimer = setTimeout(async () => {
-    try {
-      fbSetStatus('syncing', '☁ Saving…');
-      await _db.doc('dashboard/lists').set({
+// ── fbSaveAll: called ONLY when manager clicks Save & Lock ──────
+// Writes lists + settings to Firestore in one shot.
+// No auto-sync on every keystroke — zero unnecessary writes.
+async function fbSaveAll() {
+  if (!_db) {
+    console.warn('[FB] Not connected — skipping Firestore save.');
+    return false;
+  }
+  fbSetStatus('syncing', '☁ Saving…');
+  try {
+    await Promise.all([
+      _db.doc('dashboard/lists').set({
         watchlist:   LISTS.watchlist,
         crypto:      LISTS.crypto,
         updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
         updatedBy:   _uid || 'unknown',
-      });
-      fbSetStatus('synced', '☁ Synced');
-      console.log('[FB] Lists saved to Firestore.');
-    } catch(e) {
-      console.warn('[FB] Save failed:', e.message);
-      fbSetStatus('offline', '☁ Cached');
-    }
-  }, 800);
-}
-
-// ── Write settings to Firestore (PIN changes, theme) ─────────
-async function fbSaveSettings() {
-  if (!_db) return;
-  try {
-    await _db.doc('dashboard/settings').set({
-      mgr_pin:      localStorage.getItem('mgr_pin') || '',
-      theme_manual: localStorage.getItem('theme_manual') || '',
-      updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    console.log('[FB] Settings saved.');
+      }),
+      _db.doc('dashboard/settings').set({
+        mgr_pin:      localStorage.getItem('mgr_pin') || '',
+        theme_manual: localStorage.getItem('theme_manual') || '',
+        updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true }),
+    ]);
+    fbSetStatus('synced', '☁ Synced');
+    console.log('[FB] Save & Lock — all data written to Firestore.');
+    return true;
   } catch(e) {
-    console.warn('[FB] Settings save failed:', e.message);
+    console.warn('[FB] fbSaveAll failed:', e.message);
+    fbSetStatus('error', '☁ Save Failed');
+    return false;
   }
 }
 
-// ── Patch saveLists() to also write to Firestore ─────────────
-// We wrap the existing saveLists() function
-const _origSaveLists = saveLists;
-saveLists = function() {
-  _origSaveLists();   // localStorage as before
-  fbSaveLists();      // Firestore async
-};
+// ── saveLists() stays local-only — Firestore writes only on Save & Lock ──
+// (no patch needed)
 
-// ── Firestore sync status in UI ──────────────────────────────
+// ── Network event handlers ───────────────────────────────────
 window.addEventListener('online',  () => { fbSetStatus('syncing','☁ Reconnecting…'); fbLoadAll(); });
 window.addEventListener('offline', () => fbSetStatus('offline','☁ Offline'));
 
@@ -1537,7 +1552,7 @@ function applyTheme(light, manual) {
 
 function toggleTheme() {
   const isLight = document.body.classList.contains('light-theme');
-  applyTheme(!isLight, true); fbSaveSettings();
+  applyTheme(!isLight, true);
 }
 
 function autoTheme() {
@@ -1846,17 +1861,23 @@ function activateManager() {
   updateNewsReloadBtn(); updateSyncBtn(); updateRenewalTab();
   showToast('success','🔓','Manager Mode activated.');
 }
-function lockManager() {
+async function lockManager() {
+  // First: save everything to Firestore (one deliberate write)
+  const saved = await fbSaveAll();
+  // Then: lock the UI
   managerUnlocked=false;
   document.getElementById('manager-btn').classList.remove('active');
   document.getElementById('manager-btn').textContent='⚙ Manager';
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
   renderAll();
-  // Also lock portfolio when manager locks
   lockPortfolio();
   updateNewsReloadBtn(); updateSyncBtn(); updateRenewalTab();
-  showToast('info','🔒','Manager Mode & Portfolio locked.');
+  if (saved) {
+    showToast('success','☁','Changes synced to Firebase. Manager locked.');
+  } else {
+    showToast('info','🔒','Manager locked — changes saved locally only (Firebase offline).');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2091,7 +2112,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260403d'; // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260403g'; // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -2542,8 +2563,8 @@ function switchWatchlistTab(tab, btn) {
 }
 
 let activeNarrative = 'all';
-let sortCol = 'sym';
-let sortDir = 'asc';
+let sortCol = 'pct';
+let sortDir = 'desc';
 
 function setNarrativeFilter(narrative, btn) {
   activeNarrative = narrative;
@@ -2703,6 +2724,16 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       va = da.prev ? (da.price-da.prev)/da.prev*100 : 0;
       vb = db.prev ? (db.price-db.prev)/db.prev*100 : 0;
     }  // sort by close→prev pct
+    else if (sortCol === 'ext') {
+      // sort by pre/post market % change vs last close
+      const lva = liveData[a.sym]; const lvb = liveData[b.sym];
+      const epA = lva ? (lva.prePrice || lva.postPrice || null) : null;
+      const epB = lvb ? (lvb.prePrice || lvb.postPrice || null) : null;
+      const cpA = (lva && lva.price > 0) ? lva.price : da.price;
+      const cpB = (lvb && lvb.price > 0) ? lvb.price : db.price;
+      va = epA !== null && cpA > 0 ? (epA - cpA) / cpA * 100 : -9999;
+      vb = epB !== null && cpB > 0 ? (epB - cpB) / cpB * 100 : -9999;
+    }
     else if (sortCol === 'industry')  { va = a.industry||''; vb = b.industry||''; }
     else if (sortCol === 'narrative') { va = a.narrative||''; vb = b.narrative||''; }
     else { va = a.sym; vb = b.sym; }
@@ -2718,7 +2749,35 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
     return;
   }
 
-  filtered.forEach(ticker => {
+  // ── ETF pinning: split into ETFs (top) and non-ETFs ──────────
+  const etfTickers    = filtered.filter(t => (t.tags||[]).some(tag => tag === 'ETF'));
+  const nonEtfTickers = filtered.filter(t => !(t.tags||[]).some(tag => tag === 'ETF'));
+
+  // Render Industry ETF section header if any ETFs present
+  if (etfTickers.length > 0) {
+    tbody.innerHTML += `<tr>
+      <td colspan="9" style="padding:8px 12px 5px;background:rgba(59,130,246,0.05);
+        border-top:1px solid rgba(59,130,246,0.2);border-bottom:1px solid rgba(59,130,246,0.12);">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:var(--accent-blue);text-transform:uppercase;">
+          📊 Industry ETFs
+        </span>
+        <span style="font-size:9px;color:var(--text-dim);margin-left:8px;">${etfTickers.length} ETF${etfTickers.length>1?'s':''} — pinned</span>
+      </td>
+    </tr>`;
+  }
+
+  // Build final render list: ETFs first, divider, then stocks
+  const hasEtfAndStock = etfTickers.length > 0 && nonEtfTickers.length > 0;
+  const renderList = hasEtfAndStock
+    ? [...etfTickers, 'DIVIDER', ...nonEtfTickers]
+    : [...etfTickers, ...nonEtfTickers];
+
+  renderList.forEach(ticker => {
+    // Render section divider row
+    if (ticker === 'DIVIDER') {
+      tbody.innerHTML += `<tr><td colspan="9" style="padding:0;border-bottom:2px solid rgba(59,130,246,0.18);"></td></tr>`;
+      return;
+    }
     const idx = ticker._idx;
     const sym = ticker.sym;
     const d   = getPrice(sym) || { price:ticker.price||0, prev:ticker.prev||0, name:ticker.name };
