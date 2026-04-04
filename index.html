@@ -1218,7 +1218,7 @@ body.light-theme .alert-item.oil-alert-bar {
       <div class="news-live-indicator">
         <span class="live-dot"></span>
         <span id="news-last-updated">Fetching…</span>
-        <button id="news-reload-btn" onclick="reloadNewsManager()" title="Refresh news (Manager only)" style="display:none;background:none;border:1px solid rgba(245,158,11,0.4);color:var(--amber);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;" title="Manager only">⟳ Refresh News</button>
+        <button id="news-reload-btn" onclick="reloadNewsManager()" title="Refresh news (Manager only)" style="display:none;background:none;border:1px solid rgba(245,158,11,0.4);color:var(--amber);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;">⟳ Refresh News</button>
       </div>
     </div>
 
@@ -1688,7 +1688,7 @@ function doSwitchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('tab-btn-' + name).classList.add('active');
   if (name === 'portfolio' && portfolioUnlocked) showPortfolioContent();
-  if (name === 'news') loadNews();
+  if (name === 'news') { loadNews(); updateNewsReloadBtn(); }
   // Ensure portfolio content is not visible when on other tabs
   if (name !== 'portfolio') {
     const pfRoot = document.getElementById('pf-root');
@@ -2112,7 +2112,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260404c'; // fix portfolio tab HTML structure, pf-root outside tab-pane // portfolio tab hidden until manager unlock // removed renewal tab entirely // removed renewal tab entirely // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260404e'; // auto-fetch news daily, localStorage cache // live news via Claude API, fix refresh button // fix portfolio tab HTML structure, pf-root outside tab-pane // portfolio tab hidden until manager unlock // removed renewal tab entirely // removed renewal tab entirely // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -3334,19 +3334,104 @@ function renderNewsGrid() {
 let newsLoaded = false;
 let newsAutoTimer = null;
 
-function loadNews() {
-  allNewsItems = [...NEWS_STATIC];
-  renderNewsGrid();
-  document.getElementById('news-last-updated').textContent =
-    'Updated ' + new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false}) + ' HKT';
+function loadNews(forceRefresh = false) {
+  const todayHKT = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Hong_Kong'});
+  const lastFetch = localStorage.getItem('news_last_fetch_date');
+  const alreadyFetchedToday = lastFetch === todayHKT;
+
+  // Show cached or static items immediately (no blank state)
+  if (!allNewsItems.length) {
+    try {
+      const cached = JSON.parse(localStorage.getItem('news_cache'));
+      allNewsItems = (Array.isArray(cached) && cached.length) ? cached : [...NEWS_STATIC];
+    } catch(_) { allNewsItems = [...NEWS_STATIC]; }
+    renderNewsGrid();
+  }
+
+  const now = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false});
+  const label = alreadyFetchedToday ? `Updated ${now} HKT (live)` : `Updated ${now} HKT`;
+  document.getElementById('news-last-updated').textContent = label;
   newsLoaded = true;
+
+  if (forceRefresh) {
+    // Manual refresh — always fetch live
+    fetchLiveNews(false);
+  } else if (!alreadyFetchedToday) {
+    // Auto-fetch silently if we haven't fetched today yet
+    fetchLiveNews(true);
+  }
 }
 
-// Manager-only manual reload
+// Fetch fresh news from Claude API
+async function fetchLiveNews(silent = false) {
+  const btn = document.getElementById('news-reload-btn');
+  const indicator = document.getElementById('news-last-updated');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Fetching…'; }
+  if (!silent && indicator) indicator.textContent = 'Fetching live news…';
+  try {
+    const today = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Hong_Kong'});
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Today is ${today} HKT. You are a financial news analyst. Generate 8 fresh, realistic market intelligence news items for a Hong Kong-based US equity investor. Each item should cover current themes: US markets/futures, geopolitics (Iran/Israel/China-US), tech/AI/semiconductors, cybersecurity, crypto, macro (Fed/rates/PMI).
+
+Respond ONLY with a valid JSON array, no markdown, no preamble. Each object must have these exact fields:
+{"cat":"market|geo|war|tech|cyber|crypto|macro|premarket","catLabel":"emoji + label","src":"source name","srcType":"yf|x","url":"https://...","headline":"headline text","summary":"2-3 sentence summary","date":"${today.split(',').slice(1).join(',').trim()}","impact":"HIGH|MEDIUM|LOW"}
+
+Generate exactly 8 items covering different categories. Make them realistic and relevant to today's date.`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = (data.content||[]).map(b=>b.text||'').join('');
+    // Strip any markdown fences
+    const clean = text.replace(/```json|```/g,'').trim();
+    const items = JSON.parse(clean);
+    if (Array.isArray(items) && items.length > 0) {
+      allNewsItems = items;
+      renderNewsGrid();
+      const now = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false});
+      if (indicator) indicator.textContent = 'Updated ' + now + ' HKT (live)';
+      // Store today's HKT date so we don't re-fetch on every page load
+      const todayHKT = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Hong_Kong'}); // YYYY-MM-DD
+      localStorage.setItem('news_last_fetch_date', todayHKT);
+      localStorage.setItem('news_cache', JSON.stringify(items));
+      if (!silent) showToast('success','📰','News refreshed with latest AI intelligence.');
+    } else throw new Error('Empty response');
+  } catch(e) {
+    console.warn('[News] Live fetch failed:', e);
+    // Try localStorage cache first, else fall back to static
+    try {
+      const cached = JSON.parse(localStorage.getItem('news_cache'));
+      if (Array.isArray(cached) && cached.length) {
+        allNewsItems = cached;
+        renderNewsGrid();
+        const now = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false});
+        if (indicator) indicator.textContent = 'Updated ' + now + ' HKT (cached)';
+        if (!silent) showToast('info','📰','Using cached news — live fetch unavailable.');
+        return;
+      }
+    } catch(_) {}
+    allNewsItems = [...NEWS_STATIC];
+    renderNewsGrid();
+    const now = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false});
+    if (indicator) indicator.textContent = 'Updated ' + now + ' HKT (static)';
+    if (!silent) showToast('info','📰','Using cached news — live fetch unavailable.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⟳ Refresh News'; }
+  }
+}
+
+// Manager-only manual reload — triggers live Claude API fetch
 function reloadNewsManager() {
   if (!managerUnlocked) return;
-  loadNews();
-  showToast('success','📰','News reloaded.');
+  loadNews(true);  // true = force live fetch
+  showToast('info','📰','Fetching latest news…');
 }
 
 // Show/hide Reload button based on manager state
@@ -3369,7 +3454,7 @@ function scheduleNewsRefresh() {
   const mm = Math.floor((msUntil%3600000)/60000);
   console.log(`[News] Auto-refresh scheduled in ${hh}h ${mm}m (09:00 HKT)`);
   newsAutoTimer = setTimeout(() => {
-    loadNews();
+    fetchLiveNews();
     showToast('info','📰','News auto-refreshed — 09:00 HKT daily update.');
     scheduleNewsRefresh(); // reschedule for next day
   }, msUntil);
@@ -3839,6 +3924,21 @@ renderAll();
   }
   scheduleNextAutoRefresh();
   scheduleNewsRefresh(); // auto news at 09:00 HKT daily
+  // Pre-fetch news on page load if not already fetched today
+  setTimeout(() => {
+    const todayHKT = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Hong_Kong'});
+    if (localStorage.getItem('news_last_fetch_date') !== todayHKT) {
+      console.log('[News] Pre-fetching daily news on page load…');
+      fetchLiveNews(true); // silent background fetch
+    } else {
+      // Load cached news into memory
+      try {
+        const cached = JSON.parse(localStorage.getItem('news_cache'));
+        if (Array.isArray(cached) && cached.length) allNewsItems = cached;
+      } catch(_) {}
+      console.log('[News] Using today\'s cached news.');
+    }
+  }, 3000); // 3s delay so page renders first
   // Eagerly fetch live prices on first load (non-blocking, 2s delay for page render)
   setTimeout(async () => {
     try {
