@@ -1200,9 +1200,8 @@ body.light-theme .alert-item.oil-alert-bar {
 <!-- ═══ PORTFOLIO TAB ═══ -->
 <div class="tab-pane" id="tab-portfolio">
   <!-- Lock gate — shown when portfolio is locked -->
-    <div class="pf-lock-gate" id="pf-lock-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;">
+  <div class="pf-lock-gate" id="pf-lock-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;">
     <div style="font-size:64px;opacity:0.4;">🔒</div>
-  </div>
   </div>
   <!-- Actual content — hidden until unlocked -->
   <div id="pf-root" style="padding:20px 0; display:none;"></div>
@@ -1690,6 +1689,11 @@ function doSwitchTab(name) {
   document.getElementById('tab-btn-' + name).classList.add('active');
   if (name === 'portfolio' && portfolioUnlocked) showPortfolioContent();
   if (name === 'news') loadNews();
+  // Ensure portfolio content is not visible when on other tabs
+  if (name !== 'portfolio') {
+    const pfRoot = document.getElementById('pf-root');
+    if (pfRoot) pfRoot.style.display = 'none';
+  }
 }
 
 function showPortfolioContent() {
@@ -2108,7 +2112,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260404b'; // portfolio tab hidden until manager unlock // removed renewal tab entirely // removed renewal tab entirely // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260404c'; // fix portfolio tab HTML structure, pf-root outside tab-pane // portfolio tab hidden until manager unlock // removed renewal tab entirely // removed renewal tab entirely // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
