@@ -776,105 +776,13 @@ body.light-theme .alert-item.oil-alert-bar {
   margin-top:-8px;
 }
 /* Lock badge on the tab button */
-#tab-btn-portfolio .lock-tab-icon {
+/* removed - portfolio tab hidden instead of locked icon */
+/*
   font-size:11px; margin-left:4px; opacity:0.7;
 }
 #tab-btn-portfolio.unlocked .lock-tab-icon { display:none; }
+*/
 
-/* ── RENEWAL TAB ─────────────────────────────────────────────── */
-.renewal-lock-gate {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:80px 20px; text-align:center;
-}
-.renewal-upload-zone {
-  border:2px dashed var(--border); border-radius:12px; padding:32px 40px;
-  text-align:center; cursor:pointer; transition:all 0.2s;
-  background:var(--bg-card); margin:20px 0; max-width:500px; width:100%;
-}
-.renewal-upload-zone:hover, .renewal-upload-zone.drag-over {
-  border-color:var(--accent-blue); background:rgba(59,130,246,0.05);
-}
-.renewal-upload-zone input[type=file] { display:none; }
-.renewal-stats-row {
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:12px; margin-bottom:20px;
-}
-.renewal-stat-card {
-  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
-  padding:14px 16px; text-align:center;
-}
-.renewal-stat-card .stat-val {
-  font-size:28px; font-weight:800; font-variant-numeric:tabular-nums;
-}
-.renewal-stat-card .stat-lbl {
-  font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-dim);
-  text-transform:uppercase; margin-top:4px;
-}
-.renewal-table-wrap { overflow-x:auto; }
-.renewal-table {
-  width:100%; border-collapse:collapse; font-size:12px;
-}
-.renewal-table th {
-  background:var(--bg-secondary); padding:10px 12px; text-align:left;
-  font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
-  color:var(--text-dim); white-space:nowrap; position:sticky; top:0; z-index:2;
-  border-bottom:1px solid var(--border);
-}
-.renewal-table td {
-  padding:10px 12px; border-bottom:1px solid var(--border);
-  vertical-align:top; color:var(--text-secondary);
-}
-.renewal-table tr:hover td { background:var(--bg-card-hover); }
-.renewal-table td:first-child { font-weight:700; color:var(--text-primary); min-width:160px; }
-.urg-badge {
-  display:inline-block; padding:2px 8px; border-radius:4px; font-size:9px;
-  font-weight:700; letter-spacing:0.08em; white-space:nowrap;
-}
-.urg-urgent   { background:#dc354522; color:#f87171; border:1px solid #dc354544; }
-.urg-month    { background:#fd7e1422; color:#fb923c; border:1px solid #fd7e1444; }
-.urg-upcoming { background:#e5a80022; color:#fbbf24; border:1px solid #e5a80044; }
-.urg-sched    { background:#19875422; color:#4ade80; border:1px solid #19875444; }
-.cat-badge {
-  display:inline-block; padding:2px 8px; border-radius:4px; font-size:9px;
-  font-weight:700; margin-left:4px;
-}
-.cat-forecast { background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); }
-.cat-upside   { background:rgba(139,92,246,0.15);  color:#a78bfa; border:1px solid rgba(139,92,246,0.3); }
-.cat-closewon { background:rgba(16,185,129,0.15);  color:#34d399; border:1px solid rgba(16,185,129,0.3); }
-.sfdc-btn {
-  display:inline-flex; align-items:center; gap:3px;
-  padding:3px 8px; border-radius:4px; font-size:10px; font-weight:600;
-  text-decoration:none; margin:2px 2px 2px 0; white-space:nowrap;
-  background:rgba(59,130,246,0.1); color:var(--accent-blue);
-  border:1px solid rgba(59,130,246,0.25); transition:all 0.15s;
-}
-.sfdc-btn:hover { background:rgba(59,130,246,0.2); }
-.sfdc-btn.disabled { background:none; color:var(--text-dim); border-color:var(--border); cursor:default; pointer-events:none; }
-.renewal-modules { font-size:10px; color:var(--text-dim); line-height:1.7; max-width:260px; }
-.renewal-history { font-size:10px; color:var(--text-dim); line-height:1.7; max-width:200px; }
-.renewal-asv { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text-primary); }
-.renewal-asv-sub { font-size:9px; color:var(--text-dim); margin-top:2px; }
-.renewal-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
-.renewal-filter-btn {
-  padding:4px 12px; border-radius:6px; font-size:11px; font-weight:600;
-  border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary);
-  cursor:pointer; transition:all 0.15s;
-}
-.renewal-filter-btn.active {
-  background:rgba(59,130,246,0.15); border-color:var(--accent-blue); color:var(--accent-blue);
-}
-.renewal-excl-notice {
-  background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25);
-  border-radius:8px; padding:10px 16px; margin-bottom:16px;
-  font-size:11px; color:#f87171;
-}
-#renewal-search {
-  background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px;
-  padding:5px 12px; font-size:12px; color:var(--text-primary); font-family:inherit;
-  width:200px;
-}
-#renewal-search:focus { border-color:var(--accent-blue); outline:none; }
-.q1-overdue { background:rgba(239,68,68,0.05); }
 
 /* ── FIREBASE SYNC STATUS ──────────────────────────────────── */
 .fb-status {
@@ -913,7 +821,6 @@ body.light-theme .alert-item.oil-alert-bar {
 .bw-pct.up { color:var(--green); }
 .bw-pct.down { color:var(--red); }
 </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <!-- Firebase SDK — inlined to avoid CSP issues on GitHub Pages -->
   <script>
 /* Firebase App */
@@ -1156,8 +1063,7 @@ body.light-theme .alert-item.oil-alert-bar {
 <nav class="tab-nav">
   <button class="tab-nav-btn active" onclick="switchTab('market')" id="tab-btn-market">📊 Market</button>
   <button class="tab-nav-btn" onclick="switchTab('news')" id="tab-btn-news">📰 News &amp; Intelligence</button>
-  <button class="tab-nav-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio">💼 My Portfolio<span class="lock-tab-icon">🔒</span></button>
-  <button class="tab-nav-btn" onclick="switchTab('renewal')" id="tab-btn-renewal">🔄 Renewal<span class="lock-tab-icon">🔒</span></button>
+  <button class="tab-nav-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio" style="display:none;">💼 My Portfolio</button>
 </nav>
 
 <div class="container" style="padding-top:20px;">
@@ -1290,80 +1196,6 @@ body.light-theme .alert-item.oil-alert-bar {
 
 </div><!-- /tab-market -->
 
-<!-- ═══ RENEWAL TAB ═══ -->
-<div class="tab-pane" id="tab-renewal">
-  <div class="container" style="padding-top:20px;">
-    <!-- Lock gate -->
-    <div class="renewal-lock-gate" id="renewal-lock-gate">
-      <div style="font-size:64px;opacity:0.4;">🔒</div>
-    </div>
-    <!-- Content (shown when manager unlocked) -->
-    <div id="renewal-root" style="display:none;">
-      <!-- Upload zone (shown before file loaded) -->
-      <div id="renewal-upload-section">
-        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔄 Renewal Dashboard</div>
-        <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Upload your renewal database Excel file to populate the table.</div>
-        <div class="renewal-upload-zone" id="renewal-drop-zone" onclick="document.getElementById('renewal-file-input').click()"
-             ondragover="event.preventDefault();this.classList.add('drag-over')"
-             ondragleave="this.classList.remove('drag-over')"
-             ondrop="handleRenewalDrop(event)">
-          <div style="font-size:36px;margin-bottom:8px;">📂</div>
-          <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Drop Excel file here or click to browse</div>
-          <div style="font-size:11px;color:var(--text-dim);">New_Customer Renewal DB_ClaudeCowork.xlsx · sheet: 2026 Renewal</div>
-          <input type="file" id="renewal-file-input" accept=".xlsx" onchange="handleRenewalFile(this.files[0])">
-        </div>
-        <div style="margin-top:12px;text-align:center;">
-          <span style="font-size:11px;color:var(--text-dim);">or use the pre-loaded database:</span>
-          <button onclick="loadEmbeddedRenewalData()"
-            style="margin-left:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
-              color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">
-            📊 Load Apr 2026 DB
-          </button>
-        </div>
-        <div id="renewal-upload-status" style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:8px;"></div>
-      </div>
-      <!-- Data section (shown after file parsed) -->
-      <div id="renewal-data-section" style="display:none;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">🔄 Renewal Dashboard</div>
-          <span id="renewal-as-of" style="font-size:11px;color:var(--text-dim);"></span>
-          <button onclick="resetRenewalData()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:10px;">↩ Change File</button>
-        </div>
-        <!-- Stats row -->
-        <div class="renewal-stats-row" id="renewal-stats-row"></div>
-        <!-- Exclusion notice -->
-        <div class="renewal-excl-notice" id="renewal-excl-notice"></div>
-        <!-- Filter bar -->
-        <div class="renewal-filter-bar">
-          <span style="font-size:10px;color:var(--text-dim);font-weight:600;">FILTER:</span>
-          <button class="renewal-filter-btn active" onclick="setRenewalFilter('all',this)">All</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q1',this)">Q1 Overdue</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Q2',this)">Q2 Upcoming</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Forecast',this)">Forecast</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Upside',this)">Upside</button>
-          <button class="renewal-filter-btn" onclick="setRenewalFilter('Close Won',this)">Close Won</button>
-          <input id="renewal-search" placeholder="🔍 Search customer…" oninput="renderRenewalTable()">
-        </div>
-        <!-- Table -->
-        <div class="renewal-table-wrap">
-          <table class="renewal-table">
-            <thead><tr>
-              <th>Customer</th>
-              <th>Renewal Date</th>
-              <th>Status</th>
-              <th>Quota ASV</th>
-              <th>Closed ASV</th>
-              <th>Modules</th>
-              <th>Sales History</th>
-              <th>SFDC Links</th>
-            </tr></thead>
-            <tbody id="renewal-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ═══ PORTFOLIO TAB ═══ -->
 <div class="tab-pane" id="tab-portfolio">
@@ -1868,13 +1700,12 @@ function showPortfolioContent() {
 
 function lockPortfolio() {
   portfolioUnlocked = false;
-  // If currently on portfolio tab, switch back to market
   if (document.getElementById('tab-portfolio').classList.contains('active')) {
     doSwitchTab('market');
   }
   document.getElementById('pf-lock-gate').style.display = 'flex';
   document.getElementById('pf-root').style.display = 'none';
-  document.getElementById('tab-btn-portfolio').classList.remove('unlocked');
+  document.getElementById('tab-btn-portfolio').style.display = 'none';
   showToast('info', '🔒', 'Portfolio locked.');
 }
 
@@ -1892,7 +1723,7 @@ function setStoredPIN(p) { localStorage.setItem('mgr_pin', p); }
 
 function onManagerBtnClick() { managerUnlocked ? lockManager() : openPINModal(); }
 
-// pinMode: 'manager' | 'portfolio' | 'renewal'
+// pinMode: 'manager' | 'portfolio'
 let pinMode = 'manager';
 
 function openPINModal() {
@@ -1956,7 +1787,7 @@ function checkPIN() {
     if (pinMode === 'portfolio') {
       // PIN only — no security question for tab access
       portfolioUnlocked = true;
-      document.getElementById('tab-btn-portfolio').classList.add('unlocked');
+      document.getElementById('tab-btn-portfolio').style.display = '';
       showToast('success', '💼', 'Portfolio unlocked.');
       doSwitchTab('portfolio');
     } else {
@@ -1990,7 +1821,7 @@ function checkSecurityAnswer() {
     // Full manager mode — unlocks everything
     activateManager();
     portfolioUnlocked = true;
-    document.getElementById('tab-btn-portfolio').classList.add('unlocked');
+    document.getElementById('tab-btn-portfolio').style.display = '';
     // Show portfolio content if currently on portfolio tab
     const activeTab = document.querySelector('.tab-pane.active');
     if (activeTab && activeTab.id === 'tab-portfolio') showPortfolioContent();
@@ -2020,10 +1851,10 @@ function activateManager() {
   document.getElementById('manager-btn').classList.add('active');
   document.getElementById('manager-btn').textContent='🔓 Manager';
   document.getElementById('manager-banner').classList.add('visible');
-  document.getElementById('tab-btn-portfolio').classList.add('unlocked');
+  document.getElementById('tab-btn-portfolio').style.display = '';
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   renderAll();
-  updateNewsReloadBtn(); updateSyncBtn(); updateRenewalTab();
+  updateNewsReloadBtn(); updateSyncBtn();
   showToast('success','🔓','Manager Mode activated.');
 }
 async function lockManager() {
@@ -2031,19 +1862,13 @@ async function lockManager() {
   const saved = await fbSaveAll();
   // Then: lock the UI
   managerUnlocked=false;
-  // Re-lock renewal gate
-  document.getElementById('renewal-lock-gate').style.display = 'flex';
-  document.getElementById('renewal-root').style.display = 'none';
-  if (document.getElementById('tab-renewal').classList.contains('active')) {
-    doSwitchTab('market');
-  }
   document.getElementById('manager-btn').classList.remove('active');
   document.getElementById('manager-btn').textContent='⚙ Manager';
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
   renderAll();
   lockPortfolio();
-  updateNewsReloadBtn(); updateSyncBtn(); updateRenewalTab();
+  updateNewsReloadBtn(); updateSyncBtn();
   if (saved) {
     showToast('success','☁','Changes synced to Firebase. Manager locked.');
   } else {
@@ -2283,7 +2108,7 @@ const DEFAULT_LISTS = {
   ],
 };
 
-const DATA_VERSION = '20260403k'; // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
+const DATA_VERSION = '20260404b'; // portfolio tab hidden until manager unlock // removed renewal tab entirely // removed renewal tab entirely // fix renewal tab position, lock-only gates, manager-only PIN // unified PIN flow, renewal lock, remove Qualys wording // removed subcategory headers // subcats, sec question, best/worst, renewal DB, tab order // ETF section, pre/post sort, default pct sort // firebase sync-on-lock only // fix firebase synced/saving flicker // better auth error messages + auto-retry // fix firebaseConfig before initialization error // inline Firebase SDK to fix CSP // firebase: robust init, step-by-step error handling // Firebase Firestore real-time sync // renewal tab with Excel upload + SFDC links // news auto-9am HKT, reload manager-only // swap pre-market/daily-chg columns // corsproxy confirmed, pre-market candles working // fix pre-market candle boundary, manager sync bypass // v8 candle-based pre-market, direct CORS, parallel fetch // sync rate-limit 1/hour // batch v7/quote fetch, reliable preMarketPrice // two-ring donut with labels // fix pre-market/ext-hours labels, market state // portfolio revamp: 4 accounts, live prices // multi-proxy CORS fallback chain // v7 quote API, sync button, auto-load on init // separate close+premarket cols, fix fetch // pre-mkt status, split Theme/Tags cols, auto name fetch // added Weekly SMA column // tab renames, EV removed, unified Tags col
 
 function loadLists() {
   try {
@@ -4017,357 +3842,6 @@ renderAll();
       await fetchAllPrices();
     } catch(e) { console.warn('[Init] Price fetch failed:', e); }
   }, 2000);
-
-// ═══════════════════════════════════════════════════════════════
-// RENEWAL TAB — Qualys Subscription Renewal Dashboard
-// ═══════════════════════════════════════════════════════════════
-let renewalData = [];       // parsed rows from Excel
-let renewalFilter = 'all';  // current filter
-
-// Show/hide renewal tab button based on manager state
-function updateRenewalTab() {
-  const gate = document.getElementById('renewal-lock-gate');
-  const root = document.getElementById('renewal-root');
-  if (!gate || !root) return;
-  if (managerUnlocked) {
-    gate.style.display = 'none';
-    root.style.display = 'block';
-  } else {
-    gate.style.display = 'flex';
-    root.style.display = 'none';
-    if (document.getElementById('tab-renewal')?.classList.contains('active')) {
-      doSwitchTab('market');
-    }
-  }
-}
-
-function setRenewalFilter(f, btn) {
-  renewalFilter = f;
-  document.querySelectorAll('.renewal-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderRenewalTable();
-}
-
-function resetRenewalData() {
-  renewalData = [];
-  document.getElementById('renewal-upload-section').style.display = '';
-  document.getElementById('renewal-data-section').style.display = 'none';
-  document.getElementById('renewal-file-input').value = '';
-}
-
-// Drag-and-drop
-function handleRenewalDrop(event) {
-  event.preventDefault();
-  document.getElementById('renewal-drop-zone').classList.remove('drag-over');
-  const file = event.dataTransfer.files[0];
-  if (file) handleRenewalFile(file);
-}
-
-// Pre-loaded data from New_Customer_Renewal_DB_ClaudeCowork.xlsx
-const RENEWAL_DB_EMBEDDED = [{"customer": "Hutchison International LTD. Group Management Services", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-01", "quotaASV": 8790.0, "closedASV": 9229.5, "modules": "- Hybrid Virtual Scanner with Unlimited VM/PCI Scanning x 1\n- Annual Subscription of Web Application Scanning (WAS) Unlimited x 1", "historyLast2": ["15 Oct - customer confirmed they will renew with same scope", "24 Oct - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKmsKIAT/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000jsukPAAQ/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEtKmIAL/view", "qNumber": "Q-494523"}, {"customer": "Dah Sing Bank, Limited", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-02", "quotaASV": 26762.4, "closedASV": 30691.8, "modules": "- TAS x 70\n- VS x 1", "historyLast2": ["10 Nov - sent renewal quote to customer", "12 Dec - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKnGEIA1/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWCfWAAX/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG2ZfIAL/view", "qNumber": "Q-549095"}, {"customer": "Chun Shin Limited", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-15", "quotaASV": 3535.88, "closedASV": 3636.9, "modules": "- VM Internal x 32\n- Express Lite WAS x 5\n- VS x 1", "historyLast2": ["14 Oct - sent 1st renewal reminder to partner", "2 Dec - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YL2QjIAL/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L0000102AzuQAE/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OExHtIAL/view", "qNumber": "Q-497530"}, {"customer": "Kaohsiung City Government", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-15", "quotaASV": 2318.45, "closedASV": 2318.45, "modules": "- Public Sector WAS x 80\n- WAS module fee\n- VS x 2", "historyLast2": ["15 Jan - extra 13th month for last year deal, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YL2QPIA1/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001ODRqlQAH/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFkiLIAT/view", "qNumber": "Q-532582"}, {"customer": "Hutchison Telecom 3 Sweden", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-16", "quotaASV": 50148.34, "closedASV": 52655.76, "modules": "- VMDR&CSAM x 2700\n- WAS x 34", "historyLast2": ["16 Jan - sent renewal quote to customer", "28 Jan - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YL2QtIAL/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000aGoHHAA0/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OExHeIAL/view", "qNumber": "Q-497527"}, {"customer": "Savills Management Services Limited", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-18", "quotaASV": 57840.0, "closedASV": 60732.0, "modules": "- VMDR x 4000", "historyLast2": ["21 Oct - sent official renewal quote to customer", "2 Dec - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKwtnIAD/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000gvpj5AAA/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEvw1IAD/view", "qNumber": "Q-496792"}, {"customer": "Mizuho Securities Asia Limited", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-01-18", "quotaASV": 27062.28, "closedASV": 45834.0, "modules": "- VMDR x 800\n- TC x 1180", "historyLast2": ["21 Oct - sent official renewal quote to customer", "10 Nov - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fxaGuIAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000019EVKwQAO/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFsLvIAL/view", "qNumber": "Q-540819"}, {"customer": "Kaohsiung City Government", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-02-15", "quotaASV": 21855.7, "closedASV": 20514.11, "modules": "- Public Sector WAS x 80\n- WAS module fee\n- VS x 2", "historyLast2": ["3 Feb - downsell due to the quota calculation is based on 13 months purchase", "11 Feb - received PO, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YL2QPIA1/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001ODRqlQAH/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFkiLIAT/view", "qNumber": "Q-532582"}, {"customer": "Allianz Taiwan Life Insurance Company Ltd", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-02-21", "quotaASV": 5663.7, "closedASV": 5933.4, "modules": "- POL Package (Internal - Block Price) x 256\n- VS x 1", "historyLast2": ["6 Jan - sent renewal quote to partner", "15 Jan - received PO, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKtjAIAT/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000019EvhEQAS/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEulZIAT/view", "qNumber": "Q-495255"}, {"customer": "Books.com.tw", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-03-21", "quotaASV": 13191.0, "closedASV": 14111.61, "modules": "- VMDR x 1088\n- Express WAS x 1", "historyLast2": ["18 Mar - customer confirm they want to change to 2-year deal", "25 Mar - received PO, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YMCcdIAH/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWCFqAAP/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1ebV00000BBExNQAX/view", "qNumber": "Q-570039"}, {"customer": "CMB Wing Lung Insurance Co. LTD.", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-03-24", "quotaASV": 22094.78, "closedASV": 22094.78, "modules": "- VMDR x 320\n- PM x 250\n- FIM x 50", "historyLast2": ["2 Dec - year2 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YMF8nIAH/view", "sfdcAcct": "CMB Wing Lung Insurance Co. LTD.", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFE5xIAH/view", "qNumber": "Q-507007"}, {"customer": "Nan Fung Development Limited", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-03-28", "quotaASV": 6260.5, "closedASV": 11883.55, "modules": "- TAS x 20\n- VS x 1", "historyLast2": ["4 Feb - confirm to work with Amidas for transaction", "12 Mar - received PO, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/Opportunity/006Kd00000fwxqnIAA/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001ODXgEQAX/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFkjdIAD/view", "qNumber": "Q-532614"}, {"customer": "HDR Global Trading Limited (BitMEX)", "outlook": "Close Won", "quarter": "Q1", "isCloseWon": true, "renewalDate": "2027-03-28", "quotaASV": 180372.95, "closedASV": 63155.94, "modules": "- TotalCloud x 260\n- VMDR x 600\n- ETM x 600\n- TAS x 6", "historyLast2": ["18 Feb - sent renewal proposal to customer", "18 Mar - received signed PO, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwxuZIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001Lg466QAB/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/SBQQ__Quote__c/a1ebV000009ckmEQAQ/view", "qNumber": "Q-564337"}, {"customer": "Information Technology Total Services", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2027-04-01", "quotaASV": 9983.79, "closedASV": 0, "modules": "- WAS x 20\n- WAS module fee\n- VS x 1", "historyLast2": ["30 Jan - sent renewal quote to partner", "23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "Information Technology Total Services - Renewal - 4/1/2026", "sfdcAcct": "Information Technology Total Services", "sfdcQuote": "Q-508763", "qNumber": "Q-508763"}, {"customer": "Brother International (HK) Limited", "outlook": "Close Won", "quarter": "Q2", "isCloseWon": true, "renewalDate": "2026-04-16", "quotaASV": 9255.68, "closedASV": 9440.79, "modules": "- Express VMDR x 128\n- Express PM x 128", "historyLast2": ["2 Feb - provided renewal quote to customer", "11 Feb - received signed quote, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000ej76SIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/001Kd00001Yy4bLIAR/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFKCPIA5/view", "qNumber": "Q-511297"}, {"customer": "Melco Resorts and Entertainment (Sri Lanka)", "outlook": "Close Won", "quarter": "Q2", "isCloseWon": true, "renewalDate": "2026-04-28", "quotaASV": 15861.29, "closedASV": 15861.29, "modules": "- POL x 1160\n- VM x 1160\n- VS x 3", "historyLast2": ["6 Jan - year2 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000ej9xKIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWCq5AAH/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMLnIAP/view", "qNumber": "Q-513046"}, {"customer": "ZTE Corporation", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-04-30", "quotaASV": 4472.64, "closedASV": 0, "modules": "- Express VMDR x 128", "historyLast2": ["9 Feb - sent renewal quote to partner", "23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000ejA3wIAE/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000014KZ9QQAW/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMSjIAP/view", "qNumber": "Q-513134"}, {"customer": "Canon Hongkong Company Limited", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-05-08", "quotaASV": 3652.75, "closedASV": 0, "modules": "- Express WAS x 5", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template", "23 Mar - sent renewal quote to partner"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000ejC7CIAU/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001BN6qaQAD/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOBaIAP/view", "qNumber": "Q-514471"}, {"customer": "Legend World Technology Development Limited", "outlook": "Upside", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-05-11", "quotaASV": 3845.0, "closedASV": 0, "modules": "- Express WAS x 5", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000elVg4IAE/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000014GMYvQAO/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOcRIAX/view", "qNumber": "Q-514816"}, {"customer": "PCCW/HKT", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-05-14", "quotaASV": 109172.28, "closedASV": 0, "modules": "- Express WAS x 600\n- Standard API x 1\n- VS x 2", "historyLast2": ["24 Mar - sent renewal quote to customer", "30 Mar - sent revised quote to customer"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f3sqPIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000SVytnAAD/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOyhIAH/view", "qNumber": "Q-515098"}, {"customer": "NTT Com Asia", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-05-16", "quotaASV": 3818.29, "closedASV": 0, "modules": "- Express WAS x 5", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f41x8IAA/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWCMLAA5/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFPn6IAH/view", "qNumber": "Q-515746"}, {"customer": "Nan Shan General Insurance Company, Ltd.", "outlook": "Close Won", "quarter": "Q2", "isCloseWon": true, "renewalDate": "2026-05-21", "quotaASV": 1254.23, "closedASV": 1254.23, "modules": "- Express WAS x 50\n- TruRisk VMDR x 32", "historyLast2": ["6 Jan - extra 13th month for last year deal, closed won"], "sfdcOpp": "NF-Nan Shan GI-WASPCIVS-New - Year 2", "sfdcAcct": "Nan Shan General Insurance Company, Ltd.", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWpiIAH/view", "qNumber": "Q-521202"}, {"customer": "Haitong International Securities Group Limited", "outlook": "Upside", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-05-26", "quotaASV": 28039.88, "closedASV": 0, "modules": "- VMDR x 400\n- TAS x 50", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "Haitong International Securities Group Limited - Renewal - 5/26/2026", "sfdcAcct": "Haitong International Securities Group Limite", "sfdcQuote": "Q-517157", "qNumber": "Q-517157"}, {"customer": "Airstar Bank Limited", "outlook": "Upside", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-05-26", "quotaASV": 3524.35, "closedASV": 0, "modules": "- VMDR x 128", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f5O2uIAE/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/001Kd00001qaly6IAA/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFRhJIAX/view", "qNumber": "Q-517435"}, {"customer": "MAESA BC SAS", "outlook": "Upside", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-06-18", "quotaASV": 5897.98, "closedASV": 0, "modules": "- VMDR x 136", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKuBXIA1/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000012KplcQAC/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEv36IAD/view", "qNumber": "Q-495924"}, {"customer": "CK Hutchison Holdings Limited", "outlook": "Upside", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-06-19", "quotaASV": 15150.24, "closedASV": 0, "modules": "- VMDR&CSAM x 1400", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template", "9 Apr - EBR meeting confirmed"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f721ZIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001ODY1mQAH/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFYE9IAP/view", "qNumber": "Q-522278"}, {"customer": "Hundred Plus Corporation", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-06-20", "quotaASV": 1646.25, "closedASV": 0, "modules": "- Express WAS x 1", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template", "26 Feb - provided renewal quote for partner"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f6mhZIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001LiYHOQA3/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWaHIAX/view", "qNumber": "Q-521007"}, {"customer": "Crypto.com - Main", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-06-22", "quotaASV": 161965.0, "closedASV": 0, "modules": "- VMDR x 7500\n- PM x 4000\n- Enterprise API with CIPS Enabled", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f6qC5IAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFX3fIAH/view", "qNumber": "Q-521373"}, {"customer": "Crypto.com - Nadex", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-06-22", "quotaASV": 8982.0, "closedASV": 0, "modules": "- VMDR x 900", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f7AC4IAM/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFZ9tIAH/view", "qNumber": "Q-523195"}, {"customer": "SC Digital Solutions (Moxbank)", "outlook": "Forecast", "quarter": "Q2", "isCloseWon": false, "renewalDate": "2026-06-29", "quotaASV": 7470.59, "closedASV": 0, "modules": "- VMDR x 1536\n- WAS x 5", "historyLast2": ["23 Feb - sent renewal notice to customer / partner via openclaw template"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKtmjIAD/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000014IiHBQA0/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEuVrIAL/view", "qNumber": "Q-495793"}, {"customer": "Fusion Bank Limited", "outlook": "Forecast", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-07-01", "quotaASV": 5046.93, "closedASV": 0, "modules": "- VM External x 20", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f7VsAIAU/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000014JzQwQAK/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFbdbIAD/view", "qNumber": "Q-525051"}, {"customer": "Shin Kong Life Insurance Co., Ltd.", "outlook": "Forecast", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-07-16", "quotaASV": 12749.76, "closedASV": 0, "modules": "- POL x 640\n- VS x 2", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000f7bUpIAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000LzsVsAAJ/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFcHHIA1/view", "qNumber": "Q-525700"}, {"customer": "Hutchison Travel Limited", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-07-30", "quotaASV": 345.52, "closedASV": 0, "modules": "- VM External x 47", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwLvZIAU/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000pywM0AAI/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFet3IAD/view", "qNumber": "Q-527635"}, {"customer": "Greater Bay Airlines Company Limited", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-08-04", "quotaASV": 9605.68, "closedASV": 0, "modules": "- VMDR x 64\n- TAS x 5\n- PM x 64", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwYmnIAE/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/001Kd00001l1LASIA2/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFfxkIAD/view", "qNumber": "Q-528468"}, {"customer": "Hutchison Telecom 3 ROI (group budget)", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-08-25", "quotaASV": 55443.23, "closedASV": 0, "modules": "- VMDR&CSAM x 3803\n- Disconnected VS x 1", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwvb3IAA/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000jS14GAAS/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFjfBIAT/view", "qNumber": "Q-531482"}, {"customer": "Hutchison Telecom 3 ROI \n(3 ROI budget)", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-08-25", "quotaASV": 62642.03, "closedASV": 0, "modules": "- TotalCloud x 1700\n- PC Internal x 1100\n- PC x 500\n- WAS x 15\n- VMDR&CSAM x 197", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwy4UIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000jS14GAAS/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFkw3IAD/view", "qNumber": "Q-533003"}, {"customer": "Vitasoy International Holdings Ltd.", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-08-26", "quotaASV": 4323.37, "closedASV": 0, "modules": "- VMDR TruRisk x 64\n- Express WAS x 1", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwvm6IAA/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000SW6A8AAL/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFjjmIAD/view", "qNumber": "Q-531541"}, {"customer": "Companhia de Telecomunicações de Macau, S.A.R.L. (CTM)", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-09-01", "quotaASV": 28128.75, "closedASV": 0, "modules": "- VMDR x 1500\n- Express WAS x 25", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKtgBIAT/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001Ru5lWQAR/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEuxfIAD/view", "qNumber": "Q-495555"}, {"customer": "Langham Hospitality Group", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-09-04", "quotaASV": 10464.0, "closedASV": 0, "modules": "- VMDR x 300", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fwxI7IAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001BPCP2QAP/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFkElIAL/view", "qNumber": "Q-532049"}, {"customer": "PCCW Teleservices", "outlook": "Upside", "quarter": "Q3", "isCloseWon": false, "renewalDate": "2026-09-10", "quotaASV": 14295.63, "closedASV": 0, "modules": "- VMDR x 250\n- TAS x 5\n- FIM x 11", "historyLast2": ["Swapped from Kenneth"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fxL5FIAU/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWBqSAAX/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFpBiIAL/view", "qNumber": "Q-53788"}, {"customer": "FWD Group", "outlook": "Close Won", "quarter": "Q3", "isCloseWon": true, "renewalDate": "2026-09-19", "quotaASV": 443512.5, "closedASV": 443512.5, "modules": "- VMDR+CSAM x 23500 ($11.39)\n- TAS x 500\n- PC x 1000\n- Enterprise API x 1", "historyLast2": ["6 Jan - year2 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fxiF1IAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00000tthYvQAI/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFtwCIAT/view", "qNumber": "Q-542116"}, {"customer": "PAO Bank Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-10-14", "quotaASV": 18588.54, "closedASV": 0, "modules": "- VMDR x 500\n- PM x 260\n- WAS x 1", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fxSUvIAM/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001UXfFMQA1/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFqxOIAT/view", "qNumber": "Q-539718"}, {"customer": "mReferral Corporation (Hong Kong) Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-10-15", "quotaASV": 4037.25, "closedASV": 0, "modules": "- Express WAS x 5", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fy3IEIAY/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001H5jImQAJ/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFx1JIAT/view", "qNumber": "Q-544583"}, {"customer": "Daiwa Capital Markets Singapore Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-11-01", "quotaASV": 51525.6, "closedASV": 0, "modules": "- VMDR x 800\n- PM x 800\n- CSAM x 800", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fy7G0IAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWByEAAX/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFxb3IAD/view", "qNumber": "Q-545027"}, {"customer": "Modern Terminals Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-11-07", "quotaASV": 7145.36, "closedASV": 0, "modules": "- VMDR x 200", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyeCrIAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001Liw9yQAB/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG2mpIAD/view", "qNumber": "Q-549257"}, {"customer": "WeLab - Main", "outlook": "Close Won", "quarter": "Q4", "isCloseWon": true, "renewalDate": "2026-11-11", "quotaASV": 30394.27, "closedASV": 30394.27, "modules": "- FIM x 64\n- PC x 400\n- Express WAS x 10\n- VS x 1", "historyLast2": ["6 Jan - year2 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyfN4IAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L0000103HNsQAM/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG31GIAT/view", "qNumber": "Q-549446"}, {"customer": "WeLab - Welend", "outlook": "Close Won", "quarter": "Q4", "isCloseWon": true, "renewalDate": "2026-11-11", "quotaASV": 15496.91, "closedASV": 15496.91, "modules": "- FIM x 32\n- Express WAS x 5\n- PC x 90\n- VS x 1", "historyLast2": ["6 Jan - year2 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyfNEIAY/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L0000103HNsQAM/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG31LIAT/view", "qNumber": "Q-549447"}, {"customer": "Cathay Pacific", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-11-14", "quotaASV": 263373.5, "closedASV": 0, "modules": "- VMDR x 25350 (@7.01)\n- FIM x 410\n- PC x 200\n- FIM module price", "historyLast2": ["30 Mar - Shared AOC for PCI-DSS report to the customer."], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKu2uIAD/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000SW5pFAAT/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEv0FIAT/view", "qNumber": "Q-495626"}, {"customer": "Ricoh Asia Pacific Operations Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-11-16", "quotaASV": 8394.75, "closedASV": 0, "modules": "- WAS per scan x 500", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyQQ1IAM/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000b4rlrAAA/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG0IsIAL/view", "qNumber": "Q-547373"}, {"customer": "Hutchison Telephone Company Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-11-17", "quotaASV": 15214.87, "closedASV": 0, "modules": "- WAS x 35", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyYkoIAE/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L000019FCFFQA4/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG1bdIAD/view", "qNumber": "Q-548320"}, {"customer": "BigboXX.com Ltd", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-11-26", "quotaASV": 282.56, "closedASV": 0, "modules": "- WAS x 1", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fz1UwIAI/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000rxNjxAAE/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG7WtIAL/view", "qNumber": "Q-552981"}, {"customer": "MIDLAND HKP SERVICES (ADMINISTRATION) LIMITED", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-12-01", "quotaASV": 5187.0, "closedASV": 0, "modules": "- Express WAS x 5\n- VS x 1", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyvbtIAA/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001H7EPzQAN/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG6N0IAL/view", "qNumber": "Q-552082"}, {"customer": "Tahoe Life Insurance Company (Macau) Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-12-02", "quotaASV": 3027.54, "closedASV": 0, "modules": "- VMDR TruRisk x 64", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fyvvDIAQ/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/001Kd00001eySyZIAU/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG6TUIA1/view", "qNumber": "Q-552169"}, {"customer": "FWD Group - TrE", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-12-05", "quotaASV": 220264.0, "closedASV": 0, "modules": "- TrE x 8000", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000fz2rwIAA/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00000tthYvQAI/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OG7klIAD/view", "qNumber": "Q-553149"}, {"customer": "Sompo Insurance Hong Kong Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-12-10", "quotaASV": 9389.86, "closedASV": 0, "modules": "- VMDR x 128\n- PC x 30\n- Express WAS x 5", "historyLast2": [], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006bV00000KtAhZQAV/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/001Kd00001YyR0UIAV/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1ebV000007QHu1QAG/view", "qNumber": "Q-553473"}, {"customer": "Carrefour Taiwan", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-12-12", "quotaASV": 9640.89, "closedASV": 0, "modules": "- WAS x 20\n- WAS Module price", "historyLast2": [], "sfdcOpp": null, "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001JQS1cQAH/view", "sfdcQuote": null, "qNumber": ""}, {"customer": "Hong Kong Telecommunications Limited", "outlook": "Upside", "quarter": "Q4", "isCloseWon": false, "renewalDate": "2026-12-20", "quotaASV": 10057.12, "closedASV": 0, "modules": "- Express WAS x 25\n- VMDR TruRisk x 32", "historyLast2": ["Swapped from Kenneth"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKtkiIAD/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0012L00001ODOEdQAP/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OEv5BIAT/view", "qNumber": "Q-495871"}, {"customer": "Melco Resorts and Entertainment", "outlook": "Close Won", "quarter": "Q4", "isCloseWon": true, "renewalDate": "2026-12-31", "quotaASV": 100076.53, "closedASV": 100076.53, "modules": "- POL x 7806\n- VM x 7622\n- Express WAS  x 25\n- Physical Scanner x 5\n- Additional VS x 3\n- Disconnected VS x 3\n- Express API x 1", "historyLast2": ["6 Jan - year3 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006bV00000MEJOQQA5/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWCq5AAH/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1ebV000007tcLZQAY/view", "qNumber": "Q-556949"}, {"customer": "Taiwan Life Insurance", "outlook": "Close Won", "quarter": "Q4", "isCloseWon": true, "renewalDate": "2026-12-31", "quotaASV": 17339.18, "closedASV": 17339.18, "modules": "- VM x 1650\n- Express VM package x 32\n- Scanner appliance x 1\n- VS x 1\n- TAS x 5", "historyLast2": ["6 Jan - year2 passthru, closed won"], "sfdcOpp": "https://qualys.lightning.force.com/lightning/r/006Kd00000YKD6qIAH/view", "sfdcAcct": "https://qualys.lightning.force.com/lightning/r/0011a00000JWDJrAAP/view", "sfdcQuote": "https://qualys.lightning.force.com/lightning/r/a1eKd00000OFjy8IAD/view", "qNumber": "Q-531720"}];
-
-function loadEmbeddedRenewalData() {
-  parseRenewalRows(RENEWAL_DB_EMBEDDED, 'Embedded DB (Apr 2026)');
-}
-
-// Read Excel file via SheetJS (XLSX library)
-function handleRenewalFile(file) {
-  if (!file) return;
-  const status = document.getElementById('renewal-upload-status');
-  status.textContent = '⏳ Reading ' + file.name + '…';
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type:'array', cellDates:true, cellStyles:true });
-      const ws = workbook.Sheets['2026 Renewal'];
-      if (!ws) {
-        status.textContent = '❌ Sheet "2026 Renewal" not found. Check the file.';
-        return;
-      }
-      parseRenewalSheet(ws, workbook, file.name + ' (uploaded)');
-    } catch(err) {
-      status.textContent = '❌ Error: ' + err.message;
-      console.error(err);
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function parseRenewalRows(rows, filename) {
-  // rows = array of {customer,outlook,quarter,isCloseWon,renewalDate,quotaASV,closedASV,modules,historyLast2,sfdcOpp,sfdcAcct,sfdcQuote,qNumber}
-  const today = new Date(); today.setHours(0,0,0,0);
-  let excludedCount = 0;
-
-  // Remap to internal format
-  renewalData = rows.filter(r => {
-    if (!r.customer) return false;
-    const ol = (r.outlook||'').toLowerCase();
-    if (ol.includes('close lost')) { excludedCount++; return false; }
-    return true;
-  }).map(r => {
-    let renewalDate = r.renewalDate ? new Date(r.renewalDate) : null;
-    if (renewalDate && isNaN(renewalDate)) renewalDate = null;
-    return {
-      customer: r.customer,
-      renewalDate,
-      renewalDateStr: renewalDate
-        ? renewalDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
-        : (r.renewalDate||'—'),
-      quarter: r.quarter||'',
-      outlook: r.outlook||'',
-      isCloseWon: r.isCloseWon||false,
-      isQ1Pending: (r.quarter==='Q1') && !r.isCloseWon,
-      quotaASV: r.quotaASV||0,
-      closedASV: r.closedASV||0,
-      modules: (r.modules||'').replace(/\n/g,'\n'),
-      historyLast2: r.historyLast2||[],
-      sfdcOpp: r.sfdcOpp, sfdcAcct: r.sfdcAcct,
-      sfdcQuote: r.sfdcQuote, qNumber: r.qNumber||'',
-    };
-  }).sort((a,b) => {
-    if (!a.renewalDate) return 1;
-    if (!b.renewalDate) return -1;
-    return a.renewalDate - b.renewalDate;
-  });
-
-  const daysUntil = d => d ? Math.ceil((d - today) / 86400000) : 999;
-  const urgent    = renewalData.filter(r => daysUntil(r.renewalDate) <= 7).length;
-  const thisMonth = renewalData.filter(r => { const d=daysUntil(r.renewalDate); return d>7&&d<=30; }).length;
-  const upcoming  = renewalData.filter(r => { const d=daysUntil(r.renewalDate); return d>30&&d<=90; }).length;
-
-  document.getElementById('renewal-stats-row').innerHTML = [
-    ['Total Active', renewalData.length, 'var(--text-primary)'],
-    ['Urgent (≤7d)', urgent, urgent>0?'var(--red)':'var(--text-dim)'],
-    ['This Month',  thisMonth, thisMonth>0?'var(--amber)':'var(--text-dim)'],
-    ['Upcoming 3M', upcoming, 'var(--green)'],
-    ['Q1 Overdue',  renewalData.filter(r=>r.isQ1Pending).length, 'var(--accent-cyan)'],
-  ].map(([l,v,c]) => `<div class="renewal-stat-card">
-    <div class="stat-val" style="color:${c};">${v}</div>
-    <div class="stat-lbl">${l}</div>
-  </div>`).join('');
-
-  document.getElementById('renewal-excl-notice').innerHTML =
-    `⛔ ${excludedCount} record${excludedCount!==1?'s':''} excluded (Close Lost) · ${renewalData.filter(r=>r.isCloseWon).length} Close Won shown for reference`;
-  document.getElementById('renewal-as-of').textContent =
-    'As of ' + today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' + filename;
-
-  document.getElementById('renewal-upload-section').style.display = 'none';
-  document.getElementById('renewal-data-section').style.display = '';
-  renderRenewalTable();
-}
-
-function parseRenewalSheet(ws, wb, filename) {
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const threeMonths = new Date(today);
-  threeMonths.setMonth(threeMonths.getMonth() + 3);
-
-  // SheetJS: convert to array of arrays with raw values
-  const raw = XLSX.utils.sheet_to_json(ws, { header:1, raw:false, dateNF:'yyyy-mm-dd', defval:'' });
-  if (raw.length < 2) { document.getElementById('renewal-upload-status').textContent = '❌ No data rows found.'; return; }
-
-  const headers = raw[0];
-  const rows = [];
-  let excludedCount = 0;
-
-  // Column index helper
-  const col = (letter) => {
-    let n = 0;
-    for (const c of letter.toUpperCase()) n = n * 26 + c.charCodeAt(0) - 64;
-    return n - 1;
-  };
-
-  // Extract hyperlinks from SheetJS workbook
-  // SheetJS stores hyperlinks in cell.l.Target
-  function getHyperlink(ws, colLetter, rowNum) {
-    const addr = colLetter + rowNum;
-    const cell = ws[addr];
-    return cell?.l?.Target || null;
-  }
-
-  for (let ri = 1; ri < raw.length; ri++) {
-    const r = raw[ri];
-    const customerName = (r[col('B')] || '').toString().trim();
-    if (!customerName) continue;
-
-    const outlook = (r[col('A')] || '').toString().trim();
-    const isCloseLost = outlook.toLowerCase().includes('close lost') || outlook.toLowerCase() === 'closed lost';
-    if (isCloseLost) { excludedCount++; continue; }
-
-    // Parse renewal date — advance to current/next year
-    let renewalDateRaw = r[col('H')] || '';
-    let renewalDate = null;
-    if (renewalDateRaw) {
-      try {
-        let d = new Date(renewalDateRaw);
-        if (!isNaN(d)) {
-          // Advance year until >= today year
-          while (d.getFullYear() < today.getFullYear()) d.setFullYear(d.getFullYear() + 1);
-          // If the date has passed this year, advance to next year
-          if (d < today && d.getFullYear() === today.getFullYear()) d.setFullYear(d.getFullYear() + 1);
-          renewalDate = d;
-        }
-      } catch(e) {}
-    }
-
-    const quarter = (r[col('C')] || '').toString().trim();
-    const isQ1 = quarter === 'Q1';
-    const isQ2 = quarter === 'Q2';
-    const isCloseWon = outlook.toLowerCase().includes('close won') || outlook.toLowerCase() === 'closed won';
-
-    // Filter: Q2 entries + Q1 entries not Close Won/Lost
-    // Exclude Close Lost (already done above)
-    const inQ2Window = isQ2 ||
-      (renewalDate && renewalDate >= today && renewalDate <= threeMonths);
-    const isQ1Pending = isQ1 && !isCloseWon;
-    if (!inQ2Window && !isQ1Pending) continue;
-
-    // Extract SFDC hyperlinks (SheetJS)
-    const excelRow = ri + 1; // 1-indexed in Excel
-    const sfdcOpp   = getHyperlink(ws, 'V', excelRow);
-    const sfdcAcct  = getHyperlink(ws, 'W', excelRow);
-    const sfdcQuote = getHyperlink(ws, 'X', excelRow);
-    const qNumber   = (r[col('X')] || '').toString().trim(); // Q-number label from col X
-
-    // Sales history — last 2 entries from col I
-    const historyRaw = (r[col('I')] || '').toString().trim();
-    const historyLines = historyRaw.split('\n').map(l=>l.trim()).filter(Boolean);
-    const historyLast2 = historyLines.slice(-2);
-
-    rows.push({
-      customer: customerName,
-      renewalDate,
-      renewalDateStr: renewalDate ? renewalDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : renewalDateRaw,
-      quarter,
-      outlook,
-      isCloseWon,
-      isQ1Pending,
-      quotaASV:    (r[col('J')] || '').toString().trim(),
-      closedASV:   (r[col('K')] || '').toString().trim(),
-      modules:     (r[col('N')] || '').toString().trim(),
-      historyLast2,
-      sfdcOpp, sfdcAcct, sfdcQuote, qNumber,
-    });
-  }
-
-  // Sort by renewal date ascending
-  rows.sort((a,b) => {
-    if (!a.renewalDate) return 1;
-    if (!b.renewalDate) return -1;
-    return a.renewalDate - b.renewalDate;
-  });
-
-  renewalData = rows;
-
-  // Stats
-  const daysUntil = d => d ? Math.ceil((d - today) / 86400000) : 999;
-  const urgent   = rows.filter(r => daysUntil(r.renewalDate) <= 7).length;
-  const thisMonth= rows.filter(r => { const d=daysUntil(r.renewalDate); return d>7&&d<=30; }).length;
-  const upcoming = rows.filter(r => { const d=daysUntil(r.renewalDate); return d>30&&d<=90; }).length;
-
-  // Render stats
-  document.getElementById('renewal-stats-row').innerHTML = [
-    ['Total Active', rows.length, 'var(--text-primary)'],
-    ['Urgent (≤7d)', urgent, urgent>0?'var(--red)':'var(--text-dim)'],
-    ['This Month', thisMonth, thisMonth>0?'var(--amber)':'var(--text-dim)'],
-    ['Upcoming 3M', upcoming, 'var(--green)'],
-    ['Q1 Overdue', rows.filter(r=>r.isQ1Pending).length, 'var(--accent-cyan)'],
-  ].map(([l,v,c]) => `<div class="renewal-stat-card">
-    <div class="stat-val" style="color:${c};">${v}</div>
-    <div class="stat-lbl">${l}</div>
-  </div>`).join('');
-
-  document.getElementById('renewal-excl-notice').innerHTML =
-    `⛔ ${excludedCount} record${excludedCount!==1?'s':''} excluded (Close Lost) · ${rows.filter(r=>r.isCloseWon).length} Close Won shown for reference`;
-
-  document.getElementById('renewal-as-of').textContent =
-    'As of ' + today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' + filename;
-
-  document.getElementById('renewal-upload-section').style.display = 'none';
-  document.getElementById('renewal-data-section').style.display = '';
-  renderRenewalTable();
-}
-
-function urgBadge(renewalDate) {
-  if (!renewalDate) return '<span class="urg-badge urg-sched">TBD</span>';
-  const days = Math.ceil((renewalDate - new Date().setHours(0,0,0,0)) / 86400000);
-  if (days <= 0)  return '<span class="urg-badge urg-urgent">OVERDUE</span>';
-  if (days <= 7)  return '<span class="urg-badge urg-urgent">URGENT</span>';
-  if (days <= 30) return '<span class="urg-badge urg-month">THIS MONTH</span>';
-  if (days <= 90) return '<span class="urg-badge urg-upcoming">UPCOMING</span>';
-  return '<span class="urg-badge urg-sched">SCHEDULED</span>';
-}
-
-function catBadge(outlook) {
-  const o = (outlook||'').toLowerCase();
-  if (o.includes('forecast'))   return '<span class="cat-badge cat-forecast">Forecast</span>';
-  if (o.includes('upside'))     return '<span class="cat-badge cat-upside">Upside</span>';
-  if (o.includes('close won') || o.includes('closed won'))
-                                return '<span class="cat-badge cat-closewon">Close Won</span>';
-  return `<span class="cat-badge" style="background:rgba(100,116,139,0.15);color:var(--text-dim);border:1px solid var(--border);">${outlook||'–'}</span>`;
-}
-
-function sfdcLinks(row) {
-  const btn = (label, icon, url) => url
-    ? `<a class="sfdc-btn" href="${url}" target="_blank" rel="noopener">${icon} ${label}</a>`
-    : `<span class="sfdc-btn disabled">${icon} ${label}</span>`;
-  const qLabel = row.qNumber || 'Quote';
-  return btn('Opportunity','📊', row.sfdcOpp)
-       + btn('Account','🏢', row.sfdcAcct)
-       + btn(qLabel,'📄', row.sfdcQuote);
-}
-
-function renderRenewalTable() {
-  const tbody = document.getElementById('renewal-tbody');
-  if (!tbody) return;
-  const search = (document.getElementById('renewal-search')?.value||'').toLowerCase();
-  const f = renewalFilter;
-
-  const filtered = renewalData.filter(row => {
-    const o = (row.outlook||'').toLowerCase();
-    if (f === 'Q1')        return row.isQ1Pending;
-    if (f === 'Q2')        return row.quarter === 'Q2' && !row.isQ1Pending;
-    if (f === 'Forecast')  return o.includes('forecast');
-    if (f === 'Upside')    return o.includes('upside');
-    if (f === 'Close Won') return row.isCloseWon;
-    return true; // 'all'
-  }).filter(row =>
-    !search || row.customer.toLowerCase().includes(search)
-  );
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-dim);">No records match the current filter.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = filtered.map(row => {
-    const rowClass = row.isQ1Pending ? ' class="q1-overdue"' : '';
-    const modLines = row.modules.split('\n').filter(Boolean)
-      .map(m => `<div>• ${m.trim()}</div>`).join('');
-    const hist = row.historyLast2.map(l => `<div style="border-left:2px solid var(--border);padding-left:6px;margin-bottom:4px;">${l}</div>`).join('');
-    const quotaFmt = row.quotaASV ? `<div class="renewal-asv">$${parseFloat(row.quotaASV.replace(/[^0-9.]/g,'')||0).toLocaleString()}</div><div class="renewal-asv-sub">Quota ASV</div>` : '–';
-    const closedFmt= row.closedASV && row.closedASV !== '0' && row.isCloseWon
-      ? `<div class="renewal-asv" style="color:var(--green);">$${parseFloat(row.closedASV.replace(/[^0-9.]/g,'')||0).toLocaleString()}</div><div class="renewal-asv-sub">Closed ASV</div>` : '–';
-
-    return `<tr${rowClass}>
-      <td><div style="font-weight:700;color:var(--text-primary);">${row.customer}</div>
-          <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">${row.quarter||''}</div></td>
-      <td><div style="font-weight:600;color:var(--text-primary);">${row.renewalDateStr}</div>
-          ${urgBadge(row.renewalDate)}</td>
-      <td>${catBadge(row.outlook)}</td>
-      <td>${quotaFmt}</td>
-      <td>${closedFmt}</td>
-      <td><div class="renewal-modules">${modLines || '<span style="color:var(--text-dim);">–</span>'}</div></td>
-      <td><div class="renewal-history">${hist || '<span style="color:var(--text-dim);">–</span>'}</div></td>
-      <td>${sfdcLinks(row)}</td>
-    </tr>`;
-  }).join('');
-}
-
-
-
-
 
 })();
 
