@@ -1113,8 +1113,7 @@ body.light-theme .alert-item.oil-alert-bar {
       <div class="header-actions">
         <div class="last-updated manager-only" id="last-updated-wrap" style="display:none;">Fetched: <span id="last-updated">–</span></div>
         <button class="btn-sync-now manager-only" id="sync-btn" onclick="syncNow()" title="Manager: sync anytime" style="display:none;">⟳ Prices</button>
-        <button class="btn-sync-now manager-only" id="db-sync-btn" onclick="dbSyncNow()" title="Sync watchlist to Firebase" style="display:none;background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">☁ DB</button>
-        <span class="fb-status offline manager-only" id="fb-status" style="display:none;"><span class="fb-dot"></span></span>
+        <span class="fb-status offline manager-only" id="fb-status" style="display:none;cursor:pointer;" onclick="dbSyncNow()" title="Firebase DB status — click to sync"><span class="fb-dot"></span></span>
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
       </div>
@@ -1164,7 +1163,6 @@ body.light-theme .alert-item.oil-alert-bar {
 <div class="tab-pane active" id="tab-market">
 
   <div class="refresh-status-bar hidden" id="refresh-status-bar">
-    <span>🕐</span>
     <span id="refresh-status-msg">Auto-refresh active</span>
     <span class="next-refresh" id="next-refresh-countdown"></span>
   </div>
