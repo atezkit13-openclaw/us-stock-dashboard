@@ -1711,20 +1711,18 @@ function fbSetStatus(state, text) {
   if (!el) return;
   // Avoid flashing: if already synced and new state is also synced, skip
   if (state === 'synced' && _fbCurrentState === 'synced') return;
-  // If going synced, update state
+  // Always preserve manager-only class and cursor
+  const baseClass = 'fb-status manager-only';
   if (state === 'synced') {
     clearTimeout(_fbSyncedTimer);
     _fbCurrentState = 'synced';
-    el.className = 'fb-status synced';
-    el.title = text || 'Synced';
+    el.className = baseClass + ' synced';
+    el.title = text || 'Firebase synced — click to force sync';
     return;
   }
-  // For syncing/saving: only show if not already synced
-  if (state === 'syncing' && _fbCurrentState === 'synced') {
-    return;
-  }
+  if (state === 'syncing' && _fbCurrentState === 'synced') return;
   _fbCurrentState = state;
-  el.className = 'fb-status ' + state;
+  el.className = baseClass + ' ' + state;
   el.title = text || state;
 }
 
@@ -2285,8 +2283,9 @@ function activateManager() {
   document.getElementById('tab-btn-renewal').style.display = '';
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   // Show manager-only header controls
-  ['last-updated-wrap','sync-btn','fb-status'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.style.display='';
+  const _mgrShowMap = { 'last-updated-wrap':'flex', 'sync-btn':'inline-block', 'fb-status':'inline-flex' };
+  Object.entries(_mgrShowMap).forEach(([id, disp]) => {
+    const el = document.getElementById(id); if (el) el.style.display = disp;
   });
   renderAll();
   updateNewsReloadBtn(); updateSyncBtn();
@@ -2732,6 +2731,7 @@ function updateSyncBtn() {
   const btn = document.getElementById('sync-btn');
   if (!btn) return;
   if (managerUnlocked) {
+    btn.style.display = 'inline-block';
     btn.textContent = '⟳ Prices';
     btn.disabled = false;
     btn.title = 'Fetch latest prices';
@@ -2739,6 +2739,8 @@ function updateSyncBtn() {
     btn.style.cursor = 'pointer';
     btn.style.color = 'var(--amber)';
     btn.style.borderColor = 'rgba(245,158,11,0.5)';
+  } else {
+    btn.style.display = 'none';
   }
 }
 
