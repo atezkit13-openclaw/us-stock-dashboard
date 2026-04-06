@@ -1111,11 +1111,10 @@ body.light-theme .alert-item.oil-alert-bar {
         </div>
       </div>
       <div class="header-actions">
-        <div class="last-updated">Fetched: <span id="last-updated">–</span></div>
-        <button class="btn-sync-now" id="sync-btn" onclick="syncNow()" title="Fetch latest prices from Yahoo Finance">⟳ Prices</button>
-        <button class="btn-sync-now" id="db-sync-btn" onclick="dbSyncNow()" title="Sync watchlist to Firebase" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">☁ DB</button>
-        <span class="fb-status offline" id="fb-status"><span class="fb-dot"></span><span id="fb-status-text">Firebase</span></span>
-        <span class="auto-refresh-badge inactive" id="auto-badge" title="Auto-refresh schedule">⏰ Auto</span>
+        <div class="last-updated manager-only" id="last-updated-wrap" style="display:none;">Fetched: <span id="last-updated">–</span></div>
+        <button class="btn-sync-now manager-only" id="sync-btn" onclick="syncNow()" title="Manager: sync anytime" style="display:none;">⟳ Prices</button>
+        <button class="btn-sync-now manager-only" id="db-sync-btn" onclick="dbSyncNow()" title="Sync watchlist to Firebase" style="display:none;background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">☁ DB</button>
+        <span class="fb-status offline manager-only" id="fb-status" style="display:none;"><span class="fb-dot"></span></span>
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
       </div>
@@ -1710,26 +1709,24 @@ let _fbSyncedTimer = null;
 let _fbCurrentState = '';
 function fbSetStatus(state, text) {
   const el = document.getElementById('fb-status');
-  const tx = document.getElementById('fb-status-text');
-  if (!el || !tx) return;
+  if (!el) return;
   // Avoid flashing: if already synced and new state is also synced, skip
   if (state === 'synced' && _fbCurrentState === 'synced') return;
-  // If going synced, show for minimum 3s before allowing another state change
+  // If going synced, update state
   if (state === 'synced') {
     clearTimeout(_fbSyncedTimer);
     _fbCurrentState = 'synced';
     el.className = 'fb-status synced';
-    tx.textContent = text;
+    el.title = text || 'Synced';
     return;
   }
-  // For syncing/saving: only show if not already synced (avoid save flicker)
+  // For syncing/saving: only show if not already synced
   if (state === 'syncing' && _fbCurrentState === 'synced') {
-    // Silently debounce — don't flash "Saving…" for every keystroke
     return;
   }
   _fbCurrentState = state;
   el.className = 'fb-status ' + state;
-  tx.textContent = text;
+  el.title = text || state;
 }
 
 // ── Initialise Firebase (called once on page load) ───────────
@@ -2078,9 +2075,6 @@ function scheduleNextAutoRefresh() {
   const info = calcNextRefresh();
   nextRefreshTarget = Date.now() + info.msUntil;
 
-  document.getElementById('auto-badge').className = 'auto-refresh-badge';
-  document.getElementById('auto-badge').title = 'Next: ' + info.label;
-
   document.getElementById('refresh-status-bar').classList.remove('hidden');
   document.getElementById('refresh-status-msg').textContent = 'Auto-refresh scheduled: ' + info.label;
 
@@ -2291,6 +2285,10 @@ function activateManager() {
   document.getElementById('tab-btn-portfolio').style.display = '';
   document.getElementById('tab-btn-renewal').style.display = '';
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
+  // Show manager-only header controls
+  ['last-updated-wrap','sync-btn','db-sync-btn','fb-status'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='';
+  });
   renderAll();
   updateNewsReloadBtn(); updateSyncBtn();
   showToast('success','🔓','Manager Mode activated.');
@@ -2304,6 +2302,10 @@ async function lockManager() {
   document.getElementById('manager-btn').textContent='⚙ Manager';
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
+  // Hide manager-only header controls
+  ['last-updated-wrap','sync-btn','db-sync-btn','fb-status'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
   renderAll();
   lockPortfolio();
   lockRenewal();
@@ -2726,95 +2728,38 @@ async function batchFetchQuote(syms, _proxy) {
   results.forEach((r,i) => { if (r.status==='fulfilled' && r.value) map[syms[i]] = r.value; });
   return map;
 }
-// ─── Sync rate-limit: once per hour ───────────────────────────
-const SYNC_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
-let lastSyncTime = 0;
-
-function getSyncCooldownLeft() {
-  return Math.max(0, SYNC_COOLDOWN_MS - (Date.now() - lastSyncTime));
-}
-
-function fmtCooldown(ms) {
-  const totalSec = Math.ceil(ms / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
-}
-
+// ─── Sync: manager-only, no rate limit ────────────────────────
 function updateSyncBtn() {
   const btn = document.getElementById('sync-btn');
   if (!btn) return;
-  // Manager can always sync — show unlocked state
   if (managerUnlocked) {
-    btn.textContent = '⟳ Sync';
+    btn.textContent = '⟳ Prices';
     btn.disabled = false;
-    btn.title = 'Manager Mode: sync anytime';
+    btn.title = 'Fetch latest prices';
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
-    btn.style.borderColor = 'rgba(245,158,11,0.5)'; // amber = manager colour
     btn.style.color = 'var(--amber)';
-    return;
-  }
-  // Non-manager: enforce 1-hour cooldown
-  btn.style.color = '';
-  const left = getSyncCooldownLeft();
-  if (left > 0) {
-    btn.textContent = `⟳ ${fmtCooldown(left)}`;
-    btn.disabled = true;
-    btn.title = `Rate limited — next sync in ${fmtCooldown(left)}`;
-    btn.style.opacity = '0.45';
-    btn.style.cursor = 'not-allowed';
-    btn.style.borderColor = 'rgba(16,185,129,0.15)';
-  } else {
-    btn.textContent = '⟳ Sync';
-    btn.disabled = false;
-    btn.title = 'Fetch latest prices (limit: once per hour)';
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.style.borderColor = '';
+    btn.style.borderColor = 'rgba(245,158,11,0.5)';
   }
 }
 
-// Tick the countdown every second
-setInterval(updateSyncBtn, 1000);
-
 async function syncNow() {
-  // Manager bypasses rate limit entirely
-  if (!managerUnlocked) {
-    const left = getSyncCooldownLeft();
-    if (left > 0) {
-      showToast('info', '⏳', `Rate limited — next sync in ${fmtCooldown(left)}`);
-      return;
-    }
-  }
+  if (!managerUnlocked) return; // safety guard — button is hidden for visitors
   const btn = document.getElementById('sync-btn');
-  const origText = btn.textContent;
-  btn.textContent = '⟳ Syncing…';
-  btn.disabled = true;
-  btn.style.opacity = '0.6';
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '⟳ Syncing…'; btn.disabled = true; btn.style.opacity = '0.6'; }
   try {
     await fetchAllPrices();
-    // Only update rate-limit timestamp for non-managers
-    if (!managerUnlocked) {
-      lastSyncTime = Date.now();
-      localStorage.setItem('last_sync_time', lastSyncTime);
-      showToast('success', '📡', 'Synced. Next sync available in 1h.');
-    } else {
-      showToast('success', '📡', 'Manager sync complete.');
-    }
+    showToast('success', '📡', 'Prices synced.');
   } catch(e) {
     console.error(e);
     showToast('error', '❌', 'Sync failed — check console.');
   }
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  updateSyncBtn();
+  if (btn) { btn.textContent = origText || '⟳ Prices'; btn.disabled = false; btn.style.opacity = '1'; }
 }
 
-// Restore last sync time across page reloads
+// Restore last sync time across page reloads (kept for compatibility)
 (function restoreLastSync() {
-  const stored = localStorage.getItem('last_sync_time');
-  if (stored) lastSyncTime = parseInt(stored, 10) || 0;
   updateSyncBtn();
 })();
 
