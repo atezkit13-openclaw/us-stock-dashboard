@@ -810,7 +810,7 @@ body.light-theme .alert-item.oil-alert-bar {
 /* ── BEST & WORST WIDGET ─────────────────────────────────── */
 .bw-row {
   display:grid;
-  grid-template-columns: 64px 1fr auto auto auto auto;
+  grid-template-columns: 64px 1fr 58px 64px auto auto auto;
   align-items:center;
   padding:7px 10px; border-radius:7px; margin-bottom:4px;
   background:var(--bg-card); border:1px solid var(--border);
@@ -821,7 +821,9 @@ body.light-theme .alert-item.oil-alert-bar {
 .bw-sym a { color:inherit; text-decoration:none; }
 .bw-sym a:hover { color:var(--accent-blue); text-decoration:underline; }
 .bw-name { font-size:10px; color:var(--text-dim); overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.bw-pct { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.bw-close { font-size:12px; font-weight:600; color:var(--text-primary); font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right;
+  font-family:SFMono-Regular,'SF Mono',Menlo,Consolas,monospace; }
+.bw-pct { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; }
 .bw-pct.up { color:var(--green); }
 .bw-pct.down { color:var(--red); }
 .bw-earnings { font-size:9px; color:var(--text-dim); white-space:nowrap; text-align:right;
@@ -829,7 +831,7 @@ body.light-theme .alert-item.oil-alert-bar {
   border-radius:3px; padding:2px 5px; font-variant-numeric:tabular-nums; }
 .bw-mcap { font-size:9px; color:var(--text-secondary); white-space:nowrap; text-align:right;
   background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18);
-  border-radius:3px; padding:2px 5px; font-variant-numeric:tabular-nums; }
+  border-radius:3px; padding:2px 5px; font-variant-numeric:tabular-nums; font-weight:600; }
 .bw-news-btn {
   display:inline-flex; align-items:center; justify-content:center;
   font-size:9px; font-weight:700; padding:2px 7px; border-radius:3px;
@@ -841,7 +843,7 @@ body.light-theme .alert-item.oil-alert-bar {
 /* Best/Worst header row */
 .bw-header-row {
   display:grid;
-  grid-template-columns: 64px 1fr auto auto auto auto;
+  grid-template-columns: 64px 1fr 58px 64px auto auto auto;
   gap:6px; padding:3px 10px 5px;
   font-size:8px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim);
 }
@@ -1164,12 +1166,12 @@ body.light-theme .alert-item.oil-alert-bar {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="best-worst-grid">
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">🟢 Best 5</div>
-        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span>% Chg</span><span>Earnings</span><span>Mkt Cap</span><span>News</span></div>
+        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span style="text-align:right">Close</span><span style="text-align:right">% Chg</span><span>Earnings (est.)</span><span>Mkt Cap</span><span>News</span></div>
         <div id="best5-list"></div>
       </div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">🔴 Worst 5</div>
-        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span>% Chg</span><span>Earnings</span><span>Mkt Cap</span><span>News</span></div>
+        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span style="text-align:right">Close</span><span style="text-align:right">% Chg</span><span>Earnings (est.)</span><span>Mkt Cap</span><span>News</span></div>
         <div id="worst5-list"></div>
       </div>
     </div>
@@ -2735,37 +2737,80 @@ function setMaTag(listName, idx, value) {
 // Cache for Yahoo Finance quote summary data (earnings + mktCap)
 const bwQuoteCache = {};
 
+// ─── Fetch Earnings Date + Market Cap via Yahoo Finance quoteSummary ──────────
+// Yahoo Finance UI shows:
+//   Earnings Date (est.) → quoteSummary → calendarEvents → earnings → earningsDate[0].raw
+//   Market Cap (intraday) → quoteSummary → summaryDetail → marketCap.raw
+//   Fallback: v11/finance/quoteSummary with modules=calendarEvents,summaryDetail
 async function fetchBWQuoteData(sym) {
-  if (bwQuoteCache[sym]) return bwQuoteCache[sym];
+  if (bwQuoteCache[sym] && (bwQuoteCache[sym].marketCap || bwQuoteCache[sym].earningsTs)) {
+    return bwQuoteCache[sym];
+  }
   const enc = encodeURIComponent(sym);
   const CP  = 'https://corsproxy.io/?';
 
-  // Use v8/chart response which already has mktCap in meta
-  // Also try v7/quote for earningsTimestamp
-  const urls = [
-    CP + encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${enc}?modules=summaryDetail,calendarEvents&interval=1d&range=1d`),
-    CP + encodeURIComponent(`https://query2.finance.yahoo.com/v8/finance/chart/${enc}?modules=summaryDetail,calendarEvents&interval=1d&range=1d`),
-    `https://query1.finance.yahoo.com/v8/finance/chart/${enc}?modules=summaryDetail,calendarEvents&interval=1d&range=1d`,
+  // ── Strategy 1: quoteSummary v11 — returns calendarEvents + summaryDetail ──
+  // This is the exact data source Yahoo Finance UI uses for the stats table.
+  const qsBase = `https://query2.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=calendarEvents%2CsummaryDetail`;
+  const qsBase2 = `https://query1.finance.yahoo.com/v11/finance/quoteSummary/${enc}?modules=calendarEvents%2CsummaryDetail`;
+
+  const qsUrls = [
+    CP + encodeURIComponent(qsBase),
+    CP + encodeURIComponent(qsBase2),
+    qsBase,
+    qsBase2,
   ];
 
-  for (const url of urls) {
+  for (const url of qsUrls) {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const qs = j?.quoteSummary?.result?.[0] || {};
+
+      // Market Cap from summaryDetail.marketCap.raw
+      const marketCap = qs?.summaryDetail?.marketCap?.raw || null;
+
+      // Earnings Date from calendarEvents.earnings.earningsDate[0].raw
+      // Yahoo returns an array of possible earnings timestamps
+      const earningsDates = qs?.calendarEvents?.earnings?.earningsDate || [];
+      const earningsTs = earningsDates.length > 0 ? (earningsDates[0].raw || null) : null;
+
+      if (marketCap || earningsTs) {
+        const result = { marketCap, earningsTs };
+        bwQuoteCache[sym] = result;
+        console.log('[BW quoteSummary ✓]', sym, 'mktCap:', marketCap, 'earningsTs:', earningsTs);
+        return result;
+      }
+    } catch(e) { console.debug('[BW quoteSummary fail]', sym, e.message); }
+  }
+
+  // ── Strategy 2: v8/chart meta — has marketCap but rarely earningsTimestamp ──
+  const chartUrls = [
+    CP + encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${enc}?interval=1d&range=1d`),
+    CP + encodeURIComponent(`https://query2.finance.yahoo.com/v8/finance/chart/${enc}?interval=1d&range=1d`),
+  ];
+  for (const url of chartUrls) {
     try {
       const r = await fetch(url, { cache: 'no-store' });
       if (!r.ok) continue;
       const j = await r.json();
       const meta = j?.chart?.result?.[0]?.meta || {};
       const marketCap = meta.marketCap || null;
-      // earningsTimestamp can be in meta.earningsTimestamp or not
       const earningsTs = meta.earningsTimestamp || null;
-      const result = { marketCap, earningsTs };
-      bwQuoteCache[sym] = result;
-      return result;
-    } catch(e) { /* try next */ }
+      if (marketCap) {
+        const result = { marketCap, earningsTs };
+        bwQuoteCache[sym] = result;
+        console.log('[BW chart meta ✓]', sym, 'mktCap:', marketCap);
+        return result;
+      }
+    } catch(e) {}
   }
-  // Fallback: try v7/quote for earningsTimestamp
+
+  // ── Strategy 3: v7/quote — earningsTimestamp + marketCap ──
   const qUrls = [
-    CP + encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${enc}&fields=marketCap,earningsTimestamp`),
-    CP + encodeURIComponent(`https://query2.finance.yahoo.com/v7/finance/quote?symbols=${enc}&fields=marketCap,earningsTimestamp`),
+    CP + encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${enc}`),
+    CP + encodeURIComponent(`https://query2.finance.yahoo.com/v7/finance/quote?symbols=${enc}`),
   ];
   for (const url of qUrls) {
     try {
@@ -2773,11 +2818,15 @@ async function fetchBWQuoteData(sym) {
       if (!r.ok) continue;
       const j = await r.json();
       const q = j?.quoteResponse?.result?.[0] || {};
-      const result = { marketCap: q.marketCap || null, earningsTs: q.earningsTimestamp || null };
+      const marketCap = q.marketCap || null;
+      const earningsTs = q.earningsTimestamp || q.earningsTimestampStart || null;
+      const result = { marketCap, earningsTs };
       bwQuoteCache[sym] = result;
+      console.log('[BW v7/quote ✓]', sym, 'mktCap:', marketCap, 'earningsTs:', earningsTs);
       return result;
     } catch(e) {}
   }
+
   const fallback = { marketCap: null, earningsTs: null };
   bwQuoteCache[sym] = fallback;
   return fallback;
@@ -2785,17 +2834,17 @@ async function fetchBWQuoteData(sym) {
 
 function fmtMktCap(v) {
   if (!v || v <= 0) return '–';
-  if (v >= 1e12) return '$' + (v/1e12).toFixed(2) + 'T';
-  if (v >= 1e9)  return '$' + (v/1e9).toFixed(2) + 'B';
-  if (v >= 1e6)  return '$' + (v/1e6).toFixed(1) + 'M';
-  return '$' + v.toLocaleString();
+  if (v >= 1e12) return (v/1e12).toFixed(2) + 'T';
+  if (v >= 1e9)  return (v/1e9).toFixed(3) + 'B';
+  if (v >= 1e6)  return (v/1e6).toFixed(1) + 'M';
+  return v.toLocaleString();
 }
 
 function fmtEarningsDate(ts) {
   if (!ts || ts <= 0) return '–';
   const d = new Date(ts * 1000);
   const now = new Date();
-  // Show only if in future or within last 7 days
+  // Show if within last 7 days or any future date
   if (d < new Date(now - 7*24*3600*1000)) return '–';
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
@@ -2806,14 +2855,14 @@ function renderBestWorst() {
   const worstEl = document.getElementById('worst5-list');
   if (!bestEl || !worstEl) return;
 
-  // Collect all tickers with % chg
+  // Collect all tickers with price + % chg
   const all = [...LISTS.watchlist].map(t => {
-    const lv = liveData[t.sym];
-    const d  = getPrice(t.sym) || { price:t.price||0, prev:t.prev||0 };
+    const lv    = liveData[t.sym];
+    const d     = getPrice(t.sym) || { price:t.price||0, prev:t.prev||0 };
     const price = (lv && lv.price > 0) ? lv.price : d.price;
     const prev  = (lv && lv.prev  > 0) ? lv.prev  : d.prev;
     const pct   = prev > 0 ? (price - prev) / prev * 100 : 0;
-    return { sym:t.sym, name:t.name||t.sym, pct };
+    return { sym:t.sym, name:t.name||t.sym, price, pct };
   }).filter(t => t.pct !== 0);
 
   if (all.length === 0) {
@@ -2826,19 +2875,23 @@ function renderBestWorst() {
   const best5  = sorted.slice(0, 5);
   const worst5 = sorted.slice(-5).reverse();
 
-  const yfLink = sym => `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
+  const yfLink  = sym => `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
   const newsLink = sym => `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/news/`;
 
+  const loadingSpan = `<span style="color:var(--text-dim);font-size:9px;opacity:0.5;">…</span>`;
+
   const row = (t, cls) => {
-    const cached = bwQuoteCache[t.sym] || {};
+    const cached   = bwQuoteCache[t.sym] || {};
     const earnings = fmtEarningsDate(cached.earningsTs);
     const mcap     = fmtMktCap(cached.marketCap);
+    const hasData  = !!(cached.marketCap || cached.earningsTs);
     return `<div class="bw-row">
-      <span class="bw-sym"><a href="${yfLink(t.sym)}" target="_blank" title="Yahoo Finance: ${t.sym}">${t.sym} ↗</a></span>
+      <span class="bw-sym"><a href="${yfLink(t.sym)}" target="_blank" title="Open ${t.sym} on Yahoo Finance">${t.sym} ↗</a></span>
       <span class="bw-name" title="${t.name}">${t.name}</span>
+      <span class="bw-close" title="Last Close">$${t.price > 0 ? t.price.toFixed(2) : '–'}</span>
       <span class="bw-pct ${cls}">${t.pct>=0?'+':''}${t.pct.toFixed(2)}%</span>
-      <span class="bw-earnings" title="Earnings Date (est.)">${earnings === '–' ? '<span style="opacity:0.4">–</span>' : '📅 ' + earnings}</span>
-      <span class="bw-mcap" title="Market Cap">${mcap === '–' ? '<span style="opacity:0.4">–</span>' : mcap}</span>
+      <span class="bw-earnings" title="Earnings Date (est.)">${!hasData ? loadingSpan : (earnings === '–' ? '<span style="opacity:0.35">–</span>' : '📅 ' + earnings)}</span>
+      <span class="bw-mcap" title="Market Cap (intraday)">${!hasData ? loadingSpan : (mcap === '–' ? '<span style="opacity:0.35">–</span>' : mcap)}</span>
       <a class="bw-news-btn" href="${newsLink(t.sym)}" target="_blank" title="Latest news for ${t.sym}">📰 News</a>
     </div>`;
   };
@@ -2846,20 +2899,13 @@ function renderBestWorst() {
   bestEl.innerHTML  = best5.map(t  => row(t, 'up'  )).join('');
   worstEl.innerHTML = worst5.map(t => row(t, 'down')).join('');
 
-  // Async: fetch earnings + market cap for displayed tickers, then re-render
+  // Async: fetch earnings + mktCap for displayed tickers, then re-render rows
   const toFetch = [...new Set([...best5, ...worst5].map(t => t.sym))];
   (async () => {
-    let anyNew = false;
-    await Promise.allSettled(toFetch.map(async sym => {
-      const before = bwQuoteCache[sym];
-      const data = await fetchBWQuoteData(sym);
-      if (data !== before) anyNew = true;
-    }));
-    if (anyNew) {
-      // Re-render with fresh data (no re-fetch of prices)
-      bestEl.innerHTML  = best5.map(t  => row(t, 'up'  )).join('');
-      worstEl.innerHTML = worst5.map(t => row(t, 'down')).join('');
-    }
+    await Promise.allSettled(toFetch.map(sym => fetchBWQuoteData(sym)));
+    // Re-render with enriched data
+    bestEl.innerHTML  = best5.map(t  => row(t, 'up'  )).join('');
+    worstEl.innerHTML = worst5.map(t => row(t, 'down')).join('');
   })();
 }
 
