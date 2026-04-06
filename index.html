@@ -1112,9 +1112,7 @@ body.light-theme .alert-item.oil-alert-bar {
         </div>
       </div>
       <div class="header-actions">
-        <div class="last-updated manager-only" id="last-updated-wrap" style="display:none;">Fetched: <span id="last-updated">–</span></div>
-        <button class="btn-sync-now manager-only" id="sync-btn" onclick="syncNow()" title="Manager: sync anytime" style="display:none;">⟳ Prices</button>
-        <span class="fb-status offline manager-only" id="fb-status" style="display:none;cursor:pointer;" onclick="dbSyncNow()" title="Firebase DB status — click to sync"><span class="fb-dot"></span></span>
+
         <button class="btn-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
         <button class="btn btn-manager" id="manager-btn" onclick="onManagerBtnClick()">⚙ Manager</button>
       </div>
@@ -2282,13 +2280,9 @@ function activateManager() {
   document.getElementById('tab-btn-portfolio').style.display = '';
   document.getElementById('tab-btn-renewal').style.display = '';
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
-  // Show manager-only header controls
-  const _mgrShowMap = { 'last-updated-wrap':'flex', 'sync-btn':'inline-block', 'fb-status':'inline-flex' };
-  Object.entries(_mgrShowMap).forEach(([id, disp]) => {
-    const el = document.getElementById(id); if (el) el.style.display = disp;
-  });
+
   renderAll();
-  updateNewsReloadBtn(); updateSyncBtn();
+  updateNewsReloadBtn();
   showToast('success','🔓','Manager Mode activated.');
 }
 async function lockManager() {
@@ -2300,14 +2294,11 @@ async function lockManager() {
   document.getElementById('manager-btn').textContent='⚙ Manager';
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
-  // Hide manager-only header controls
-  ['last-updated-wrap','sync-btn','fb-status'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.style.display='none';
-  });
+
   renderAll();
   lockPortfolio();
   lockRenewal();
-  updateNewsReloadBtn(); updateSyncBtn();
+  updateNewsReloadBtn();
   if (saved) {
     showToast('success','☁','Changes synced to Firebase. Manager locked.');
   } else {
@@ -2761,7 +2752,6 @@ async function syncNow() {
 
 // Restore last sync time across page reloads (kept for compatibility)
 (function restoreLastSync() {
-  updateSyncBtn();
 })();
 
 async function fetchAllPrices() {
@@ -2783,8 +2773,6 @@ async function fetchAllPrices() {
   console.log('[fetchAllPrices] done:', Object.keys(fetched).length, '/', allSyms.length, 'symbols');
   updateSyncBtn();
   renderAll();
-  const ts = new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Hong_Kong',hour12:false})+' HKT';
-  document.getElementById('last-updated').textContent = ts;
   setTimeout(checkTableOverflow, 100);
   checkAlerts();
 }
@@ -5060,7 +5048,7 @@ renderAll();
 
 (async()=>{
   try { await fetchAllPrices(); } catch(e) {
-    document.getElementById('last-updated').textContent='Seed data (fetch failed)';
+    console.warn('Seed data — fetch failed');
   }
   scheduleNextAutoRefresh();
   scheduleNewsRefresh(); // auto news at 09:00 HKT daily
