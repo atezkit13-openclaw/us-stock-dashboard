@@ -858,23 +858,47 @@ body.light-theme .alert-item.oil-alert-bar {
 }
 .rstat-label { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); }
 .rstat-val   { font-size:20px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
-.renewal-status-badge {
-  display:inline-block; font-size:9px; font-weight:700; padding:2px 7px; border-radius:3px;
-  letter-spacing:0.06em; white-space:nowrap;
+
+/* Renewal filter buttons */
+.ren-filter-btn {
+  padding:4px 14px; border-radius:20px; border:1px solid var(--border);
+  background:var(--bg-card); color:var(--text-secondary);
+  cursor:pointer; font-size:11px; font-weight:600; transition:all 0.15s; white-space:nowrap;
 }
-.rs-active   { background:rgba(16,185,129,0.12); color:var(--green);       border:1px solid rgba(16,185,129,0.3); }
-.rs-atrisk   { background:rgba(239,68,68,0.12);  color:var(--red);         border:1px solid rgba(239,68,68,0.3); }
-.rs-renewed  { background:rgba(59,130,246,0.12); color:var(--accent-blue); border:1px solid rgba(59,130,246,0.3); }
-.rs-lost     { background:rgba(71,85,105,0.15);  color:var(--text-dim);    border:1px solid var(--border); }
-.rs-pending  { background:rgba(245,158,11,0.12); color:var(--amber);       border:1px solid rgba(245,158,11,0.3); }
-.renewal-days-badge {
-  display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
-  white-space:nowrap; font-variant-numeric:tabular-nums;
-}
-.rdays-urgent  { background:rgba(239,68,68,0.15);  color:var(--red);   border:1px solid rgba(239,68,68,0.3); }
-.rdays-soon    { background:rgba(245,158,11,0.15); color:var(--amber); border:1px solid rgba(245,158,11,0.3); }
-.rdays-normal  { background:rgba(16,185,129,0.1);  color:var(--green); border:1px solid rgba(16,185,129,0.2); }
-.rdays-past    { background:rgba(71,85,105,0.15);  color:var(--text-dim); border:1px solid var(--border); }
+.ren-filter-btn:hover { border-color:var(--border-bright); color:var(--text-primary); }
+.ren-filter-btn.active { background:rgba(59,130,246,0.15); border-color:var(--accent-blue); color:var(--accent-blue); }
+.ren-filter-btn.ren-won.active { background:rgba(16,185,129,0.15); border-color:var(--green); color:var(--green); }
+.ren-filter-btn.ren-fc.active  { background:rgba(59,130,246,0.15); border-color:var(--accent-blue); color:var(--accent-blue); }
+.ren-filter-btn.ren-up.active  { background:rgba(245,158,11,0.15); border-color:var(--amber); color:var(--amber); }
+
+/* Day countdown badges */
+.ren-overdue { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
+  background:rgba(239,68,68,0.2); color:var(--red); border:1px solid rgba(239,68,68,0.4); white-space:nowrap; }
+.ren-today   { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
+  background:rgba(239,68,68,0.25); color:#fff; border:1px solid var(--red); white-space:nowrap; animation:pulse 1s infinite; }
+.ren-urgent  { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
+  background:rgba(239,68,68,0.12); color:var(--red); border:1px solid rgba(239,68,68,0.3); white-space:nowrap; }
+.ren-soon    { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
+  background:rgba(245,158,11,0.12); color:var(--amber); border:1px solid rgba(245,158,11,0.3); white-space:nowrap; }
+.ren-normal  { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
+  background:rgba(16,185,129,0.08); color:var(--green); border:1px solid rgba(16,185,129,0.2); white-space:nowrap; }
+
+/* SFDC inline link buttons — match reference design */
+.sfdc-btn { display:inline-block; padding:3px 7px; border-radius:4px; font-size:11px;
+  text-decoration:none; margin:1px 1px; font-weight:600; white-space:nowrap; transition:all 0.12s; }
+.sfdc-opp   { background:rgba(16,185,129,0.12);  color:var(--green);       border:1px solid rgba(16,185,129,0.25); }
+.sfdc-opp:hover  { background:rgba(16,185,129,0.22); }
+.sfdc-acct  { background:rgba(59,130,246,0.12);  color:var(--accent-blue); border:1px solid rgba(59,130,246,0.25); }
+.sfdc-acct:hover { background:rgba(59,130,246,0.22); }
+.sfdc-quote { background:rgba(245,158,11,0.12);  color:var(--amber);       border:1px solid rgba(245,158,11,0.25); }
+.sfdc-quote:hover{ background:rgba(245,158,11,0.22); }
+.sfdc-disabled { display:inline-block; padding:3px 7px; border-radius:4px; font-size:11px;
+  color:var(--text-dim); margin:1px 1px; opacity:0.45; }
+
+/* High-value row highlight */
+#renewal-data-table tr.high-value td { background:rgba(59,130,246,0.04); }
+#renewal-data-table tr.high-value { border-left:2px solid var(--accent-blue); }
+#renewal-data-table tr.renewal-row:hover td { background:var(--bg-card-hover); }
 </style>
   <!-- Firebase SDK — inlined to avoid CSP issues on GitHub Pages -->
   <script>
@@ -1041,57 +1065,7 @@ body.light-theme .alert-item.oil-alert-bar {
   </div>
 </div>
 
-<!-- ═══ RENEWAL ADD/EDIT MODAL ═══ -->
-<div class="modal-overlay" id="renewal-modal">
-  <div class="modal" style="max-width:500px;">
-    <button class="modal-close" onclick="closeModal('renewal-modal')">✕</button>
-    <div class="modal-title" id="renewal-modal-title">➕ Add Renewal</div>
-    <div class="modal-sub">Track a customer subscription renewal</div>
-    <div class="form-row">
-      <div class="form-label">Customer Name *</div>
-      <input class="form-input" id="ren-customer" placeholder="e.g. Cathay Pacific">
-    </div>
-    <div class="form-row-2">
-      <div class="form-row">
-        <div class="form-label">Sales Rep</div>
-        <input class="form-input" id="ren-rep" placeholder="e.g. zheung">
-      </div>
-      <div class="form-row">
-        <div class="form-label">Renewal Date *</div>
-        <input class="form-input" id="ren-date" type="date">
-      </div>
-    </div>
-    <div class="form-row-2">
-      <div class="form-row">
-        <div class="form-label">ARR (USD)</div>
-        <input class="form-input" id="ren-arr" type="number" min="0" placeholder="e.g. 85000">
-      </div>
-      <div class="form-row">
-        <div class="form-label">Status</div>
-        <select class="form-select" id="ren-status">
-          <option value="Active">Active</option>
-          <option value="At Risk">At Risk</option>
-          <option value="Renewed">Renewed</option>
-          <option value="Pending">Pending</option>
-          <option value="Lost">Lost</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-label">Products</div>
-      <input class="form-input" id="ren-products" placeholder="e.g. VMDR, WAS, Patch Management">
-    </div>
-    <div class="form-row">
-      <div class="form-label">Notes</div>
-      <input class="form-input" id="ren-notes" placeholder="e.g. Multi-year deal, upsell opportunity">
-    </div>
-    <div class="pin-error-msg" id="renewal-modal-error"></div>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal('renewal-modal')">Cancel</button>
-      <button class="btn-primary" id="renewal-save-btn" onclick="saveRenewal()">Add</button>
-    </div>
-  </div>
-</div>
+<!-- renewal modal removed — tab now uses static xlsx-sourced data -->
 
 <div class="toast" id="toast">
   <span id="toast-icon"></span>
@@ -1318,75 +1292,295 @@ body.light-theme .alert-item.oil-alert-bar {
   <div id="pf-root" style="padding:20px 0; display:none;"></div>
 </div>
 
-<!-- ═══ RENEWAL TAB ═══ -->
+<!-- ═══ RENEWAL TAB — Qualys Subscription Renewal Pipeline ═══ -->
 <div class="tab-pane" id="tab-renewal">
   <!-- Lock gate -->
   <div id="renewal-lock-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;">
     <div style="font-size:64px;opacity:0.4;">🔒</div>
-    <div style="font-size:14px;color:var(--text-dim);margin-top:16px;">Manager Mode required</div>
+    <div style="font-size:14px;color:var(--text-dim);margin-top:16px;">Manager Mode required to access Renewal Pipeline</div>
   </div>
+
   <!-- Actual content -->
   <div id="renewal-root" style="padding:20px 0;display:none;">
 
-    <!-- Header row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;">
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;">
       <div>
-        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">🔄 Renewal Pipeline</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Track upcoming subscription renewals · Manager only</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">🔄 Qualys Renewal Pipeline — Q1/Q2 2026</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">
+          Q2 accounts + Q1 overdue (excl. Close Lost) · Sorted by renewal date · Source: New_Customer_Renewal_DB
+          <span style="margin-left:10px;color:var(--accent-cyan);">Generated: 2026-04-06</span>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        <button class="btn-sync-now" onclick="openAddRenewal()" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.35);color:var(--green);">+ Add Renewal</button>
-        <button class="btn-sync-now" id="renewal-export-btn" onclick="exportRenewalCSV()" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">⬇ Export CSV</button>
+      <button class="btn-sync-now" onclick="exportRenewalCSV()" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">⬇ Export CSV</button>
+    </div>
+
+    <!-- Summary stat cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:20px;">
+      <div class="renewal-stat-card" style="border-left:3px solid var(--accent-blue);">
+        <div class="rstat-label">Total Pipeline ASV</div>
+        <div class="rstat-val">$470,713</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">17 accounts</div>
+      </div>
+      <div class="renewal-stat-card" style="border-left:3px solid var(--green);">
+        <div class="rstat-label">✅ Close Won</div>
+        <div class="rstat-val" style="color:var(--green);">3</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$26,556</div>
+      </div>
+      <div class="renewal-stat-card" style="border-left:3px solid var(--accent-blue);">
+        <div class="rstat-label">🔵 Forecast</div>
+        <div class="rstat-val" style="color:var(--accent-blue);">9</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$387,699</div>
+      </div>
+      <div class="renewal-stat-card" style="border-left:3px solid var(--amber);">
+        <div class="rstat-label">🟡 Upside</div>
+        <div class="rstat-val" style="color:var(--amber);">5</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$56,457</div>
       </div>
     </div>
 
-    <!-- Stats bar -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;" id="renewal-stats-bar">
-      <div class="renewal-stat-card" id="rstat-total"><div class="rstat-label">Total</div><div class="rstat-val" id="rstat-total-val">–</div></div>
-      <div class="renewal-stat-card" id="rstat-due30"><div class="rstat-label">Due ≤ 30 Days</div><div class="rstat-val" style="color:var(--red);" id="rstat-due30-val">–</div></div>
-      <div class="renewal-stat-card" id="rstat-due90"><div class="rstat-label">Due ≤ 90 Days</div><div class="rstat-val" style="color:var(--amber);" id="rstat-due90-val">–</div></div>
-      <div class="renewal-stat-card" id="rstat-arr"><div class="rstat-label">Total ARR (USD)</div><div class="rstat-val" style="color:var(--accent-cyan);" id="rstat-arr-val">–</div></div>
-    </div>
-
-    <!-- Filter + sort bar -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
-      <input id="renewal-search" placeholder="🔍  Search customer / rep…" oninput="renderRenewalTable()"
+    <!-- Filter bar -->
+    <div class="renewal-filter-bar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+      <button class="ren-filter-btn active" onclick="filterRenewalStatus('all',this)">All (17)</button>
+      <button class="ren-filter-btn ren-won" onclick="filterRenewalStatus('close_won',this)">✅ Close Won (3)</button>
+      <button class="ren-filter-btn ren-fc" onclick="filterRenewalStatus('forecast',this)">🔵 Forecast (9)</button>
+      <button class="ren-filter-btn ren-up" onclick="filterRenewalStatus('upside',this)">🟡 Upside (5)</button>
+      <span style="width:1px;height:20px;background:var(--border);display:inline-block;margin:0 4px;"></span>
+      <button class="filter-btn" onclick="filterRenewalMonth('April',this)">April (4)</button>
+    <button class="filter-btn" onclick="filterRenewalMonth('June',this)">June (6)</button>
+    <button class="filter-btn" onclick="filterRenewalMonth('May',this)">May (7)</button>
+      <input id="renewal-search-inline" placeholder="🔍 Search…" oninput="filterRenewalSearch(this.value)"
         style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);
-               font-size:12px;padding:7px 12px;border-radius:6px;outline:none;width:220px;font-family:inherit;">
-      <select id="renewal-filter-status" onchange="renderRenewalTable()"
-        style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);
-               font-size:11px;padding:6px 10px;border-radius:6px;outline:none;font-family:inherit;">
-        <option value="all">All Statuses</option>
-        <option value="Active">Active</option>
-        <option value="At Risk">At Risk</option>
-        <option value="Renewed">Renewed</option>
-        <option value="Lost">Lost</option>
-        <option value="Pending">Pending</option>
-      </select>
-      <select id="renewal-filter-rep" onchange="renderRenewalTable()"
-        style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);
-               font-size:11px;padding:6px 10px;border-radius:6px;outline:none;font-family:inherit;">
-        <option value="all">All Reps</option>
-      </select>
-      <span style="font-size:10px;color:var(--text-dim);margin-left:auto;" id="renewal-count-label"></span>
+               font-size:11px;padding:5px 10px;border-radius:20px;outline:none;width:160px;font-family:inherit;margin-left:auto;">
+      <span id="renewal-visible-count" style="font-size:10px;color:var(--text-dim);white-space:nowrap;"></span>
     </div>
 
     <!-- Table -->
     <div class="scroll-hint">← swipe to see all columns →</div>
     <div class="table-wrap">
-      <table id="renewal-table" style="min-width:900px;">
+      <table id="renewal-data-table" style="min-width:900px;">
         <thead><tr>
-          <th style="cursor:pointer;" onclick="setRenewalSort('customer')">Customer ↕</th>
-          <th style="cursor:pointer;" onclick="setRenewalSort('rep')">Rep ↕</th>
-          <th style="cursor:pointer;" onclick="setRenewalSort('date')">Renewal Date ↕</th>
-          <th style="cursor:pointer;" onclick="setRenewalSort('arr')">ARR (USD) ↕</th>
-          <th>Products</th>
-          <th style="cursor:pointer;" onclick="setRenewalSort('status')">Status ↕</th>
-          <th>Notes</th>
-          <th class="mgr-col">Actions</th>
+          <th style="width:28px;">#</th>
+          <th>Customer</th>
+          <th style="white-space:nowrap;">Renewal Date</th>
+          <th>Status</th>
+          <th style="white-space:nowrap;">ASV (USD)</th>
+          <th>2026 Modules</th>
+          <th>Recent Activity</th>
+          <th>SFDC Links</th>
         </tr></thead>
-        <tbody id="renewal-tbody"></tbody>
+        <tbody id="renewal-data-tbody">
+<tr class="renewal-row" data-status="forecast" data-month="April">
+      <td style="color:#8b949e;font-size:11px;">1</td>
+      <td class="customer-name">ZTE Corporation</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-04-30</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 341d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$4,473</td>
+      <td class="modules-cell" style="font-size:11px;">- Express VMDR x 128</td>
+      <td class="history-cell">9 Feb - sent renewal quote to partner <span style="color:#484f58">|</span> 23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ejA3wIAE/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000014KZ9QQAW/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMSjIAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-513134</a></td>
+    </tr><tr class="renewal-row" data-status="upside" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">2</td>
+      <td class="customer-name">Legend World Technology Development Limited</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-05-11</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 330d overdue</span></div>
+      </td>
+      <td><span class="badge badge-yellow">🟡 Upside</span></td>
+      <td class="asv-cell">$3,845</td>
+      <td class="modules-cell" style="font-size:11px;">- Express WAS x 5</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000elVg4IAE/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000014GMYvQAO/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOcRIAX/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-514816</a></td>
+    </tr><tr class="renewal-row high-value" data-status="forecast" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">3</td>
+      <td class="customer-name">PCCW/HKT</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-05-14</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 327d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$184,958<br><span style="font-size:10px;color:#8b949e;">orig $109,172</span></td>
+      <td class="modules-cell" style="font-size:11px;">- Express WAS x 600<br>- Standard API x 1<br>- VS x 2</td>
+      <td class="history-cell">24 Mar - sent renewal quote to customer <span style="color:#484f58">|</span> 30 Mar - sent revised quote to customer</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f3sqPIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0011a00000SVytnAAD/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOyhIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-515098</a></td>
+    </tr><tr class="renewal-row" data-status="forecast" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">4</td>
+      <td class="customer-name">NTT Com Asia</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-05-16</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 325d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$3,818</td>
+      <td class="modules-cell" style="font-size:11px;">- Express WAS x 5</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f41x8IAA/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0011a00000JWCMLAA5/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFPn6IAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-515746</a></td>
+    </tr><tr class="renewal-row" data-status="upside" data-month="June">
+      <td style="color:#8b949e;font-size:11px;">5</td>
+      <td class="customer-name">MAESA BC SAS</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-06-18</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 292d overdue</span></div>
+      </td>
+      <td><span class="badge badge-yellow">🟡 Upside</span></td>
+      <td class="asv-cell">$5,898</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR x 136</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000YKuBXIA1/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000012KplcQAC/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OEv36IAD/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-495924</a></td>
+    </tr><tr class="renewal-row" data-status="upside" data-month="June">
+      <td style="color:#8b949e;font-size:11px;">6</td>
+      <td class="customer-name">CK Hutchison Holdings Limited</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-06-19</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 291d overdue</span></div>
+      </td>
+      <td><span class="badge badge-yellow">🟡 Upside</span></td>
+      <td class="asv-cell">$15,150</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR&CSAM x 1400</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template <span style="color:#484f58">|</span> 9 Apr - EBR meeting confirmed</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f721ZIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00001ODY1mQAH/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFYE9IAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-522278</a></td>
+    </tr><tr class="renewal-row" data-status="forecast" data-month="June">
+      <td style="color:#8b949e;font-size:11px;">7</td>
+      <td class="customer-name">Hundred Plus Corporation</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-06-20</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 290d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$1,646</td>
+      <td class="modules-cell" style="font-size:11px;">- Express WAS x 1</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template <span style="color:#484f58">|</span> 26 Feb - provided renewal quote for partner</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f6mhZIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00001LiYHOQA3/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWaHIAX/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-521007</a></td>
+    </tr><tr class="renewal-row high-value" data-status="forecast" data-month="June">
+      <td style="color:#8b949e;font-size:11px;">8</td>
+      <td class="customer-name">Crypto.com - Main</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-06-22</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 288d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$161,965</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR x 7500<br>- PM x 4000<br>- Enterprise API with CIPS Enabled</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f6qC5IAI/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFX3fIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-521373</a></td>
+    </tr><tr class="renewal-row" data-status="forecast" data-month="June">
+      <td style="color:#8b949e;font-size:11px;">9</td>
+      <td class="customer-name">Crypto.com - Nadex</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-06-22</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 288d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$8,982</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR x 900</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f7AC4IAM/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFZ9tIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-523195</a></td>
+    </tr><tr class="renewal-row" data-status="forecast" data-month="June">
+      <td style="color:#8b949e;font-size:11px;">10</td>
+      <td class="customer-name">SC Digital Solutions (Moxbank)</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2025-06-29</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 281d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$7,471</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR x 1536<br>- WAS x 5</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000YKtmjIAD/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000014IiHBQA0/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OEuVrIAL/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-495793</a></td>
+    </tr><tr class="renewal-row" data-status="forecast" data-month="April">
+      <td style="color:#8b949e;font-size:11px;">11</td>
+      <td class="customer-name">Information Technology Total Services</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-04-01</div>
+        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 5d overdue</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$10,733<br><span style="font-size:10px;color:#8b949e;">orig $9,984</span></td>
+      <td class="modules-cell" style="font-size:11px;">- WAS x 20<br>- WAS module fee<br>- VS x 1</td>
+      <td class="history-cell">30 Jan - sent renewal quote to partner <span style="color:#484f58">|</span> 23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><span class="sfdc-disabled">📊 Opp</span> <span class="sfdc-disabled">🏢 Acct</span> <span class="sfdc-disabled">📄 Q-508763</span></td>
+    </tr><tr class="renewal-row" data-status="close_won" data-month="April">
+      <td style="color:#8b949e;font-size:11px;">12</td>
+      <td class="customer-name">Brother International (HK) Limited</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-04-16</div>
+        <div style="margin-top:3px;"><span class="ren-urgent">10d</span></div>
+      </td>
+      <td><span class="badge badge-green">✅ Close Won</span></td>
+      <td class="asv-cell">$9,441<br><span style="font-size:10px;color:#8b949e;">orig $9,256</span></td>
+      <td class="modules-cell" style="font-size:11px;">- Express VMDR x 128<br>- Express PM x 128</td>
+      <td class="history-cell">2 Feb - provided renewal quote to customer <span style="color:#484f58">|</span> 11 Feb - received signed quote, closed won</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ej76SIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/001Kd00001Yy4bLIAR/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFKCPIA5/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-511297</a></td>
+    </tr><tr class="renewal-row" data-status="close_won" data-month="April">
+      <td style="color:#8b949e;font-size:11px;">13</td>
+      <td class="customer-name">Melco Resorts and Entertainment (Sri Lanka)</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-04-28</div>
+        <div style="margin-top:3px;"><span class="ren-soon">22d</span></div>
+      </td>
+      <td><span class="badge badge-green">✅ Close Won</span></td>
+      <td class="asv-cell">$15,861</td>
+      <td class="modules-cell" style="font-size:11px;">- POL x 1160<br>- VM x 1160<br>- VS x 3</td>
+      <td class="history-cell">6 Jan - year2 passthru, closed won</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ej9xKIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0011a00000JWCq5AAH/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMLnIAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-513046</a></td>
+    </tr><tr class="renewal-row" data-status="forecast" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">14</td>
+      <td class="customer-name">Canon Hongkong Company Limited</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-05-08</div>
+        <div style="margin-top:3px;"><span class="ren-soon">32d</span></div>
+      </td>
+      <td><span class="badge badge-blue">🔵 Forecast</span></td>
+      <td class="asv-cell">$3,653</td>
+      <td class="modules-cell" style="font-size:11px;">- Express WAS x 5</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template <span style="color:#484f58">|</span> 23 Mar - sent renewal quote to partner</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ejC7CIAU/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00001BN6qaQAD/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOBaIAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-514471</a></td>
+    </tr><tr class="renewal-row" data-status="close_won" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">15</td>
+      <td class="customer-name">Nan Shan General Insurance Company, Ltd.</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-05-21</div>
+        <div style="margin-top:3px;"><span class="ren-soon">45d</span></div>
+      </td>
+      <td><span class="badge badge-green">✅ Close Won</span></td>
+      <td class="asv-cell">$1,254</td>
+      <td class="modules-cell" style="font-size:11px;">- Express WAS x 50<br>- TruRisk VMDR x 32</td>
+      <td class="history-cell">6 Jan - extra 13th month for last year deal, closed won</td>
+      <td class="sfdc-cell"><span class="sfdc-disabled">📊 Opp</span> <span class="sfdc-disabled">🏢 Acct</span> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWpiIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-521202</a></td>
+    </tr><tr class="renewal-row" data-status="upside" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">16</td>
+      <td class="customer-name">Haitong International Securities Group Limited</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-05-26</div>
+        <div style="margin-top:3px;"><span class="ren-normal">50d</span></div>
+      </td>
+      <td><span class="badge badge-yellow">🟡 Upside</span></td>
+      <td class="asv-cell">$28,040</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR x 400<br>- TAS x 50</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><span class="sfdc-disabled">📊 Opp</span> <span class="sfdc-disabled">🏢 Acct</span> <span class="sfdc-disabled">📄 Q-517157</span></td>
+    </tr><tr class="renewal-row" data-status="upside" data-month="May">
+      <td style="color:#8b949e;font-size:11px;">17</td>
+      <td class="customer-name">Airstar Bank Limited</td>
+      <td>
+        <div style="font-weight:600;white-space:nowrap;">2026-05-26</div>
+        <div style="margin-top:3px;"><span class="ren-normal">50d</span></div>
+      </td>
+      <td><span class="badge badge-yellow">🟡 Upside</span></td>
+      <td class="asv-cell">$3,524</td>
+      <td class="modules-cell" style="font-size:11px;">- VMDR x 128</td>
+      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
+      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f5O2uIAE/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/001Kd00001qaly6IAA/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFRhJIAX/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-517435</a></td>
+    </tr>
+        </tbody>
       </table>
+    </div>
+
+    <div style="font-size:10px;color:var(--text-dim);margin-top:10px;text-align:right;">
+      ⚠ Upside ASV shown as Original Renewal Quota (confirmed ASV pending) · High-value rows (≥$50K) highlighted in blue
     </div>
 
   </div><!-- /renewal-root -->
@@ -3366,43 +3560,13 @@ function renderCryptoTable() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RENEWAL TAB — data, render, CRUD
+// RENEWAL TAB — static data from xlsx, filter + export only
 // ═══════════════════════════════════════════════════════════════
 
-const RENEWAL_VERSION = '20260406a';
-let RENEWALS = loadRenewals();
-
-function loadRenewals() {
-  try {
-    const v = localStorage.getItem('renewal_version');
-    const s = localStorage.getItem('renewal_data');
-    if (s && v === RENEWAL_VERSION) return JSON.parse(s);
-  } catch(e) {}
-  // Default sample data
-  return [
-    { id: genRenewId(), customer:'Cathay Pacific',   rep:'zheung', date:'2026-06-30', arr:120000, products:'VMDR, WAS, CSAM',           status:'Active',  notes:'Multi-year upsell potential via ETM' },
-    { id: genRenewId(), customer:'Dah Sing Bank',    rep:'zheung', date:'2026-05-15', arr:48000,  products:'VMDR, Patch Management',      status:'At Risk', notes:'Budget review in progress' },
-    { id: genRenewId(), customer:'A.S. Watson',      rep:'rlo',    date:'2026-07-31', arr:85000,  products:'VMDR, WAS, TotalCloud',        status:'Active',  notes:'ETM demo scheduled' },
-    { id: genRenewId(), customer:'HKJC',             rep:'rlo',    date:'2026-04-30', arr:210000, products:'VMDR, CSAM, Patch Management', status:'Pending', notes:'PO pending finance approval' },
-    { id: genRenewId(), customer:'Sample Co HK',     rep:'zheung', date:'2026-09-01', arr:32000,  products:'WAS',                          status:'Active',  notes:'' },
-  ];
-}
-
-function saveRenewals() {
-  localStorage.setItem('renewal_version', RENEWAL_VERSION);
-  localStorage.setItem('renewal_data', JSON.stringify(RENEWALS));
-}
-
-function genRenewId() {
-  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-}
-
-// Show/hide renewal tab based on manager state
+// Show/hide renewal tab — mirrors portfolio gate pattern
 function showRenewalContent() {
   document.getElementById('renewal-lock-gate').style.display = 'none';
   document.getElementById('renewal-root').style.display = 'block';
-  renderRenewalTable();
-  populateRepFilter();
 }
 function lockRenewal() {
   if (document.getElementById('tab-renewal').classList.contains('active')) {
@@ -3413,201 +3577,82 @@ function lockRenewal() {
   document.getElementById('tab-btn-renewal').style.display = 'none';
 }
 
-// Sort state
-let renewalSortCol = 'date';
-let renewalSortDir = 'asc';
+// ── Filter state ──────────────────────────────────────────────
+let _renStatusFilter = 'all';
+let _renMonthFilter  = 'all';
+let _renSearchVal    = '';
 
-function setRenewalSort(col) {
-  if (renewalSortCol === col) renewalSortDir = renewalSortDir === 'asc' ? 'desc' : 'asc';
-  else { renewalSortCol = col; renewalSortDir = col === 'arr' ? 'desc' : 'asc'; }
-  renderRenewalTable();
+function filterRenewalStatus(val, btn) {
+  _renStatusFilter = val;
+  // Reset month filter when changing status
+  _renMonthFilter = 'all';
+  document.querySelectorAll('.ren-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  _applyRenewalFilters();
 }
 
-function populateRepFilter() {
-  const sel = document.getElementById('renewal-filter-rep');
-  if (!sel) return;
-  const reps = [...new Set(RENEWALS.map(r => r.rep).filter(Boolean))].sort();
-  // Keep existing 'all' option, rebuild the rest
-  while (sel.options.length > 1) sel.remove(1);
-  reps.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
+function filterRenewalMonth(val, btn) {
+  _renMonthFilter = (_renMonthFilter === val) ? 'all' : val; // toggle
+  // Clear status filter active state but keep status
+  document.querySelectorAll('.ren-filter-btn').forEach(b => {
+    if (!b.getAttribute('onclick')?.includes('filterRenewalStatus')) {
+      b.classList.remove('active');
+    }
+  });
+  if (btn) btn.classList.toggle('active', _renMonthFilter !== 'all');
+  _applyRenewalFilters();
 }
 
-function renewalStatusClass(status) {
-  const map = { 'Active':'rs-active','At Risk':'rs-atrisk','Renewed':'rs-renewed','Lost':'rs-lost','Pending':'rs-pending' };
-  return map[status] || 'rs-pending';
+function filterRenewalSearch(val) {
+  _renSearchVal = (val || '').toLowerCase().trim();
+  _applyRenewalFilters();
 }
 
-function renewalDaysLabel(dateStr) {
-  if (!dateStr) return '';
-  const d   = new Date(dateStr);
-  const now = new Date(); now.setHours(0,0,0,0);
-  const diff = Math.round((d - now) / 86400000);
-  if (diff < 0)    return `<span class="renewal-days-badge rdays-past">${Math.abs(diff)}d ago</span>`;
-  if (diff === 0)  return `<span class="renewal-days-badge rdays-urgent">TODAY</span>`;
-  if (diff <= 30)  return `<span class="renewal-days-badge rdays-urgent">${diff}d</span>`;
-  if (diff <= 90)  return `<span class="renewal-days-badge rdays-soon">${diff}d</span>`;
-  return `<span class="renewal-days-badge rdays-normal">${diff}d</span>`;
-}
+function _applyRenewalFilters() {
+  const rows = document.querySelectorAll('#renewal-data-tbody tr.renewal-row');
+  let visible = 0;
+  rows.forEach(tr => {
+    const st    = tr.dataset.status  || '';
+    const mo    = tr.dataset.month   || '';
+    const text  = tr.textContent.toLowerCase();
 
-function fmtARR(v) {
-  if (!v && v !== 0) return '–';
-  return '$' + Number(v).toLocaleString();
-}
+    const statusOk = _renStatusFilter === 'all' || st === _renStatusFilter;
+    const monthOk  = _renMonthFilter  === 'all' || mo === _renMonthFilter;
+    const searchOk = !_renSearchVal   || text.includes(_renSearchVal);
 
-function renderRenewalTable() {
-  const tbody = document.getElementById('renewal-tbody');
-  if (!tbody) return;
-
-  const search     = (document.getElementById('renewal-search')?.value || '').toLowerCase();
-  const filterSt   = document.getElementById('renewal-filter-status')?.value || 'all';
-  const filterRep  = document.getElementById('renewal-filter-rep')?.value || 'all';
-
-  let data = RENEWALS.filter(r => {
-    if (filterSt  !== 'all' && r.status !== filterSt)  return false;
-    if (filterRep !== 'all' && r.rep    !== filterRep)  return false;
-    if (search && !((r.customer||'').toLowerCase().includes(search) || (r.rep||'').toLowerCase().includes(search) || (r.products||'').toLowerCase().includes(search))) return false;
-    return true;
+    const show = statusOk && monthOk && searchOk;
+    tr.style.display = show ? '' : 'none';
+    if (show) visible++;
   });
 
-  // Sort
-  data.sort((a,b) => {
-    let va, vb;
-    if      (renewalSortCol === 'customer') { va = (a.customer||'').toLowerCase(); vb = (b.customer||'').toLowerCase(); }
-    else if (renewalSortCol === 'rep')      { va = (a.rep||'').toLowerCase();      vb = (b.rep||'').toLowerCase(); }
-    else if (renewalSortCol === 'date')     { va = a.date||'';                     vb = b.date||''; }
-    else if (renewalSortCol === 'arr')      { va = Number(a.arr)||0;               vb = Number(b.arr)||0; }
-    else if (renewalSortCol === 'status')   { va = a.status||'';                   vb = b.status||''; }
-    else { va = a.customer||''; vb = b.customer||''; }
-    if (va < vb) return renewalSortDir === 'asc' ? -1 : 1;
-    if (va > vb) return renewalSortDir === 'asc' ?  1 : -1;
-    return 0;
-  });
-
-  // Stats
-  const now = new Date(); now.setHours(0,0,0,0);
-  const allActive = RENEWALS.filter(r => r.status !== 'Lost' && r.status !== 'Renewed');
-  const due30  = allActive.filter(r => { const d = new Date(r.date||''); return (d-now)/86400000 <= 30; }).length;
-  const due90  = allActive.filter(r => { const d = new Date(r.date||''); return (d-now)/86400000 <= 90; }).length;
-  const totalARR = RENEWALS.reduce((s,r) => s + (Number(r.arr)||0), 0);
-  document.getElementById('rstat-total-val').textContent  = RENEWALS.length;
-  document.getElementById('rstat-due30-val').textContent  = due30;
-  document.getElementById('rstat-due90-val').textContent  = due90;
-  document.getElementById('rstat-arr-val').textContent    = '$' + (totalARR/1000).toFixed(0) + 'K';
-  document.getElementById('renewal-count-label').textContent = `Showing ${data.length} of ${RENEWALS.length}`;
-
-  if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-dim);font-size:12px;">No renewals match the current filter.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = data.map(r => {
-    const daysHtml   = renewalDaysLabel(r.date);
-    const statusHtml = `<span class="renewal-status-badge ${renewalStatusClass(r.status)}">${r.status}</span>`;
-    const dateDisp   = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '–';
-    const products   = (r.products||'–').split(',').map(p=>`<span class="ticker-tag">${p.trim()}</span>`).join('');
-    return `<tr>
-      <td style="font-weight:600;font-size:12px;">${r.customer||'–'}</td>
-      <td><span style="font-size:11px;color:var(--text-secondary);">${r.rep||'–'}</span></td>
-      <td>
-        <div style="font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;">${dateDisp}</div>
-        <div style="margin-top:3px;">${daysHtml}</div>
-      </td>
-      <td style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent-cyan);">${fmtARR(r.arr)}</td>
-      <td><div class="ticker-tags" style="flex-wrap:wrap;gap:3px;max-width:200px;">${products}</div></td>
-      <td>${statusHtml}</td>
-      <td style="font-size:11px;color:var(--text-secondary);max-width:180px;white-space:normal;line-height:1.4;">${r.notes||'–'}</td>
-      <td><div class="mgr-actions" style="display:flex;">
-        <button class="btn-edit-row" onclick="openEditRenewal('${r.id}')">✏</button>
-        <button class="btn-del-row"  onclick="deleteRenewal('${r.id}')">✕</button>
-      </div></td>
-    </tr>`;
-  }).join('');
+  // Update visible count label
+  const lbl = document.getElementById('renewal-visible-count');
+  if (lbl) lbl.textContent = `Showing ${visible} of ${rows.length}`;
 }
 
-// ── CRUD ───────────────────────────────────────────────────────
-let editingRenewalId = null;
-
-function openAddRenewal() {
-  editingRenewalId = null;
-  document.getElementById('renewal-modal-title').textContent = '➕ Add Renewal';
-  document.getElementById('renewal-save-btn').textContent = 'Add';
-  document.getElementById('ren-customer').value  = '';
-  document.getElementById('ren-rep').value       = '';
-  document.getElementById('ren-date').value      = '';
-  document.getElementById('ren-arr').value       = '';
-  document.getElementById('ren-products').value  = '';
-  document.getElementById('ren-notes').value     = '';
-  document.getElementById('ren-status').value    = 'Active';
-  document.getElementById('renewal-modal-error').textContent = '';
-  openModal('renewal-modal');
-  setTimeout(() => document.getElementById('ren-customer').focus(), 120);
-}
-
-function openEditRenewal(id) {
-  const r = RENEWALS.find(x => x.id === id);
-  if (!r) return;
-  editingRenewalId = id;
-  document.getElementById('renewal-modal-title').textContent = '✏ Edit Renewal';
-  document.getElementById('renewal-save-btn').textContent = 'Save';
-  document.getElementById('ren-customer').value  = r.customer || '';
-  document.getElementById('ren-rep').value       = r.rep      || '';
-  document.getElementById('ren-date').value      = r.date     || '';
-  document.getElementById('ren-arr').value       = r.arr      || '';
-  document.getElementById('ren-products').value  = r.products || '';
-  document.getElementById('ren-notes').value     = r.notes    || '';
-  document.getElementById('ren-status').value    = r.status   || 'Active';
-  document.getElementById('renewal-modal-error').textContent = '';
-  openModal('renewal-modal');
-  setTimeout(() => document.getElementById('ren-customer').focus(), 120);
-}
-
-function saveRenewal() {
-  const customer = document.getElementById('ren-customer').value.trim();
-  const date     = document.getElementById('ren-date').value.trim();
-  if (!customer) { document.getElementById('renewal-modal-error').textContent = 'Customer name is required.'; return; }
-  if (!date)     { document.getElementById('renewal-modal-error').textContent = 'Renewal date is required.'; return; }
-
-  const entry = {
-    id:       editingRenewalId || genRenewId(),
-    customer,
-    rep:      document.getElementById('ren-rep').value.trim(),
-    date,
-    arr:      parseFloat(document.getElementById('ren-arr').value) || 0,
-    products: document.getElementById('ren-products').value.trim(),
-    status:   document.getElementById('ren-status').value,
-    notes:    document.getElementById('ren-notes').value.trim(),
-  };
-
-  if (editingRenewalId) {
-    const idx = RENEWALS.findIndex(x => x.id === editingRenewalId);
-    if (idx >= 0) RENEWALS[idx] = entry;
-  } else {
-    RENEWALS.push(entry);
-  }
-  saveRenewals();
-  populateRepFilter();
-  renderRenewalTable();
-  closeModal('renewal-modal');
-  showToast('success', '✅', editingRenewalId ? 'Renewal updated.' : 'Renewal added.');
-}
-
-function deleteRenewal(id) {
-  if (!confirm('Remove this renewal record?')) return;
-  RENEWALS = RENEWALS.filter(r => r.id !== id);
-  saveRenewals();
-  renderRenewalTable();
-  showToast('info', '🗑', 'Renewal removed.');
-}
-
+// ── CSV export — reads from rendered table DOM ────────────────
 function exportRenewalCSV() {
-  const headers = ['Customer','Rep','Renewal Date','ARR (USD)','Products','Status','Notes'];
-  const rows = RENEWALS.map(r => [
-    r.customer, r.rep, r.date, r.arr, r.products, r.status, r.notes
-  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`));
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const rows = document.querySelectorAll('#renewal-data-tbody tr.renewal-row');
+  const headers = ['#','Customer','Renewal Date','Status','ASV (USD)','Modules','Recent Activity'];
+  const lines = [headers.join(',')];
+  rows.forEach(tr => {
+    if (tr.style.display === 'none') return;
+    const cells = tr.querySelectorAll('td');
+    const vals = [
+      cells[0]?.textContent.trim(),
+      cells[1]?.textContent.trim(),
+      cells[2]?.textContent.trim().split('\n')[0].trim(),
+      cells[3]?.textContent.trim(),
+      cells[4]?.textContent.trim().replace(/\n.*/,'').trim(),
+      (cells[5]?.textContent || '').trim().replace(/\s+/g,' '),
+      (cells[6]?.textContent || '').trim().replace(/\s+/g,' '),
+    ];
+    lines.push(vals.map(v => `"${(v||'').replace(/"/g,'""')}"`).join(','));
+  });
+  const csv = lines.join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'renewals_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'renewal_pipeline_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   showToast('success','⬇','CSV exported.');
 }
