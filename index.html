@@ -852,6 +852,17 @@ body.light-theme .alert-item.oil-alert-bar {
 .tbl-news-btn:hover { background:rgba(245,158,11,0.2); border-color:var(--amber); }
 
 /* ── RENEWAL TAB ── */
+
+.ren-sort-btn {
+  padding:4px 12px; border-radius:6px; border:1px solid var(--border);
+  background:var(--bg-secondary); color:var(--text-dim);
+  cursor:pointer; font-size:10px; font-weight:600; transition:all 0.15s; white-space:nowrap;
+  font-family:inherit;
+}
+.ren-sort-btn:hover { border-color:var(--border-bright); color:var(--text-primary); }
+.ren-sort-btn.active { background:rgba(6,182,212,0.1); border-color:var(--accent-cyan); color:var(--accent-cyan); }
+.email-template-body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+
 .renewal-stat-card {
   background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
   padding:12px 16px; display:flex; flex-direction:column; gap:4px;
@@ -1304,287 +1315,328 @@ body.light-theme .alert-item.oil-alert-bar {
   <div id="renewal-root" style="padding:20px 0;display:none;">
 
     <!-- Header -->
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
       <div>
-        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">🔄 Qualys Renewal Pipeline — Q1/Q2 2026</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">🔄 Qualys Renewal Pipeline — Upcoming 90 Days</div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">
-          Q2 accounts + Q1 overdue (excl. Close Lost) · Sorted by renewal date · Source: New_Customer_Renewal_DB
-          <span style="margin-left:10px;color:var(--accent-cyan);">Generated: 2026-04-06</span>
+          Forecast &amp; Upside only · 2026-04-06 → 2026-07-05 · Source: New_Customer_Renewal_DB
+          &nbsp;<span style="color:var(--accent-cyan);">Generated: 2026-04-06</span>
         </div>
       </div>
-      <button class="btn-sync-now" onclick="exportRenewalCSV()" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">⬇ Export CSV</button>
+      <button onclick="exportRenewalCSV()" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent-blue);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;white-space:nowrap;">⬇ Export CSV</button>
+    </div>
+
+    <!-- Exclusion notice -->
+    <div style="background:rgba(71,85,105,0.12);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-bottom:16px;font-size:11px;color:var(--text-dim);">
+      ℹ️ <strong style="color:var(--text-secondary);">21 Close Won</strong> and <strong style="color:var(--text-secondary);">11 Close Lost</strong> records excluded from this view.
     </div>
 
     <!-- Summary stat cards -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:20px;">
-      <div class="renewal-stat-card" style="border-left:3px solid var(--accent-blue);">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;">
+      <div class="renewal-stat-card" style="border-left:3px solid var(--accent-cyan);">
         <div class="rstat-label">Total Pipeline ASV</div>
-        <div class="rstat-val">$470,713</div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">17 accounts</div>
+        <div class="rstat-val">$438,470</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">14 accounts · next 90 days</div>
       </div>
-      <div class="renewal-stat-card" style="border-left:3px solid var(--green);">
-        <div class="rstat-label">✅ Close Won</div>
-        <div class="rstat-val" style="color:var(--green);">3</div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$26,556</div>
-      </div>
-      <div class="renewal-stat-card" style="border-left:3px solid var(--accent-blue);">
+      <div class="renewal-stat-card" style="border-left:3px solid #3b82f6;">
         <div class="rstat-label">🔵 Forecast</div>
-        <div class="rstat-val" style="color:var(--accent-blue);">9</div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$387,699</div>
+        <div class="rstat-val" style="color:#3b82f6;">9</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$382,013</div>
       </div>
-      <div class="renewal-stat-card" style="border-left:3px solid var(--amber);">
-        <div class="rstat-label">🟡 Upside</div>
-        <div class="rstat-val" style="color:var(--amber);">5</div>
+      <div class="renewal-stat-card" style="border-left:3px solid #8b5cf6;">
+        <div class="rstat-label">🟣 Upside</div>
+        <div class="rstat-val" style="color:#8b5cf6;">5</div>
         <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">$56,457</div>
+      </div>
+      <div class="renewal-stat-card" style="border-left:3px solid var(--red);">
+        <div class="rstat-label">⚡ Due ≤ 30 Days</div>
+        <div class="rstat-val" style="color:var(--red);" id="ren-stat-due30">–</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:3px;" id="ren-stat-due30-asv"></div>
       </div>
     </div>
 
-    <!-- Filter bar -->
-    <div class="renewal-filter-bar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
-      <button class="ren-filter-btn active" onclick="filterRenewalStatus('all',this)">All (17)</button>
-      <button class="ren-filter-btn ren-won" onclick="filterRenewalStatus('close_won',this)">✅ Close Won (3)</button>
-      <button class="ren-filter-btn ren-fc" onclick="filterRenewalStatus('forecast',this)">🔵 Forecast (9)</button>
-      <button class="ren-filter-btn ren-up" onclick="filterRenewalStatus('upside',this)">🟡 Upside (5)</button>
-      <span style="width:1px;height:20px;background:var(--border);display:inline-block;margin:0 4px;"></span>
-      <button class="filter-btn" onclick="filterRenewalMonth('April',this)">April (4)</button>
-    <button class="filter-btn" onclick="filterRenewalMonth('June',this)">June (6)</button>
-    <button class="filter-btn" onclick="filterRenewalMonth('May',this)">May (7)</button>
-      <input id="renewal-search-inline" placeholder="🔍 Search…" oninput="filterRenewalSearch(this.value)"
+    <!-- Filter + sort bar -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+      <button class="ren-filter-btn active" onclick="setRenFilter('all',this)">All (14)</button>
+      <button class="ren-filter-btn ren-fc" onclick="setRenFilter('forecast',this)">🔵 Forecast (9)</button>
+      <button class="ren-filter-btn ren-up" onclick="setRenFilter('upside',this)">🟣 Upside (5)</button>
+      <div style="width:1px;height:22px;background:var(--border);margin:0 4px;"></div>
+      <span style="font-size:10px;color:var(--text-dim);font-weight:600;">SORT:</span>
+      <button class="ren-sort-btn active" data-col="date" onclick="setRenSort('date',this)">📅 Date ↕</button>
+      <button class="ren-sort-btn" data-col="asv" onclick="setRenSort('asv',this)">💰 ASV ↕</button>
+      <button class="ren-sort-btn" data-col="status" onclick="setRenSort('status',this)">📊 Status ↕</button>
+      <input id="ren-search-input" placeholder="🔍 Search…" oninput="filterRenewalSearch(this.value)"
         style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);
                font-size:11px;padding:5px 10px;border-radius:20px;outline:none;width:160px;font-family:inherit;margin-left:auto;">
-      <span id="renewal-visible-count" style="font-size:10px;color:var(--text-dim);white-space:nowrap;"></span>
+      <span id="ren-count-label" style="font-size:10px;color:var(--text-dim);white-space:nowrap;"></span>
     </div>
 
     <!-- Table -->
     <div class="scroll-hint">← swipe to see all columns →</div>
     <div class="table-wrap">
-      <table id="renewal-data-table" style="min-width:900px;">
+      <table id="renewal-data-table" style="min-width:700px;">
         <thead><tr>
           <th style="width:28px;">#</th>
           <th>Customer</th>
           <th style="white-space:nowrap;">Renewal Date</th>
           <th>Status</th>
           <th style="white-space:nowrap;">ASV (USD)</th>
-          <th>2026 Modules</th>
-          <th>Recent Activity</th>
-          <th>SFDC Links</th>
+          <th>Renewal Reminder</th>
         </tr></thead>
         <tbody id="renewal-data-tbody">
-<tr class="renewal-row" data-status="forecast" data-month="April">
-      <td style="color:#8b949e;font-size:11px;">1</td>
-      <td class="customer-name">ZTE Corporation</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-04-30</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 341d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$4,473</td>
-      <td class="modules-cell" style="font-size:11px;">- Express VMDR x 128</td>
-      <td class="history-cell">9 Feb - sent renewal quote to partner <span style="color:#484f58">|</span> 23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ejA3wIAE/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000014KZ9QQAW/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMSjIAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-513134</a></td>
-    </tr><tr class="renewal-row" data-status="upside" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">2</td>
-      <td class="customer-name">Legend World Technology Development Limited</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-05-11</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 330d overdue</span></div>
-      </td>
-      <td><span class="badge badge-yellow">🟡 Upside</span></td>
-      <td class="asv-cell">$3,845</td>
-      <td class="modules-cell" style="font-size:11px;">- Express WAS x 5</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000elVg4IAE/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000014GMYvQAO/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOcRIAX/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-514816</a></td>
-    </tr><tr class="renewal-row high-value" data-status="forecast" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">3</td>
-      <td class="customer-name">PCCW/HKT</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-05-14</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 327d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$184,958<br><span style="font-size:10px;color:#8b949e;">orig $109,172</span></td>
-      <td class="modules-cell" style="font-size:11px;">- Express WAS x 600<br>- Standard API x 1<br>- VS x 2</td>
-      <td class="history-cell">24 Mar - sent renewal quote to customer <span style="color:#484f58">|</span> 30 Mar - sent revised quote to customer</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f3sqPIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0011a00000SVytnAAD/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOyhIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-515098</a></td>
-    </tr><tr class="renewal-row" data-status="forecast" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">4</td>
-      <td class="customer-name">NTT Com Asia</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-05-16</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 325d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$3,818</td>
-      <td class="modules-cell" style="font-size:11px;">- Express WAS x 5</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f41x8IAA/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0011a00000JWCMLAA5/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFPn6IAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-515746</a></td>
-    </tr><tr class="renewal-row" data-status="upside" data-month="June">
-      <td style="color:#8b949e;font-size:11px;">5</td>
-      <td class="customer-name">MAESA BC SAS</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-06-18</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 292d overdue</span></div>
-      </td>
-      <td><span class="badge badge-yellow">🟡 Upside</span></td>
-      <td class="asv-cell">$5,898</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR x 136</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000YKuBXIA1/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000012KplcQAC/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OEv36IAD/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-495924</a></td>
-    </tr><tr class="renewal-row" data-status="upside" data-month="June">
-      <td style="color:#8b949e;font-size:11px;">6</td>
-      <td class="customer-name">CK Hutchison Holdings Limited</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-06-19</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 291d overdue</span></div>
-      </td>
-      <td><span class="badge badge-yellow">🟡 Upside</span></td>
-      <td class="asv-cell">$15,150</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR&CSAM x 1400</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template <span style="color:#484f58">|</span> 9 Apr - EBR meeting confirmed</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f721ZIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00001ODY1mQAH/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFYE9IAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-522278</a></td>
-    </tr><tr class="renewal-row" data-status="forecast" data-month="June">
-      <td style="color:#8b949e;font-size:11px;">7</td>
-      <td class="customer-name">Hundred Plus Corporation</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-06-20</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 290d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$1,646</td>
-      <td class="modules-cell" style="font-size:11px;">- Express WAS x 1</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template <span style="color:#484f58">|</span> 26 Feb - provided renewal quote for partner</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f6mhZIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00001LiYHOQA3/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWaHIAX/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-521007</a></td>
-    </tr><tr class="renewal-row high-value" data-status="forecast" data-month="June">
-      <td style="color:#8b949e;font-size:11px;">8</td>
-      <td class="customer-name">Crypto.com - Main</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-06-22</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 288d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$161,965</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR x 7500<br>- PM x 4000<br>- Enterprise API with CIPS Enabled</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f6qC5IAI/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFX3fIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-521373</a></td>
-    </tr><tr class="renewal-row" data-status="forecast" data-month="June">
-      <td style="color:#8b949e;font-size:11px;">9</td>
-      <td class="customer-name">Crypto.com - Nadex</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-06-22</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 288d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$8,982</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR x 900</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f7AC4IAM/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFZ9tIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-523195</a></td>
-    </tr><tr class="renewal-row" data-status="forecast" data-month="June">
-      <td style="color:#8b949e;font-size:11px;">10</td>
-      <td class="customer-name">SC Digital Solutions (Moxbank)</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2025-06-29</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 281d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$7,471</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR x 1536<br>- WAS x 5</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000YKtmjIAD/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L000014IiHBQA0/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OEuVrIAL/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-495793</a></td>
-    </tr><tr class="renewal-row" data-status="forecast" data-month="April">
-      <td style="color:#8b949e;font-size:11px;">11</td>
-      <td class="customer-name">Information Technology Total Services</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-04-01</div>
-        <div style="margin-top:3px;"><span class="ren-overdue">⚠ 5d overdue</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$10,733<br><span style="font-size:10px;color:#8b949e;">orig $9,984</span></td>
-      <td class="modules-cell" style="font-size:11px;">- WAS x 20<br>- WAS module fee<br>- VS x 1</td>
-      <td class="history-cell">30 Jan - sent renewal quote to partner <span style="color:#484f58">|</span> 23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><span class="sfdc-disabled">📊 Opp</span> <span class="sfdc-disabled">🏢 Acct</span> <span class="sfdc-disabled">📄 Q-508763</span></td>
-    </tr><tr class="renewal-row" data-status="close_won" data-month="April">
-      <td style="color:#8b949e;font-size:11px;">12</td>
-      <td class="customer-name">Brother International (HK) Limited</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-04-16</div>
-        <div style="margin-top:3px;"><span class="ren-urgent">10d</span></div>
-      </td>
-      <td><span class="badge badge-green">✅ Close Won</span></td>
-      <td class="asv-cell">$9,441<br><span style="font-size:10px;color:#8b949e;">orig $9,256</span></td>
-      <td class="modules-cell" style="font-size:11px;">- Express VMDR x 128<br>- Express PM x 128</td>
-      <td class="history-cell">2 Feb - provided renewal quote to customer <span style="color:#484f58">|</span> 11 Feb - received signed quote, closed won</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ej76SIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/001Kd00001Yy4bLIAR/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFKCPIA5/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-511297</a></td>
-    </tr><tr class="renewal-row" data-status="close_won" data-month="April">
-      <td style="color:#8b949e;font-size:11px;">13</td>
-      <td class="customer-name">Melco Resorts and Entertainment (Sri Lanka)</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-04-28</div>
-        <div style="margin-top:3px;"><span class="ren-soon">22d</span></div>
-      </td>
-      <td><span class="badge badge-green">✅ Close Won</span></td>
-      <td class="asv-cell">$15,861</td>
-      <td class="modules-cell" style="font-size:11px;">- POL x 1160<br>- VM x 1160<br>- VS x 3</td>
-      <td class="history-cell">6 Jan - year2 passthru, closed won</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ej9xKIAQ/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0011a00000JWCq5AAH/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMLnIAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-513046</a></td>
-    </tr><tr class="renewal-row" data-status="forecast" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">14</td>
-      <td class="customer-name">Canon Hongkong Company Limited</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-05-08</div>
-        <div style="margin-top:3px;"><span class="ren-soon">32d</span></div>
-      </td>
-      <td><span class="badge badge-blue">🔵 Forecast</span></td>
-      <td class="asv-cell">$3,653</td>
-      <td class="modules-cell" style="font-size:11px;">- Express WAS x 5</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template <span style="color:#484f58">|</span> 23 Mar - sent renewal quote to partner</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000ejC7CIAU/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/0012L00001BN6qaQAD/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOBaIAP/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-514471</a></td>
-    </tr><tr class="renewal-row" data-status="close_won" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">15</td>
-      <td class="customer-name">Nan Shan General Insurance Company, Ltd.</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-05-21</div>
-        <div style="margin-top:3px;"><span class="ren-soon">45d</span></div>
-      </td>
-      <td><span class="badge badge-green">✅ Close Won</span></td>
-      <td class="asv-cell">$1,254</td>
-      <td class="modules-cell" style="font-size:11px;">- Express WAS x 50<br>- TruRisk VMDR x 32</td>
-      <td class="history-cell">6 Jan - extra 13th month for last year deal, closed won</td>
-      <td class="sfdc-cell"><span class="sfdc-disabled">📊 Opp</span> <span class="sfdc-disabled">🏢 Acct</span> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWpiIAH/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-521202</a></td>
-    </tr><tr class="renewal-row" data-status="upside" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">16</td>
-      <td class="customer-name">Haitong International Securities Group Limited</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-05-26</div>
-        <div style="margin-top:3px;"><span class="ren-normal">50d</span></div>
-      </td>
-      <td><span class="badge badge-yellow">🟡 Upside</span></td>
-      <td class="asv-cell">$28,040</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR x 400<br>- TAS x 50</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><span class="sfdc-disabled">📊 Opp</span> <span class="sfdc-disabled">🏢 Acct</span> <span class="sfdc-disabled">📄 Q-517157</span></td>
-    </tr><tr class="renewal-row" data-status="upside" data-month="May">
-      <td style="color:#8b949e;font-size:11px;">17</td>
-      <td class="customer-name">Airstar Bank Limited</td>
-      <td>
-        <div style="font-weight:600;white-space:nowrap;">2026-05-26</div>
-        <div style="margin-top:3px;"><span class="ren-normal">50d</span></div>
-      </td>
-      <td><span class="badge badge-yellow">🟡 Upside</span></td>
-      <td class="asv-cell">$3,524</td>
-      <td class="modules-cell" style="font-size:11px;">- VMDR x 128</td>
-      <td class="history-cell">23 Feb - sent renewal notice to customer / partner via openclaw template</td>
-      <td class="sfdc-cell"><a href="https://qualys.lightning.force.com/lightning/r/006Kd00000f5O2uIAE/view" target="_blank" class="sfdc-btn sfdc-opp">📊 Opp</a> <a href="https://qualys.lightning.force.com/lightning/r/001Kd00001qaly6IAA/view" target="_blank" class="sfdc-btn sfdc-acct">🏢 Acct</a> <a href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFRhJIAX/view" target="_blank" class="sfdc-btn sfdc-quote">📄 Q-517435</a></td>
-    </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-04-30" data-asv="4472.64" data-days="24">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">1</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">ZTE Corporation</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f9731622;color:#f97316;border:1px solid #f9731666;letter-spacing:.06em;">THIS MONTH</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">30 Apr</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f97316;background:#ffedd5;border-radius:4px;padding:1px 6px;white-space:nowrap;">24d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$4,473</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_0')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-05-08" data-asv="3652.75" data-days="32">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">2</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Canon Hongkong Company Limited</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b66;letter-spacing:.06em;">UPCOMING</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">08 May</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fef3c7;border-radius:4px;padding:1px 6px;white-space:nowrap;">32d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$3,653</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_1')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="upside" data-date="2026-05-11" data-asv="3845.0" data-days="35">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">3</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Legend World Technology Development Limited</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b66;letter-spacing:.06em;">UPCOMING</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">11 May</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fef3c7;border-radius:4px;padding:1px 6px;white-space:nowrap;">35d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;">🟣 Upside</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$3,845</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_2')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-05-14" data-asv="184958.34" data-days="38">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">4</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">PCCW/HKT</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b66;letter-spacing:.06em;">UPCOMING</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">14 May</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fef3c7;border-radius:4px;padding:1px 6px;white-space:nowrap;">38d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$184,958</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_3')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-05-16" data-asv="3818.29" data-days="40">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">5</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">NTT Com Asia</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b66;letter-spacing:.06em;">UPCOMING</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">16 May</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fef3c7;border-radius:4px;padding:1px 6px;white-space:nowrap;">40d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$3,818</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_4')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="upside" data-date="2026-05-26" data-asv="28039.88" data-days="50">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">6</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Haitong International Securities Group Limited</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b66;letter-spacing:.06em;">UPCOMING</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">26 May</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fef3c7;border-radius:4px;padding:1px 6px;white-space:nowrap;">50d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;">🟣 Upside</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$28,040</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_5')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="upside" data-date="2026-05-26" data-asv="3524.35" data-days="50">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">7</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Airstar Bank Limited</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b66;letter-spacing:.06em;">UPCOMING</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">26 May</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fef3c7;border-radius:4px;padding:1px 6px;white-space:nowrap;">50d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;">🟣 Upside</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$3,524</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_6')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="upside" data-date="2026-06-18" data-asv="5897.98" data-days="73">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">8</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">MAESA BC SAS</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">18 Jun</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">73d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;">🟣 Upside</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$5,898</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_7')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="upside" data-date="2026-06-19" data-asv="15150.24" data-days="74">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">9</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">CK Hutchison Holdings Limited</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">19 Jun</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">74d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd;">🟣 Upside</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$15,150</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_8')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-06-20" data-asv="1646.25" data-days="75">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">10</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Hundred Plus Corporation</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">20 Jun</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">75d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$1,646</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_9')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-06-22" data-asv="161965.0" data-days="77">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">11</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Crypto.com - Main</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">22 Jun</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">77d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$161,965</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_10')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-06-22" data-asv="8982.0" data-days="77">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">12</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Crypto.com - Nadex</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">22 Jun</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">77d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$8,982</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_11')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-06-29" data-asv="7470.59" data-days="84">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">13</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">SC Digital Solutions (Moxbank)</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">29 Jun</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">84d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$7,471</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_12')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
+      <tr class="ren-row" data-status="forecast" data-date="2026-07-01" data-asv="5046.93" data-days="86">
+        <td style="color:var(--text-dim);font-size:11px;padding:10px 8px;">14</td>
+        <td style="padding:10px 14px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">Fusion Bank Limited</div>
+          <div style="margin-top:4px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#10b98122;color:#10b981;border:1px solid #10b98166;letter-spacing:.06em;">SCHEDULED</span></div>
+        </td>
+        <td style="padding:10px 14px;white-space:nowrap;">
+          <div style="font-weight:600;font-size:12px;color:var(--text-primary);">01 Jul</div>
+          <div style="margin-top:3px;"><span style="font-size:10px;font-weight:700;color:#10b981;background:#d1fae5;border-radius:4px;padding:1px 6px;white-space:nowrap;">86d</span></div>
+        </td>
+        <td style="padding:10px 14px;"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">🔵 Forecast</span></td>
+        <td style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--accent-cyan);white-space:nowrap;font-variant-numeric:tabular-nums;">$5,047</td>
+        <td style="padding:10px 14px;">
+          <button onclick="openRenewalPopup('popup_13')" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);color:var(--accent-blue);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">✉ Email Draft</button>
+        </td>
+      </tr>
         </tbody>
       </table>
     </div>
 
     <div style="font-size:10px;color:var(--text-dim);margin-top:10px;text-align:right;">
-      ⚠ Upside ASV shown as Original Renewal Quota (confirmed ASV pending) · High-value rows (≥$50K) highlighted in blue
+      💡 Click <strong>✉ Email Draft</strong> to view the renewal reminder template, contact info &amp; SFDC links for each customer.
     </div>
 
   </div><!-- /renewal-root -->
 </div><!-- /tab-renewal -->
+
+<!-- ═══ RENEWAL EMAIL POPUP MODAL ═══ -->
+<div id="renewal-email-overlay" onclick="if(event.target===this)closeRenewalPopup()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:2000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;max-width:800px;width:100%;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);animation:modal-in .2s ease;position:relative;">
+    <!-- Modal header bar -->
+    <div style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff;padding:16px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:15px;font-weight:700;" id="renewal-popup-title">Renewal Reminder</div>
+        <div style="font-size:11px;opacity:.8;margin-top:2px;" id="renewal-popup-sub"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="copyRenewalEmail()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;" title="Copy email body to clipboard">📋 Copy</button>
+        <button onclick="closeRenewalPopup()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;">✕</button>
+      </div>
+    </div>
+    <!-- Modal body -->
+    <div id="renewal-popup-body" style="padding:20px;"></div>
+  </div>
+</div>
 
 <!-- ═══ NEWS TAB ═══ -->
 <div class="tab-pane" id="tab-news">
@@ -4435,6 +4487,626 @@ function checkTableOverflow() {
     }, { once: true });
   });
 }
+const RENEWAL_POPUPS = {
+  "popup_0": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eZenger Fan\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3ePartner Sales\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:fanpeilong@51component.com" style="color:#0369a1;font-size:10px;"\x3efanpeilong@51component.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000ejA3wIAE/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L000014KZ9QQAW/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFMSjIAP/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-513134\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - ZTE Corporation 30 Apr 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eZTE Corporation\x3c/strong\x3e is due on \x3cstrong\x3e30 Apr 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eExpress VMDR x 128\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/patch-management' target='_blank' style='color:#3b82f6;'\x3ePatch Management (PM)\x3c/a\x3e\x3c/strong\x3e module to automate vulnerability remediation directly within your Qualys platform.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_1": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eHilary Lee\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eAccount Manager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:hilary.lee@eastech.com.hk" style="color:#0369a1;font-size:10px;"\x3ehilary.lee@eastech.com.hk\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eKenneth Lee\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eManager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:kenneth_lee@chk.canon.com.hk" style="color:#0369a1;font-size:10px;"\x3ekenneth_lee@chk.canon.com.hk\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000ejC7CIAU/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L00001BN6qaQAD/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOBaIAP/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-514471\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Canon Hongkong Company Limited 08 May 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eCanon Hongkong Company Limited\x3c/strong\x3e is due on \x3cstrong\x3e08 May 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eExpress WAS x 5\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing WAS in your subscription, I'd recommend exploring \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/vulnerability-management-detection-response/' target='_blank' style='color:#3b82f6;'\x3eVMDR\x3c/a\x3e\x3c/strong\x3e for comprehensive vulnerability management, along with \x3cstrong\x3ePatch Management (PM)\x3c/strong\x3e and \x3cstrong\x3eCSAM\x3c/strong\x3e to build a full security lifecycle.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_2": `\x3cdiv style="background:#fef9c3;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#92400e;margin-bottom:4px;"\x3e📊 Renewal History Alert\x3c/div\x3e
+\x3cdiv style="margin:3px 0 3px 16px;font-size:12px;"\x3e• ⚠️ SALY renewal in 2025 — no price uplift was applied.\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eTimmy Tin\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eIT director\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:timmy.tin@prizm.digital" style="color:#0369a1;font-size:10px;"\x3etimmy.tin@prizm.digital\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000elVg4IAE/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L000014GMYvQAO/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOcRIAX/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-514816\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Legend World Technology Development Limited 11 May 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eLegend World Technology Development Limited\x3c/strong\x3e is due on \x3cstrong\x3e11 May 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eExpress WAS x 5\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing WAS in your subscription, I'd recommend exploring \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/vulnerability-management-detection-response/' target='_blank' style='color:#3b82f6;'\x3eVMDR\x3c/a\x3e\x3c/strong\x3e for comprehensive vulnerability management, along with \x3cstrong\x3ePatch Management (PM)\x3c/strong\x3e and \x3cstrong\x3eCSAM\x3c/strong\x3e to build a full security lifecycle.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_3": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eRay Fung\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eManager Business Technology\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:Ray.KW.Fung@pccw.com" style="color:#0369a1;font-size:10px;"\x3eRay.KW.Fung@pccw.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eSub Contact / VP\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eEsther Yang\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eSenior Security Specialist\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:esther.j.yang@pccw.com" style="color:#0369a1;font-size:10px;"\x3eesther.j.yang@pccw.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f3sqPIAQ/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0011a00000SVytnAAD/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFOyhIAH/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-515098\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - PCCW/HKT 14 May 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3ePCCW/HKT\x3c/strong\x3e is due on \x3cstrong\x3e14 May 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eExpress WAS x 600\x3c/li\x3e
+\x3cli style="margin:2px 0;"\x3eStandard API x 1\x3c/li\x3e
+\x3cli style="margin:2px 0;"\x3eVS x 2\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing WAS in your subscription, I'd recommend exploring \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/vulnerability-management-detection-response/' target='_blank' style='color:#3b82f6;'\x3eVMDR\x3c/a\x3e\x3c/strong\x3e for comprehensive vulnerability management, along with \x3cstrong\x3ePatch Management (PM)\x3c/strong\x3e and \x3cstrong\x3eCSAM\x3c/strong\x3e to build a full security lifecycle.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_4": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eHenry Lo\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3ePartner Senior Client Manager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:henry.lo@global.ntt" style="color:#0369a1;font-size:10px;"\x3ehenry.lo@global.ntt\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f41x8IAA/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0011a00000JWCMLAA5/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFPn6IAH/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-515746\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - NTT Com Asia 16 May 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eNTT Com Asia\x3c/strong\x3e is due on \x3cstrong\x3e16 May 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eExpress WAS x 5\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing WAS in your subscription, I'd recommend exploring \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/vulnerability-management-detection-response/' target='_blank' style='color:#3b82f6;'\x3eVMDR\x3c/a\x3e\x3c/strong\x3e for comprehensive vulnerability management, along with \x3cstrong\x3ePatch Management (PM)\x3c/strong\x3e and \x3cstrong\x3eCSAM\x3c/strong\x3e to build a full security lifecycle.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_5": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3ePeggy Kam\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3ePartner Sales\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:peggy.kam@amidas.com.hk" style="color:#0369a1;font-size:10px;"\x3epeggy.kam@amidas.com.hk\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eJesper Leung\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eManager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:jesper.km.leung@htisec.com" style="color:#0369a1;font-size:10px;"\x3ejesper.km.leung@htisec.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Haitong International Securities Group Limited 26 May 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eHaitong International Securities Group Limited\x3c/strong\x3e is due on \x3cstrong\x3e26 May 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR x 400\x3c/li\x3e
+\x3cli style="margin:2px 0;"\x3eTAS x 50\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR, TAS in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/patch-management' target='_blank' style='color:#3b82f6;'\x3ePatch Management (PM)\x3c/a\x3e\x3c/strong\x3e module to automate vulnerability remediation directly within your Qualys platform.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_6": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eTerence Ho\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eManager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:terence.ho@airstarbank.com" style="color:#0369a1;font-size:10px;"\x3eterence.ho@airstarbank.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eSub Contact / VP\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eRaymond Hung\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eassistant\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:raymond.hung@airstarbank.com" style="color:#0369a1;font-size:10px;"\x3eraymond.hung@airstarbank.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f5O2uIAE/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/001Kd00001qaly6IAA/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFRhJIAX/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-517435\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Airstar Bank Limited 26 May 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eAirstar Bank Limited\x3c/strong\x3e is due on \x3cstrong\x3e26 May 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR x 128\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/patch-management' target='_blank' style='color:#3b82f6;'\x3ePatch Management (PM)\x3c/a\x3e\x3c/strong\x3e module to automate vulnerability remediation directly within your Qualys platform.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_7": `\x3cdiv style="background:#fef9c3;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#92400e;margin-bottom:4px;"\x3e📊 Renewal History Alert\x3c/div\x3e
+\x3cdiv style="margin:3px 0 3px 16px;font-size:12px;"\x3e• ⚠️ Same pricing for 2025 and 2024 (5.8k) — no uplift applied in past 2 years.\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eAlex Hudelot\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eChief Executive Officer &amp; Chief Security Officer\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:alex@theos-cyber.com" style="color:#0369a1;font-size:10px;"\x3ealex@theos-cyber.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000YKuBXIA1/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L000012KplcQAC/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OEv36IAD/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-495924\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - MAESA BC SAS 18 Jun 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eMAESA BC SAS\x3c/strong\x3e is due on \x3cstrong\x3e18 Jun 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR x 136\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/patch-management' target='_blank' style='color:#3b82f6;'\x3ePatch Management (PM)\x3c/a\x3e\x3c/strong\x3e module to automate vulnerability remediation directly within your Qualys platform.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_8": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eHubi Cheung\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eSales Manager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:hubicheung@cyberworld.com.hk" style="color:#0369a1;font-size:10px;"\x3ehubicheung@cyberworld.com.hk\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eSub Contact / VP\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eAustin Yeung\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eIT operation\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:austiny@ckh.com.hk" style="color:#0369a1;font-size:10px;"\x3eaustiny@ckh.com.hk\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f721ZIAQ/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L00001ODY1mQAH/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFYE9IAP/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-522278\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - CK Hutchison Holdings Limited 19 Jun 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eCK Hutchison Holdings Limited\x3c/strong\x3e is due on \x3cstrong\x3e19 Jun 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR&amp;CSAM x 1400\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR, CSAM in your subscription, I'd recommend exploring \x3cstrong\x3eEnterprise TruRisk Management (ETM)\x3c/strong\x3e — which includes the following advanced packages:
+\x3cul style="margin:6px 0 6px 18px;line-height:1.8;"\x3e\x3cli\x3e\x3ca href="https://blog.qualys.com/product-tech/2025/10/15/bringing-the-power-of-agentic-ai-for-identity-risk-adaptive-threat-prioritization-and-exposure-exploitability-validation" target="_blank" style="color:#3b82f6;"\x3eAgentic AI\x3c/a\x3e\x3c/li\x3e\x3cli\x3e\x3ca href="https://blog.qualys.com/product-tech/2026/02/04/truconfirm-ending-vulnerability-guesswork-with-proof-inside-etm" target="_blank" style="color:#3b82f6;"\x3eTruConfirm\x3c/a\x3e\x3c/li\x3e\x3cli\x3e\x3ca href="https://blog.qualys.com/product-tech/2025/10/15/introducing-trulens-for-enterprise-trurisk-management-unified-threat-intelligence" target="_blank" style="color:#3b82f6;"\x3eTruLens\x3c/a\x3e\x3c/li\x3e\x3cli\x3e\x3ca href="https://blog.qualys.com/product-tech/2025/10/15/qualys-etm-identity-the-first-true-quantification-of-the-identity-perimeter" target="_blank" style="color:#3b82f6;"\x3eETM Identity\x3c/a\x3e\x3c/li\x3e\x3cli\x3e\x3ca href="https://blog.qualys.com/product-tech/2025/09/30/how-agentic-ai-powers-seamless-audit-readiness-with-agent-chang" target="_blank" style="color:#3b82f6;"\x3eETM Audit\x3c/a\x3e\x3c/li\x3e\x3c/ul\x3e
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_9": `\x3cdiv style="background:#fef9c3;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#92400e;margin-bottom:4px;"\x3e📊 Renewal History Alert\x3c/div\x3e
+\x3cdiv style="margin:3px 0 3px 16px;font-size:12px;"\x3e• ⚠️ SALY renewal in 2025 — no price uplift was applied.\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3ePartner Contact\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eSang Chiu\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3ePartner Product Manager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:sang@ciphertech.com.tw" style="color:#0369a1;font-size:10px;"\x3esang@ciphertech.com.tw\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f6mhZIAQ/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L00001LiYHOQA3/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFWaHIAX/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-521007\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Hundred Plus Corporation 20 Jun 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eHundred Plus Corporation\x3c/strong\x3e is due on \x3cstrong\x3e20 Jun 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eExpress WAS x 1\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing WAS in your subscription, I'd recommend exploring \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/vulnerability-management-detection-response/' target='_blank' style='color:#3b82f6;'\x3eVMDR\x3c/a\x3e\x3c/strong\x3e for comprehensive vulnerability management, along with \x3cstrong\x3ePatch Management (PM)\x3c/strong\x3e and \x3cstrong\x3eCSAM\x3c/strong\x3e to build a full security lifecycle.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_10": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eTim Yip\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eSVP Cyber Resilience, Risk &amp; Controls \x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:tim.yip@crypto.com" style="color:#0369a1;font-size:10px;"\x3etim.yip@crypto.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eSub Contact / VP\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3ePengRan\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eManager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:pengran.zhao@crypto.com" style="color:#0369a1;font-size:10px;"\x3epengran.zhao@crypto.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f6qC5IAI/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFX3fIAH/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-521373\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Crypto.com - Main 22 Jun 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eCrypto.com - Main\x3c/strong\x3e is due on \x3cstrong\x3e22 Jun 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR x 7500\x3c/li\x3e
+\x3cli style="margin:2px 0;"\x3ePM x 4000\x3c/li\x3e
+\x3cli style="margin:2px 0;"\x3eEnterprise API with CIPS Enabled\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR, Patch Management (PM) in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/cybersecurity-asset-management' target='_blank' style='color:#3b82f6;'\x3eCybersecurity Asset Management (CSAM)\x3c/a\x3e\x3c/strong\x3e module for complete asset visibility and risk context.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_11": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eTim Yip\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eSVP Cyber Resilience, Risk &amp; Controls \x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:tim.yip@crypto.com" style="color:#0369a1;font-size:10px;"\x3etim.yip@crypto.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eSub Contact / VP\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3ePengRan\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eManager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:pengran.zhao@crypto.com" style="color:#0369a1;font-size:10px;"\x3epengran.zhao@crypto.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f7AC4IAM/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L00000xOtxBQAS/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFZ9tIAH/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-523195\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Crypto.com - Nadex 22 Jun 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eCrypto.com - Nadex\x3c/strong\x3e is due on \x3cstrong\x3e22 Jun 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR x 900\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/patch-management' target='_blank' style='color:#3b82f6;'\x3ePatch Management (PM)\x3c/a\x3e\x3c/strong\x3e module to automate vulnerability remediation directly within your Qualys platform.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_12": `\x3cdiv style="background:#fef9c3;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#92400e;margin-bottom:4px;"\x3e📊 Renewal History Alert\x3c/div\x3e
+\x3cdiv style="margin:3px 0 3px 16px;font-size:12px;"\x3e• ⚠️ Same pricing for 2025 and 2024 (7k) — no uplift applied in past 2 years.\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eDickie Ku\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3emanager\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:dickie.ku@moxbank.com" style="color:#0369a1;font-size:10px;"\x3edickie.ku@moxbank.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eSub Contact / VP\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eCristina Agundez\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eprocurement\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:cristina.agundez@moxbank.com" style="color:#0369a1;font-size:10px;"\x3ecristina.agundez@moxbank.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000YKtmjIAD/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L000014IiHBQA0/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OEuVrIAL/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-495793\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - SC Digital Solutions (Moxbank) 29 Jun 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eSC Digital Solutions (Moxbank)\x3c/strong\x3e is due on \x3cstrong\x3e29 Jun 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVMDR x 1536\x3c/li\x3e
+\x3cli style="margin:2px 0;"\x3eWAS x 5\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing VMDR, WAS in your subscription, I'd recommend exploring the \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/patch-management' target='_blank' style='color:#3b82f6;'\x3ePatch Management (PM)\x3c/a\x3e\x3c/strong\x3e module to automate vulnerability remediation directly within your Qualys platform.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`,
+  "popup_13": `\x3cdiv style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#0369a1;margin-bottom:8px;"\x3e📋 Send To\x3c/div\x3e
+\x3cdiv\x3e\x3cdiv style="display:inline-block;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;
+padding:7px 12px;margin:4px;min-width:160px;vertical-align:top;"\x3e
+\x3cdiv style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0369a1;margin-bottom:3px;"\x3eMain Contact / CISO\x3c/div\x3e
+\x3cdiv style="font-weight:600;font-size:12px;color:#0f172a;"\x3eRay Chiang\x3c/div\x3e
+\x3cdiv style="font-size:11px;color:#475569;"\x3eAD, IT Security\x3c/div\x3e
+\x3cdiv style="margin-top:3px;"\x3e\x3ca href="mailto:ray.chiang@fusionbank.com" style="color:#0369a1;font-size:10px;"\x3eray.chiang@fusionbank.com\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;"\x3e
+\x3cdiv style="font-weight:700;font-size:12px;color:#6d28d9;margin-bottom:8px;"\x3e☁️ Salesforce Records\x3c/div\x3e
+\x3cdiv\x3e\x3ca href="https://qualys.lightning.force.com/lightning/r/006Kd00000f7VsAIAU/view" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🔗 Renewal Opp\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/0012L000014JzQwQAK/view" target="_blank" style="display:inline-block;background:#eff6ff;border:1px solid #93c5fd;color:#1d4ed8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e🏢 Account\x3c/a\x3e \x3ca href="https://qualys.lightning.force.com/lightning/r/a1eKd00000OFbdbIAD/view" target="_blank" style="display:inline-block;background:#fefce8;border:1px solid #fde047;color:#854d0e;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;text-decoration:none;margin:3px;"\x3e📄 Q-525051\x3c/a\x3e\x3c/div\x3e
+\x3c/div\x3e\x3cdiv style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;"\x3e
+\x3cdiv style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;"\x3e📧 Email Template\x3c/div\x3e
+\x3cdiv style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.7;color:#1e293b;"\x3e
+\x3cp\x3e\x3cstrong\x3eSubject:\x3c/strong\x3e Qualys Subscription Renewal Reminder - Fusion Bank Limited 01 Jul 2026\x3c/p\x3e
+\x3chr style="border:none;border-top:1px solid #e2e8f0;margin:10px 0;"\x3e
+\x3cp\x3eDear Customer,\x3c/p\x3e
+\x3cp\x3eGood day to you!\x3c/p\x3e
+\x3cp\x3eYour Qualys subscription for \x3cstrong\x3eFusion Bank Limited\x3c/strong\x3e is due on \x3cstrong\x3e01 Jul 2026\x3c/strong\x3e.\x3c/p\x3e
+\x3cp\x3e\x3cstrong\x3eCurrent Subscription Items:\x3c/strong\x3e\x3c/p\x3e
+\x3cul style="margin:4px 0 12px 18px;line-height:1.8;"\x3e
+\x3cli style="margin:2px 0;"\x3eVM External x 20\x3c/li\x3e
+\x3c/ul\x3e
+\x3cp\x3e\x3cstrong\x3eNew Qualys modules suggested for your subscription:\x3c/strong\x3e\x3c/p\x3e
+\x3cdiv style="margin:6px 0 14px 0;"\x3eSince you are already utilizing your current Qualys modules in your subscription, I'd recommend exploring \x3cstrong\x3e\x3ca href='https://www.qualys.com/apps/vulnerability-management-detection-response/' target='_blank' style='color:#3b82f6;'\x3eVMDR\x3c/a\x3e\x3c/strong\x3e for comprehensive vulnerability management, along with \x3cstrong\x3ePatch Management (PM)\x3c/strong\x3e and \x3cstrong\x3eCSAM\x3c/strong\x3e to build a full security lifecycle.
+Just let me know if you're interested in any further technical discussion or PoC.\x3c/div\x3e
+\x3cp\x3eMeanwhile, let me know if you would like to renew the existing subscription with the same service scopes or if any adjustments are needed for the upcoming renewal. Thanks.\x3c/p\x3e
+\x3cbr\x3e
+\x3cp style="color:#64748b;font-size:12px;"\x3eBest regards,\x3cbr\x3e[Your Name]\x3cbr\x3eSenior Technical Account Manager, Qualys\x3cbr\x3eHong Kong &amp; APAC\x3c/p\x3e
+\x3c/div\x3e
+\x3c/div\x3e`
+};
+
+// ─── RENEWAL POPUP ──────────────────────────────────────────
+function openRenewalPopup(id) {
+  const popup = RENEWAL_POPUPS[id];
+  if (!popup) return;
+  // Find customer info from table row
+  const row = document.querySelector(`[onclick="openRenewalPopup('${id}')"]`)?.closest('tr');
+  const customer = row?.querySelector('td:nth-child(2) div')?.textContent || '';
+  const dateEl   = row?.querySelector('td:nth-child(3) div')?.textContent || '';
+  document.getElementById('renewal-popup-title').textContent = '✉ ' + customer;
+  document.getElementById('renewal-popup-sub').textContent   = 'Renewal: ' + dateEl;
+  document.getElementById('renewal-popup-body').innerHTML = popup;
+  const ov = document.getElementById('renewal-email-overlay');
+  ov.style.display = 'flex';
+  ov.scrollTop = 0;
+}
+function closeRenewalPopup() {
+  document.getElementById('renewal-email-overlay').style.display = 'none';
+}
+function copyRenewalEmail() {
+  const emailDiv = document.querySelector('#renewal-popup-body .email-template-body');
+  if (!emailDiv) { showToast('error','❌','Email body not found.'); return; }
+  // Get plain text
+  const text = emailDiv.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('success','📋','Email copied to clipboard!');
+  }).catch(() => {
+    showToast('error','❌','Copy failed — please select manually.');
+  });
+}
+
+// ─── RENEWAL FILTER + SORT ───────────────────────────────────
+let _renFilter = 'all';
+let _renSearch = '';
+let _renSortCol = 'date';
+let _renSortDir = 'asc';
+
+function setRenFilter(val, btn) {
+  _renFilter = val;
+  document.querySelectorAll('.ren-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  _applyRenewalFilters();
+}
+function setRenSort(col, btn) {
+  if (_renSortCol === col) _renSortDir = _renSortDir === 'asc' ? 'desc' : 'asc';
+  else { _renSortCol = col; _renSortDir = col === 'asv' ? 'desc' : 'asc'; }
+  document.querySelectorAll('.ren-sort-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  _sortAndShowRenewalRows();
+}
+function filterRenewalSearch(val) {
+  _renSearch = (val||'').toLowerCase().trim();
+  _applyRenewalFilters();
+}
+function _applyRenewalFilters() {
+  _sortAndShowRenewalRows();
+}
+function _sortAndShowRenewalRows() {
+  const tbody = document.getElementById('renewal-data-tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr.ren-row'));
+
+  // Sort
+  rows.sort((a, b) => {
+    let va, vb;
+    if (_renSortCol === 'date') {
+      va = a.dataset.date; vb = b.dataset.date;
+    } else if (_renSortCol === 'asv') {
+      va = parseFloat(a.dataset.asv)||0; vb = parseFloat(b.dataset.asv)||0;
+    } else if (_renSortCol === 'status') {
+      va = a.dataset.status; vb = b.dataset.status;
+    }
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    let cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return _renSortDir === 'asc' ? cmp : -cmp;
+  });
+
+  // Re-append sorted, apply visibility
+  let visible = 0, total = rows.length;
+  rows.forEach((tr, i) => {
+    const st   = tr.dataset.status || '';
+    const text = tr.textContent.toLowerCase();
+    const statusOk = _renFilter === 'all' || st === _renFilter;
+    const searchOk = !_renSearch || text.includes(_renSearch);
+    tr.style.display = (statusOk && searchOk) ? '' : 'none';
+    if (statusOk && searchOk) {
+      visible++;
+      tr.querySelector('td:first-child').textContent = visible;
+    }
+    tbody.appendChild(tr);
+  });
+  const lbl = document.getElementById('ren-count-label');
+  if (lbl) lbl.textContent = `Showing ${visible} of ${total}`;
+
+  // Update due30 stat
+  const due30 = rows.filter(r => r.style.display !== 'none' && parseInt(r.dataset.days) <= 30);
+  const el = document.getElementById('ren-stat-due30');
+  const el2 = document.getElementById('ren-stat-due30-asv');
+  if (el) el.textContent = due30.length;
+  if (el2) {
+    const asvSum = due30.reduce((s,r) => s + (parseFloat(r.dataset.asv)||0), 0);
+    el2.textContent = asvSum > 0 ? '$' + asvSum.toLocaleString(undefined,{maximumFractionDigits:0}) : '';
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
