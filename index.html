@@ -810,7 +810,7 @@ body.light-theme .alert-item.oil-alert-bar {
 /* ── BEST & WORST WIDGET ─────────────────────────────────── */
 .bw-row {
   display:grid;
-  grid-template-columns: 64px 1fr 58px 64px auto auto auto;
+  grid-template-columns: 64px 1fr 58px 64px auto;
   align-items:center;
   padding:7px 10px; border-radius:7px; margin-bottom:4px;
   background:var(--bg-card); border:1px solid var(--border);
@@ -826,12 +826,6 @@ body.light-theme .alert-item.oil-alert-bar {
 .bw-pct { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; }
 .bw-pct.up { color:var(--green); }
 .bw-pct.down { color:var(--red); }
-.bw-earnings { font-size:9px; color:var(--text-dim); white-space:nowrap; text-align:right;
-  background:rgba(59,130,246,0.07); border:1px solid rgba(59,130,246,0.18);
-  border-radius:3px; padding:2px 5px; font-variant-numeric:tabular-nums; }
-.bw-mcap { font-size:9px; color:var(--text-secondary); white-space:nowrap; text-align:right;
-  background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18);
-  border-radius:3px; padding:2px 5px; font-variant-numeric:tabular-nums; font-weight:600; }
 .bw-news-btn {
   display:inline-flex; align-items:center; justify-content:center;
   font-size:9px; font-weight:700; padding:2px 7px; border-radius:3px;
@@ -843,11 +837,44 @@ body.light-theme .alert-item.oil-alert-bar {
 /* Best/Worst header row */
 .bw-header-row {
   display:grid;
-  grid-template-columns: 64px 1fr 58px 64px auto auto auto;
+  grid-template-columns: 64px 1fr 58px 64px auto;
   gap:6px; padding:3px 10px 5px;
   font-size:8px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim);
 }
+/* Inline news button used in watchlist table */
+.tbl-news-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:9px; font-weight:700; padding:2px 8px; border-radius:3px;
+  background:rgba(245,158,11,0.08); color:var(--amber);
+  border:1px solid rgba(245,158,11,0.25);
+  text-decoration:none; white-space:nowrap; transition:all 0.15s; letter-spacing:0.04em;
+}
+.tbl-news-btn:hover { background:rgba(245,158,11,0.2); border-color:var(--amber); }
 
+/* ── RENEWAL TAB ── */
+.renewal-stat-card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+  padding:12px 16px; display:flex; flex-direction:column; gap:4px;
+}
+.rstat-label { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); }
+.rstat-val   { font-size:20px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.renewal-status-badge {
+  display:inline-block; font-size:9px; font-weight:700; padding:2px 7px; border-radius:3px;
+  letter-spacing:0.06em; white-space:nowrap;
+}
+.rs-active   { background:rgba(16,185,129,0.12); color:var(--green);       border:1px solid rgba(16,185,129,0.3); }
+.rs-atrisk   { background:rgba(239,68,68,0.12);  color:var(--red);         border:1px solid rgba(239,68,68,0.3); }
+.rs-renewed  { background:rgba(59,130,246,0.12); color:var(--accent-blue); border:1px solid rgba(59,130,246,0.3); }
+.rs-lost     { background:rgba(71,85,105,0.15);  color:var(--text-dim);    border:1px solid var(--border); }
+.rs-pending  { background:rgba(245,158,11,0.12); color:var(--amber);       border:1px solid rgba(245,158,11,0.3); }
+.renewal-days-badge {
+  display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px;
+  white-space:nowrap; font-variant-numeric:tabular-nums;
+}
+.rdays-urgent  { background:rgba(239,68,68,0.15);  color:var(--red);   border:1px solid rgba(239,68,68,0.3); }
+.rdays-soon    { background:rgba(245,158,11,0.15); color:var(--amber); border:1px solid rgba(245,158,11,0.3); }
+.rdays-normal  { background:rgba(16,185,129,0.1);  color:var(--green); border:1px solid rgba(16,185,129,0.2); }
+.rdays-past    { background:rgba(71,85,105,0.15);  color:var(--text-dim); border:1px solid var(--border); }
 </style>
   <!-- Firebase SDK — inlined to avoid CSP issues on GitHub Pages -->
   <script>
@@ -1014,6 +1041,58 @@ body.light-theme .alert-item.oil-alert-bar {
   </div>
 </div>
 
+<!-- ═══ RENEWAL ADD/EDIT MODAL ═══ -->
+<div class="modal-overlay" id="renewal-modal">
+  <div class="modal" style="max-width:500px;">
+    <button class="modal-close" onclick="closeModal('renewal-modal')">✕</button>
+    <div class="modal-title" id="renewal-modal-title">➕ Add Renewal</div>
+    <div class="modal-sub">Track a customer subscription renewal</div>
+    <div class="form-row">
+      <div class="form-label">Customer Name *</div>
+      <input class="form-input" id="ren-customer" placeholder="e.g. Cathay Pacific">
+    </div>
+    <div class="form-row-2">
+      <div class="form-row">
+        <div class="form-label">Sales Rep</div>
+        <input class="form-input" id="ren-rep" placeholder="e.g. zheung">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Renewal Date *</div>
+        <input class="form-input" id="ren-date" type="date">
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row">
+        <div class="form-label">ARR (USD)</div>
+        <input class="form-input" id="ren-arr" type="number" min="0" placeholder="e.g. 85000">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Status</div>
+        <select class="form-select" id="ren-status">
+          <option value="Active">Active</option>
+          <option value="At Risk">At Risk</option>
+          <option value="Renewed">Renewed</option>
+          <option value="Pending">Pending</option>
+          <option value="Lost">Lost</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">Products</div>
+      <input class="form-input" id="ren-products" placeholder="e.g. VMDR, WAS, Patch Management">
+    </div>
+    <div class="form-row">
+      <div class="form-label">Notes</div>
+      <input class="form-input" id="ren-notes" placeholder="e.g. Multi-year deal, upsell opportunity">
+    </div>
+    <div class="pin-error-msg" id="renewal-modal-error"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('renewal-modal')">Cancel</button>
+      <button class="btn-primary" id="renewal-save-btn" onclick="saveRenewal()">Add</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">
   <span id="toast-icon"></span>
   <span class="toast-msg" id="toast-msg"></span>
@@ -1092,6 +1171,7 @@ body.light-theme .alert-item.oil-alert-bar {
   <button class="tab-nav-btn active" onclick="switchTab('market')" id="tab-btn-market">📊 Market</button>
   <button class="tab-nav-btn" onclick="switchTab('news')" id="tab-btn-news">📰 News &amp; Intelligence</button>
   <button class="tab-nav-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio" style="display:none;">💼 My Portfolio</button>
+  <button class="tab-nav-btn" onclick="switchTab('renewal')" id="tab-btn-renewal" style="display:none;">🔄 Renewal</button>
 </nav>
 
 <div class="container" style="padding-top:20px;">
@@ -1166,12 +1246,12 @@ body.light-theme .alert-item.oil-alert-bar {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="best-worst-grid">
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">🟢 Best 5</div>
-        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span style="text-align:right">Close</span><span style="text-align:right">% Chg</span><span>Earnings (est.)</span><span>Mkt Cap</span><span>News</span></div>
+        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span style="text-align:right">Close</span><span style="text-align:right">% Chg</span><span>News</span></div>
         <div id="best5-list"></div>
       </div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">🔴 Worst 5</div>
-        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span style="text-align:right">Close</span><span style="text-align:right">% Chg</span><span>Earnings (est.)</span><span>Mkt Cap</span><span>News</span></div>
+        <div class="bw-header-row"><span>Ticker</span><span>Name</span><span style="text-align:right">Close</span><span style="text-align:right">% Chg</span><span>News</span></div>
         <div id="worst5-list"></div>
       </div>
     </div>
@@ -1216,6 +1296,7 @@ body.light-theme .alert-item.oil-alert-bar {
           <th>Weekly SMA</th>
           <th onclick="setSortCol('narrative',null)" style="cursor:pointer;">Theme</th>
           <th>Tags</th>
+          <th>News</th>
           <th class="mgr-col">Actions</th>
         </tr></thead>
         <tbody id="watchlist-tbody"></tbody>
@@ -1236,6 +1317,80 @@ body.light-theme .alert-item.oil-alert-bar {
   <!-- Actual content — hidden until unlocked -->
   <div id="pf-root" style="padding:20px 0; display:none;"></div>
 </div>
+
+<!-- ═══ RENEWAL TAB ═══ -->
+<div class="tab-pane" id="tab-renewal">
+  <!-- Lock gate -->
+  <div id="renewal-lock-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;">
+    <div style="font-size:64px;opacity:0.4;">🔒</div>
+    <div style="font-size:14px;color:var(--text-dim);margin-top:16px;">Manager Mode required</div>
+  </div>
+  <!-- Actual content -->
+  <div id="renewal-root" style="padding:20px 0;display:none;">
+
+    <!-- Header row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">🔄 Renewal Pipeline</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Track upcoming subscription renewals · Manager only</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-sync-now" onclick="openAddRenewal()" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.35);color:var(--green);">+ Add Renewal</button>
+        <button class="btn-sync-now" id="renewal-export-btn" onclick="exportRenewalCSV()" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:var(--accent-blue);">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;" id="renewal-stats-bar">
+      <div class="renewal-stat-card" id="rstat-total"><div class="rstat-label">Total</div><div class="rstat-val" id="rstat-total-val">–</div></div>
+      <div class="renewal-stat-card" id="rstat-due30"><div class="rstat-label">Due ≤ 30 Days</div><div class="rstat-val" style="color:var(--red);" id="rstat-due30-val">–</div></div>
+      <div class="renewal-stat-card" id="rstat-due90"><div class="rstat-label">Due ≤ 90 Days</div><div class="rstat-val" style="color:var(--amber);" id="rstat-due90-val">–</div></div>
+      <div class="renewal-stat-card" id="rstat-arr"><div class="rstat-label">Total ARR (USD)</div><div class="rstat-val" style="color:var(--accent-cyan);" id="rstat-arr-val">–</div></div>
+    </div>
+
+    <!-- Filter + sort bar -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+      <input id="renewal-search" placeholder="🔍  Search customer / rep…" oninput="renderRenewalTable()"
+        style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);
+               font-size:12px;padding:7px 12px;border-radius:6px;outline:none;width:220px;font-family:inherit;">
+      <select id="renewal-filter-status" onchange="renderRenewalTable()"
+        style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);
+               font-size:11px;padding:6px 10px;border-radius:6px;outline:none;font-family:inherit;">
+        <option value="all">All Statuses</option>
+        <option value="Active">Active</option>
+        <option value="At Risk">At Risk</option>
+        <option value="Renewed">Renewed</option>
+        <option value="Lost">Lost</option>
+        <option value="Pending">Pending</option>
+      </select>
+      <select id="renewal-filter-rep" onchange="renderRenewalTable()"
+        style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);
+               font-size:11px;padding:6px 10px;border-radius:6px;outline:none;font-family:inherit;">
+        <option value="all">All Reps</option>
+      </select>
+      <span style="font-size:10px;color:var(--text-dim);margin-left:auto;" id="renewal-count-label"></span>
+    </div>
+
+    <!-- Table -->
+    <div class="scroll-hint">← swipe to see all columns →</div>
+    <div class="table-wrap">
+      <table id="renewal-table" style="min-width:900px;">
+        <thead><tr>
+          <th style="cursor:pointer;" onclick="setRenewalSort('customer')">Customer ↕</th>
+          <th style="cursor:pointer;" onclick="setRenewalSort('rep')">Rep ↕</th>
+          <th style="cursor:pointer;" onclick="setRenewalSort('date')">Renewal Date ↕</th>
+          <th style="cursor:pointer;" onclick="setRenewalSort('arr')">ARR (USD) ↕</th>
+          <th>Products</th>
+          <th style="cursor:pointer;" onclick="setRenewalSort('status')">Status ↕</th>
+          <th>Notes</th>
+          <th class="mgr-col">Actions</th>
+        </tr></thead>
+        <tbody id="renewal-tbody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /renewal-root -->
+</div><!-- /tab-renewal -->
 
 <!-- ═══ NEWS TAB ═══ -->
 <div class="tab-pane" id="tab-news">
@@ -1718,6 +1873,7 @@ function doSwitchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('tab-btn-' + name).classList.add('active');
   if (name === 'portfolio' && portfolioUnlocked) showPortfolioContent();
+  if (name === 'renewal'   && managerUnlocked)   showRenewalContent();
   if (name === 'news') loadNews();
   // Ensure portfolio content is not visible when on other tabs
   if (name !== 'portfolio') {
@@ -1856,6 +2012,7 @@ function checkSecurityAnswer() {
     activateManager();
     portfolioUnlocked = true;
     document.getElementById('tab-btn-portfolio').style.display = '';
+    document.getElementById('tab-btn-renewal').style.display = '';
     // Show portfolio content if currently on portfolio tab
     const activeTab = document.querySelector('.tab-pane.active');
     if (activeTab && activeTab.id === 'tab-portfolio') showPortfolioContent();
@@ -1886,6 +2043,7 @@ function activateManager() {
   document.getElementById('manager-btn').textContent='🔓 Manager';
   document.getElementById('manager-banner').classList.add('visible');
   document.getElementById('tab-btn-portfolio').style.display = '';
+  document.getElementById('tab-btn-renewal').style.display = '';
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   renderAll();
   updateNewsReloadBtn(); updateSyncBtn();
@@ -1902,6 +2060,7 @@ async function lockManager() {
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
   renderAll();
   lockPortfolio();
+  lockRenewal();
   updateNewsReloadBtn(); updateSyncBtn();
   if (saved) {
     showToast('success','☁','Changes synced to Firebase. Manager locked.');
@@ -2878,35 +3037,18 @@ function renderBestWorst() {
   const yfLink  = sym => `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/`;
   const newsLink = sym => `https://finance.yahoo.com/quote/${encodeURIComponent(sym)}/news/`;
 
-  const loadingSpan = `<span style="color:var(--text-dim);font-size:9px;opacity:0.5;">…</span>`;
-
   const row = (t, cls) => {
-    const cached   = bwQuoteCache[t.sym] || {};
-    const earnings = fmtEarningsDate(cached.earningsTs);
-    const mcap     = fmtMktCap(cached.marketCap);
-    const hasData  = !!(cached.marketCap || cached.earningsTs);
     return `<div class="bw-row">
       <span class="bw-sym"><a href="${yfLink(t.sym)}" target="_blank" title="Open ${t.sym} on Yahoo Finance">${t.sym} ↗</a></span>
       <span class="bw-name" title="${t.name}">${t.name}</span>
       <span class="bw-close" title="Last Close">$${t.price > 0 ? t.price.toFixed(2) : '–'}</span>
       <span class="bw-pct ${cls}">${t.pct>=0?'+':''}${t.pct.toFixed(2)}%</span>
-      <span class="bw-earnings" title="Earnings Date (est.)">${!hasData ? loadingSpan : (earnings === '–' ? '<span style="opacity:0.35">–</span>' : '📅 ' + earnings)}</span>
-      <span class="bw-mcap" title="Market Cap (intraday)">${!hasData ? loadingSpan : (mcap === '–' ? '<span style="opacity:0.35">–</span>' : mcap)}</span>
       <a class="bw-news-btn" href="${newsLink(t.sym)}" target="_blank" title="Latest news for ${t.sym}">📰 News</a>
     </div>`;
   };
 
   bestEl.innerHTML  = best5.map(t  => row(t, 'up'  )).join('');
   worstEl.innerHTML = worst5.map(t => row(t, 'down')).join('');
-
-  // Async: fetch earnings + mktCap for displayed tickers, then re-render rows
-  const toFetch = [...new Set([...best5, ...worst5].map(t => t.sym))];
-  (async () => {
-    await Promise.allSettled(toFetch.map(sym => fetchBWQuoteData(sym)));
-    // Re-render with enriched data
-    bestEl.innerHTML  = best5.map(t  => row(t, 'up'  )).join('');
-    worstEl.innerHTML = worst5.map(t => row(t, 'down')).join('');
-  })();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3102,6 +3244,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       <td>${smaDropdown}</td>
       <td>${themeCellHtml}</td>
       <td>${tagsCellHtml}</td>
+      <td><a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰 News</a></td>
       ${mgr}
     </tr>`;
   });
@@ -3174,6 +3317,7 @@ function renderCryptoAsWatchlist() {
       <td><span class="industry-badge">${industry}</span></td>
       <td>${narrBadge}</td>
       <td>${tagsHtml}</td>
+      <td><a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰 News</a></td>
       ${mgr}
     </tr>`;
   });
@@ -3219,6 +3363,253 @@ function renderCryptoTable() {
       ${mgr}
     </tr>`;
   });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENEWAL TAB — data, render, CRUD
+// ═══════════════════════════════════════════════════════════════
+
+const RENEWAL_VERSION = '20260406a';
+let RENEWALS = loadRenewals();
+
+function loadRenewals() {
+  try {
+    const v = localStorage.getItem('renewal_version');
+    const s = localStorage.getItem('renewal_data');
+    if (s && v === RENEWAL_VERSION) return JSON.parse(s);
+  } catch(e) {}
+  // Default sample data
+  return [
+    { id: genRenewId(), customer:'Cathay Pacific',   rep:'zheung', date:'2026-06-30', arr:120000, products:'VMDR, WAS, CSAM',           status:'Active',  notes:'Multi-year upsell potential via ETM' },
+    { id: genRenewId(), customer:'Dah Sing Bank',    rep:'zheung', date:'2026-05-15', arr:48000,  products:'VMDR, Patch Management',      status:'At Risk', notes:'Budget review in progress' },
+    { id: genRenewId(), customer:'A.S. Watson',      rep:'rlo',    date:'2026-07-31', arr:85000,  products:'VMDR, WAS, TotalCloud',        status:'Active',  notes:'ETM demo scheduled' },
+    { id: genRenewId(), customer:'HKJC',             rep:'rlo',    date:'2026-04-30', arr:210000, products:'VMDR, CSAM, Patch Management', status:'Pending', notes:'PO pending finance approval' },
+    { id: genRenewId(), customer:'Sample Co HK',     rep:'zheung', date:'2026-09-01', arr:32000,  products:'WAS',                          status:'Active',  notes:'' },
+  ];
+}
+
+function saveRenewals() {
+  localStorage.setItem('renewal_version', RENEWAL_VERSION);
+  localStorage.setItem('renewal_data', JSON.stringify(RENEWALS));
+}
+
+function genRenewId() {
+  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+// Show/hide renewal tab based on manager state
+function showRenewalContent() {
+  document.getElementById('renewal-lock-gate').style.display = 'none';
+  document.getElementById('renewal-root').style.display = 'block';
+  renderRenewalTable();
+  populateRepFilter();
+}
+function lockRenewal() {
+  if (document.getElementById('tab-renewal').classList.contains('active')) {
+    doSwitchTab('market');
+  }
+  document.getElementById('renewal-lock-gate').style.display = 'flex';
+  document.getElementById('renewal-root').style.display = 'none';
+  document.getElementById('tab-btn-renewal').style.display = 'none';
+}
+
+// Sort state
+let renewalSortCol = 'date';
+let renewalSortDir = 'asc';
+
+function setRenewalSort(col) {
+  if (renewalSortCol === col) renewalSortDir = renewalSortDir === 'asc' ? 'desc' : 'asc';
+  else { renewalSortCol = col; renewalSortDir = col === 'arr' ? 'desc' : 'asc'; }
+  renderRenewalTable();
+}
+
+function populateRepFilter() {
+  const sel = document.getElementById('renewal-filter-rep');
+  if (!sel) return;
+  const reps = [...new Set(RENEWALS.map(r => r.rep).filter(Boolean))].sort();
+  // Keep existing 'all' option, rebuild the rest
+  while (sel.options.length > 1) sel.remove(1);
+  reps.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
+}
+
+function renewalStatusClass(status) {
+  const map = { 'Active':'rs-active','At Risk':'rs-atrisk','Renewed':'rs-renewed','Lost':'rs-lost','Pending':'rs-pending' };
+  return map[status] || 'rs-pending';
+}
+
+function renewalDaysLabel(dateStr) {
+  if (!dateStr) return '';
+  const d   = new Date(dateStr);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.round((d - now) / 86400000);
+  if (diff < 0)    return `<span class="renewal-days-badge rdays-past">${Math.abs(diff)}d ago</span>`;
+  if (diff === 0)  return `<span class="renewal-days-badge rdays-urgent">TODAY</span>`;
+  if (diff <= 30)  return `<span class="renewal-days-badge rdays-urgent">${diff}d</span>`;
+  if (diff <= 90)  return `<span class="renewal-days-badge rdays-soon">${diff}d</span>`;
+  return `<span class="renewal-days-badge rdays-normal">${diff}d</span>`;
+}
+
+function fmtARR(v) {
+  if (!v && v !== 0) return '–';
+  return '$' + Number(v).toLocaleString();
+}
+
+function renderRenewalTable() {
+  const tbody = document.getElementById('renewal-tbody');
+  if (!tbody) return;
+
+  const search     = (document.getElementById('renewal-search')?.value || '').toLowerCase();
+  const filterSt   = document.getElementById('renewal-filter-status')?.value || 'all';
+  const filterRep  = document.getElementById('renewal-filter-rep')?.value || 'all';
+
+  let data = RENEWALS.filter(r => {
+    if (filterSt  !== 'all' && r.status !== filterSt)  return false;
+    if (filterRep !== 'all' && r.rep    !== filterRep)  return false;
+    if (search && !((r.customer||'').toLowerCase().includes(search) || (r.rep||'').toLowerCase().includes(search) || (r.products||'').toLowerCase().includes(search))) return false;
+    return true;
+  });
+
+  // Sort
+  data.sort((a,b) => {
+    let va, vb;
+    if      (renewalSortCol === 'customer') { va = (a.customer||'').toLowerCase(); vb = (b.customer||'').toLowerCase(); }
+    else if (renewalSortCol === 'rep')      { va = (a.rep||'').toLowerCase();      vb = (b.rep||'').toLowerCase(); }
+    else if (renewalSortCol === 'date')     { va = a.date||'';                     vb = b.date||''; }
+    else if (renewalSortCol === 'arr')      { va = Number(a.arr)||0;               vb = Number(b.arr)||0; }
+    else if (renewalSortCol === 'status')   { va = a.status||'';                   vb = b.status||''; }
+    else { va = a.customer||''; vb = b.customer||''; }
+    if (va < vb) return renewalSortDir === 'asc' ? -1 : 1;
+    if (va > vb) return renewalSortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+
+  // Stats
+  const now = new Date(); now.setHours(0,0,0,0);
+  const allActive = RENEWALS.filter(r => r.status !== 'Lost' && r.status !== 'Renewed');
+  const due30  = allActive.filter(r => { const d = new Date(r.date||''); return (d-now)/86400000 <= 30; }).length;
+  const due90  = allActive.filter(r => { const d = new Date(r.date||''); return (d-now)/86400000 <= 90; }).length;
+  const totalARR = RENEWALS.reduce((s,r) => s + (Number(r.arr)||0), 0);
+  document.getElementById('rstat-total-val').textContent  = RENEWALS.length;
+  document.getElementById('rstat-due30-val').textContent  = due30;
+  document.getElementById('rstat-due90-val').textContent  = due90;
+  document.getElementById('rstat-arr-val').textContent    = '$' + (totalARR/1000).toFixed(0) + 'K';
+  document.getElementById('renewal-count-label').textContent = `Showing ${data.length} of ${RENEWALS.length}`;
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-dim);font-size:12px;">No renewals match the current filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(r => {
+    const daysHtml   = renewalDaysLabel(r.date);
+    const statusHtml = `<span class="renewal-status-badge ${renewalStatusClass(r.status)}">${r.status}</span>`;
+    const dateDisp   = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '–';
+    const products   = (r.products||'–').split(',').map(p=>`<span class="ticker-tag">${p.trim()}</span>`).join('');
+    return `<tr>
+      <td style="font-weight:600;font-size:12px;">${r.customer||'–'}</td>
+      <td><span style="font-size:11px;color:var(--text-secondary);">${r.rep||'–'}</span></td>
+      <td>
+        <div style="font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;">${dateDisp}</div>
+        <div style="margin-top:3px;">${daysHtml}</div>
+      </td>
+      <td style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent-cyan);">${fmtARR(r.arr)}</td>
+      <td><div class="ticker-tags" style="flex-wrap:wrap;gap:3px;max-width:200px;">${products}</div></td>
+      <td>${statusHtml}</td>
+      <td style="font-size:11px;color:var(--text-secondary);max-width:180px;white-space:normal;line-height:1.4;">${r.notes||'–'}</td>
+      <td><div class="mgr-actions" style="display:flex;">
+        <button class="btn-edit-row" onclick="openEditRenewal('${r.id}')">✏</button>
+        <button class="btn-del-row"  onclick="deleteRenewal('${r.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CRUD ───────────────────────────────────────────────────────
+let editingRenewalId = null;
+
+function openAddRenewal() {
+  editingRenewalId = null;
+  document.getElementById('renewal-modal-title').textContent = '➕ Add Renewal';
+  document.getElementById('renewal-save-btn').textContent = 'Add';
+  document.getElementById('ren-customer').value  = '';
+  document.getElementById('ren-rep').value       = '';
+  document.getElementById('ren-date').value      = '';
+  document.getElementById('ren-arr').value       = '';
+  document.getElementById('ren-products').value  = '';
+  document.getElementById('ren-notes').value     = '';
+  document.getElementById('ren-status').value    = 'Active';
+  document.getElementById('renewal-modal-error').textContent = '';
+  openModal('renewal-modal');
+  setTimeout(() => document.getElementById('ren-customer').focus(), 120);
+}
+
+function openEditRenewal(id) {
+  const r = RENEWALS.find(x => x.id === id);
+  if (!r) return;
+  editingRenewalId = id;
+  document.getElementById('renewal-modal-title').textContent = '✏ Edit Renewal';
+  document.getElementById('renewal-save-btn').textContent = 'Save';
+  document.getElementById('ren-customer').value  = r.customer || '';
+  document.getElementById('ren-rep').value       = r.rep      || '';
+  document.getElementById('ren-date').value      = r.date     || '';
+  document.getElementById('ren-arr').value       = r.arr      || '';
+  document.getElementById('ren-products').value  = r.products || '';
+  document.getElementById('ren-notes').value     = r.notes    || '';
+  document.getElementById('ren-status').value    = r.status   || 'Active';
+  document.getElementById('renewal-modal-error').textContent = '';
+  openModal('renewal-modal');
+  setTimeout(() => document.getElementById('ren-customer').focus(), 120);
+}
+
+function saveRenewal() {
+  const customer = document.getElementById('ren-customer').value.trim();
+  const date     = document.getElementById('ren-date').value.trim();
+  if (!customer) { document.getElementById('renewal-modal-error').textContent = 'Customer name is required.'; return; }
+  if (!date)     { document.getElementById('renewal-modal-error').textContent = 'Renewal date is required.'; return; }
+
+  const entry = {
+    id:       editingRenewalId || genRenewId(),
+    customer,
+    rep:      document.getElementById('ren-rep').value.trim(),
+    date,
+    arr:      parseFloat(document.getElementById('ren-arr').value) || 0,
+    products: document.getElementById('ren-products').value.trim(),
+    status:   document.getElementById('ren-status').value,
+    notes:    document.getElementById('ren-notes').value.trim(),
+  };
+
+  if (editingRenewalId) {
+    const idx = RENEWALS.findIndex(x => x.id === editingRenewalId);
+    if (idx >= 0) RENEWALS[idx] = entry;
+  } else {
+    RENEWALS.push(entry);
+  }
+  saveRenewals();
+  populateRepFilter();
+  renderRenewalTable();
+  closeModal('renewal-modal');
+  showToast('success', '✅', editingRenewalId ? 'Renewal updated.' : 'Renewal added.');
+}
+
+function deleteRenewal(id) {
+  if (!confirm('Remove this renewal record?')) return;
+  RENEWALS = RENEWALS.filter(r => r.id !== id);
+  saveRenewals();
+  renderRenewalTable();
+  showToast('info', '🗑', 'Renewal removed.');
+}
+
+function exportRenewalCSV() {
+  const headers = ['Customer','Rep','Renewal Date','ARR (USD)','Products','Status','Notes'];
+  const rows = RENEWALS.map(r => [
+    r.customer, r.rep, r.date, r.arr, r.products, r.status, r.notes
+  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`));
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'renewals_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('success','⬇','CSV exported.');
 }
 
 // ═══════════════════════════════════════════════════════════════
