@@ -796,8 +796,9 @@ body.light-theme .alert-item.oil-alert-bar {
 .fb-status.offline  { background:rgba(245,158,11,0.12);  color:var(--amber);        border:1px solid rgba(245,158,11,0.3); }
 .fb-status.error    { background:rgba(239,68,68,0.10);   color:var(--red);          border:1px solid rgba(239,68,68,0.3); }
 .fb-dot {
-  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+  width:9px; height:9px; border-radius:50%; flex-shrink:0;
 }
+.fb-status[onclick]:hover { opacity:0.75; transform:scale(1.15); }
 .fb-status.syncing .fb-dot  { background:var(--accent-blue); animation:pulse 1s infinite; }
 .fb-status.synced  .fb-dot  { background:var(--green); }
 .fb-status.offline .fb-dot  { background:var(--amber); }
@@ -1888,10 +1889,10 @@ function fbStartListener() {
 
 // ── dbSyncNow: manual DB sync button ─────────────────────────
 async function dbSyncNow() {
-  const btn = document.getElementById('db-sync-btn');
-  if (btn) { btn.textContent = '☁ Syncing…'; btn.disabled = true; }
+  const dot = document.getElementById('fb-status');
+  if (dot) { dot.style.opacity = '0.5'; dot.style.pointerEvents = 'none'; }
   const ok = await fbSaveAll();
-  if (btn) { btn.textContent = '☁ DB'; btn.disabled = false; }
+  if (dot) { dot.style.opacity = '1'; dot.style.pointerEvents = 'auto'; }
   if (ok) showToast('success','☁','Watchlist synced to Firebase.');
   else    showToast('info','☁','DB sync failed — check connection.');
 }
@@ -2284,7 +2285,7 @@ function activateManager() {
   document.getElementById('tab-btn-renewal').style.display = '';
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.add('manager-active'));
   // Show manager-only header controls
-  ['last-updated-wrap','sync-btn','db-sync-btn','fb-status'].forEach(id=>{
+  ['last-updated-wrap','sync-btn','fb-status'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='';
   });
   renderAll();
@@ -2301,7 +2302,7 @@ async function lockManager() {
   document.getElementById('manager-banner').classList.remove('visible');
   ['watchlist-table','crypto-table'].forEach(id=>document.getElementById(id).classList.remove('manager-active'));
   // Hide manager-only header controls
-  ['last-updated-wrap','sync-btn','db-sync-btn','fb-status'].forEach(id=>{
+  ['last-updated-wrap','sync-btn','fb-status'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   renderAll();
