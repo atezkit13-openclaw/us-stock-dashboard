@@ -804,8 +804,17 @@ body.light-theme .alert-item.oil-alert-bar {
 .fb-status.offline .fb-dot  { background:var(--amber); }
 .fb-status.error   .fb-dot  { background:var(--red); }
 
-/* ── ETF ticker highlight ─────────────────────────────────── */
-.ticker-link.etf-ticker { color:var(--amber) !important; }
+/* ── TRADINGVIEW CHART ICON ── */
+.tv-icon {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; margin-left:5px;
+  background:rgba(33,150,243,0.12); border:1px solid rgba(33,150,243,0.3);
+  border-radius:3px; text-decoration:none; vertical-align:middle;
+  transition:all 0.15s; flex-shrink:0; cursor:pointer;
+}
+.tv-icon:hover { background:rgba(33,150,243,0.28); border-color:#2196f3; transform:scale(1.1); }
+.tv-icon svg { width:11px; height:11px; display:block; }
+
 .ticker-link.etf-ticker:hover { color:#fbbf24 !important; }
 
 /* ── BEST & WORST WIDGET ─────────────────────────────────── */
@@ -2789,6 +2798,44 @@ function fmtP(p,s){
 function fmtC(v){return(v>=0?'+':'')+v.toFixed(2);}
 function dir(v){return v>0?'up':v<0?'down':'neutral';}
 
+// ── TradingView URL + chart icon ──────────────────────────────
+const TV_EXCHANGE = {
+  // Indices & Futures
+  '^GSPC':'SP:SPX','^NDX':'NASDAQ:NDX','^RUT':'TVC:RUT','^DJI':'DJ:DJI',
+  '^VIX':'TVC:VIX','^DXY':'TVC:DXY','DXY':'TVC:DXY',
+  'ES=F':'CME_MINI:ES1!','NQ=F':'CME_MINI:NQ1!','YM=F':'CBOT_MINI:YM1!',
+  'RTY=F':'CME_MINI:RTY1!','GC=F':'COMEX:GC1!','BZ=F':'TVC:UKOIL',
+  'CL=F':'NYMEX:CL1!',
+  // Crypto
+  'BTC-USD':'BITSTAMP:BTCUSD','ETH-USD':'BITSTAMP:ETHUSD',
+  // NYSE-listed
+  'MA':'NYSE:MA','V':'NYSE:V','JPM':'NYSE:JPM','GS':'NYSE:GS',
+  'MS':'NYSE:MS','C':'NYSE:C','BLK':'NYSE:BLK','XOM':'NYSE:XOM',
+  'CVX':'NYSE:CVX','NEM':'NYSE:NEM','WPM':'NYSE:WPM','GEV':'NYSE:GEV',
+  'NEE':'NYSE:NEE','ETN':'NYSE:ETN','CEG':'NYSE:CEG','VST':'NYSE:VST',
+  'GE':'NYSE:GE','RTX':'NYSE:RTX','BA':'NYSE:BA','NOC':'NYSE:NOC',
+  'LMT':'NYSE:LMT','MP':'NYSE:MP','ATI':'NYSE:ATI','CRS':'NYSE:CRS',
+  'PH':'NYSE:PH','IBM':'NYSE:IBM','CRM':'NYSE:CRM','SAP':'NYSE:SAP',
+  'XLF':'NYSE:XLF','XLE':'NYSE:XLE','SOXX':'NASDAQ:SOXX',
+  'WPM':'NYSE:WPM','HBM':'NYSE:HBM','AG':'NYSE:AG','SLV':'NYSE:SLV',
+  'GLDM':'NYSE:GLDM','COPX':'NYSE:COPX','CPER':'NYSE:CPER','PPLT':'NYSE:PPLT',
+  'REMX':'NYSE:REMX','UEC':'NYSE:UEC','CCJ':'NYSE:CCJ','URNJ':'NYSE:URNJ',
+  'FSLR':'NASDAQ:FSLR','VRT':'NYSE:VRT','BE':'NYSE:BE','FLNC':'NASDAQ:FLNC',
+};
+// Default: try NASDAQ prefix; TV will redirect if wrong exchange
+function tvLink(sym) {
+  if (TV_EXCHANGE[sym]) return `https://www.tradingview.com/symbols/${TV_EXCHANGE[sym].replace(':','/')}/`;
+  // Strip Yahoo suffixes for TradingView
+  const clean = sym.replace(/[-=^]/g,'').replace(/USD$/,'').toUpperCase();
+  return `https://www.tradingview.com/symbols/NASDAQ-${clean}/`;
+}
+const TV_ICON = `<a class="tv-icon" target="_blank" title="View chart on TradingView" href="TVHREF">` +
+  `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">` +
+  `<polyline points="1,10 4,6 7,8 10,3 13,5" stroke="#2196f3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>` +
+  `<polyline points="10,3 13,3 13,5" stroke="#2196f3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>` +
+  `</svg></a>`;
+function tvIcon(sym) { return TV_ICON.replace('TVHREF', tvLink(sym)); }
+
 // ═══════════════════════════════════════════════════════════════
 // RENDER INDEX CARDS
 // fmtCardPrice: no $ prefix for indices (points), VIX, DXY; $ for price-based
@@ -3219,7 +3266,7 @@ function renderBestWorst() {
 
   const row = (t, cls) => {
     return `<div class="bw-row">
-      <span class="bw-sym"><a href="${yfLink(t.sym)}" target="_blank" title="Open ${t.sym} on Yahoo Finance">${t.sym} ↗</a></span>
+      <span class="bw-sym"><a href="${yfLink(t.sym)}" target="_blank" title="Open ${t.sym} on Yahoo Finance">${t.sym} ↗</a>${tvIcon(t.sym)}</span>
       <span class="bw-name" title="${t.name}">${t.name}</span>
       <span class="bw-close" title="Last Close">$${t.price > 0 ? t.price.toFixed(2) : '–'}</span>
       <span class="bw-pct ${cls}">${t.pct>=0?'+':''}${t.pct.toFixed(2)}%</span>
@@ -3405,11 +3452,12 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
 
     tbody.innerHTML += `<tr>
       <td>
-        <a class="ticker-link${(ticker.tags||[]).some(t=>t==='ETF')?` etf-ticker`:''}" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+        <div style="display:flex;align-items:center;gap:2px;">
+          <a class="ticker-link${(ticker.tags||[]).some(t=>t==='ETF')?` etf-ticker`:''}" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+          ${tvIcon(sym)}
+        </div>
         <div class="ticker-name">${ticker.name}</div>
       </td>
-      <td class="price-cell">
-        <div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;">$${fmtP(closePrice,sym)}</div>
         <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">prev $${fmtP(prevClose,sym)}</div>
       </td>
       <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
@@ -3486,7 +3534,10 @@ function renderCryptoAsWatchlist() {
 
     tbody.innerHTML += `<tr>
       <td>
-        <a class="ticker-link${(ticker.tags||[]).some(t=>t==='ETF')?` etf-ticker`:''}" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+        <div style="display:flex;align-items:center;gap:2px;">
+          <a class="ticker-link${(ticker.tags||[]).some(t=>t==='ETF')?` etf-ticker`:''}" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+          ${tvIcon(sym)}
+        </div>
         <div class="ticker-name">${ticker.name}</div>
         ${tagsHtml}
       </td>
@@ -3532,9 +3583,14 @@ function renderCryptoTable() {
     const cInd = ticker.industry ? `<span class="industry-badge">${ticker.industry}</span>` : '–';
 
     tbody.innerHTML+=`<tr>
-      <td><a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
-          <div class="ticker-name">${d.name}</div>
-          <div class="ticker-tags">${cTagsHtml}</div></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:2px;">
+          <a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
+          ${tvIcon(sym)}
+        </div>
+        <div class="ticker-name">${d.name}</div>
+        <div class="ticker-tags">${cTagsHtml}</div>
+      </td>
       <td class="price-cell">$${fmtP(d.price,sym)}</td>
       <td class="change-cell ${cl}" style="font-size:13px;font-weight:700;">${pct>=0?'+':''}${pct.toFixed(2)}%<br><span style="font-size:10px;font-weight:400;opacity:0.7;">${fmtC(abs)}</span></td>
       <td>${cStatusHtml}</td>
