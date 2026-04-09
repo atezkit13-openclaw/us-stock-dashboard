@@ -854,12 +854,12 @@ body.light-theme .alert-item.oil-alert-bar {
 /* Inline news button used in watchlist table */
 .tbl-news-btn {
   display:inline-flex; align-items:center; justify-content:center;
-  font-size:9px; font-weight:700; padding:2px 8px; border-radius:3px;
-  background:rgba(245,158,11,0.08); color:var(--amber);
-  border:1px solid rgba(245,158,11,0.25);
-  text-decoration:none; white-space:nowrap; transition:all 0.15s; letter-spacing:0.04em;
+  width:18px; height:18px; margin-left:3px;
+  background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3);
+  border-radius:3px; text-decoration:none; font-size:11px; line-height:1;
+  transition:all 0.15s; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
-.tbl-news-btn:hover { background:rgba(245,158,11,0.2); border-color:var(--amber); }
+.tbl-news-btn:hover { background:rgba(245,158,11,0.25); border-color:var(--amber); transform:scale(1.1); }
 
 /* ── RENEWAL TAB ── */
 
@@ -1286,7 +1286,6 @@ body.light-theme .alert-item.oil-alert-bar {
           <th>Weekly SMA</th>
           <th onclick="setSortCol('narrative',null)" style="cursor:pointer;">Theme</th>
           <th>Tags</th>
-          <th>News</th>
           <th class="mgr-col">Actions</th>
         </tr></thead>
         <tbody id="watchlist-tbody"></tbody>
@@ -1947,8 +1946,8 @@ window.addEventListener('offline', () => fbSetStatus('offline','☁ Offline'));
 // THEME — Auto light/dark based on HKT sunrise/sunset
 // Sunrise HK ≈ 06:15, Sunset ≈ 18:45 (approximate annual average)
 // ═══════════════════════════════════════════════════════════════
-const SUNRISE_HKT = 6 * 60 + 15;  // 06:15
-const SUNSET_HKT  = 18 * 60 + 45; // 18:45
+const LIGHT_START_HKT = 6 * 60;   // 06:00 HKT → switch to light
+const LIGHT_END_HKT   = 18 * 60;  // 18:00 HKT → switch to dark
 
 function getHKTMinutes() {
   const now = new Date();
@@ -1966,20 +1965,36 @@ function applyTheme(light, manual) {
 function toggleTheme() {
   const isLight = document.body.classList.contains('light-theme');
   applyTheme(!isLight, true);
+  // Auto-clear manual override at the next theme boundary so auto-schedule resumes
+  const mins = getHKTMinutes();
+  let msUntilBoundary;
+  if (mins < LIGHT_START_HKT) {
+    msUntilBoundary = (LIGHT_START_HKT - mins) * 60000;
+  } else if (mins < LIGHT_END_HKT) {
+    msUntilBoundary = (LIGHT_END_HKT - mins) * 60000;
+  } else {
+    msUntilBoundary = (LIGHT_START_HKT + 24*60 - mins) * 60000;
+  }
+  clearTimeout(window._themeOverrideTimer);
+  window._themeOverrideTimer = setTimeout(() => {
+    localStorage.removeItem('theme_manual');
+    autoTheme();
+  }, msUntilBoundary + 1000); // +1s buffer past the boundary
 }
 
 function autoTheme() {
   const manual = localStorage.getItem('theme_manual');
   if (manual) { applyTheme(manual === 'light', false); return; }
   const mins = getHKTMinutes();
-  applyTheme(mins >= SUNRISE_HKT && mins < SUNSET_HKT, false);
+  // Light: 06:00–18:00 HKT · Dark: 18:00–06:00 HKT
+  applyTheme(mins >= LIGHT_START_HKT && mins < LIGHT_END_HKT, false);
 }
 
-// Re-check theme every 5 minutes (handles sunrise/sunset crossover)
+// Run immediately on load, then re-check every minute for boundary crossings
 autoTheme();
 setInterval(() => {
   if (!localStorage.getItem('theme_manual')) autoTheme();
-}, 5 * 60 * 1000);
+}, 60 * 1000);
 
 // ═══════════════════════════════════════════════════════════════
 // CLOCK & MARKET STATUS
@@ -3455,6 +3470,7 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
         <div style="display:flex;align-items:center;gap:2px;">
           <a class="ticker-link${(ticker.tags||[]).some(t=>t==='ETF')?` etf-ticker`:''}" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
           ${tvIcon(sym)}
+          <a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰</a>
         </div>
         <div class="ticker-name">${ticker.name}</div>
       </td>
@@ -3472,7 +3488,6 @@ function renderStockTable(tbodyId, listName, tagCls, tagLbl) {
       <td>${smaDropdown}</td>
       <td>${themeCellHtml}</td>
       <td>${tagsCellHtml}</td>
-      <td><a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰 News</a></td>
       ${mgr}
     </tr>`;
   });
@@ -3537,6 +3552,7 @@ function renderCryptoAsWatchlist() {
         <div style="display:flex;align-items:center;gap:2px;">
           <a class="ticker-link${(ticker.tags||[]).some(t=>t==='ETF')?` etf-ticker`:''}" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
           ${tvIcon(sym)}
+          <a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰</a>
         </div>
         <div class="ticker-name">${ticker.name}</div>
         ${tagsHtml}
@@ -3548,7 +3564,6 @@ function renderCryptoAsWatchlist() {
       <td><span class="industry-badge">${industry}</span></td>
       <td>${narrBadge}</td>
       <td>${tagsHtml}</td>
-      <td><a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰 News</a></td>
       ${mgr}
     </tr>`;
   });
@@ -3587,6 +3602,7 @@ function renderCryptoTable() {
         <div style="display:flex;align-items:center;gap:2px;">
           <a class="ticker-link" href="https://finance.yahoo.com/quote/${sym}/" target="_blank">${sym}</a>
           ${tvIcon(sym)}
+          <a class="tbl-news-btn" href="https://finance.yahoo.com/quote/${sym}/news/" target="_blank" title="Latest news for ${sym}">📰</a>
         </div>
         <div class="ticker-name">${d.name}</div>
         <div class="ticker-tags">${cTagsHtml}</div>
